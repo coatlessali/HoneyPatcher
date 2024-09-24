@@ -1,0 +1,4 @@
+potential packaging solution: https://packaging.python.org/en/latest/discussions/deploying-python-applications/
+guizero, our gui library of choice: https://lawsie.github.io/guizero/start/
+python-bps, licensed under WTFPL: https://gitlab.com/Screwtapello/python-bps/-/tree/master?ref_type=heads
+a xdelta3 solution, apache 2.0: https://github.com/samuelcolvin/xdelta3-python/tree/master
