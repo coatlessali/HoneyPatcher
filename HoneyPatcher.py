@@ -42,7 +42,7 @@ def toggle_logoskip():
 
 def set_directory():
     #global directory
-    directory = app.select_folder(title="Select Sonic The Fighters USRDIR", folder=".")
+    directory = app.select_folder(title="Select Sonic The Fighters USRDIR", folder=usrdir)
     config.set('main', 'usrdir', directory)
     honey_restart()
 
