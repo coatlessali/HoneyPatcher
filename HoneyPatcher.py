@@ -8,8 +8,8 @@ config.read('HoneyConfig.ini')
 
 # VARS
 
-path = config.get('main', 'path')
-print(path)
+usrdir = config.get('main', 'usrdir')
+print(usrdir)
 logoskip = config.getboolean('main', 'logoskip')
 
 # DEFS
@@ -35,7 +35,7 @@ def toggle_logoskip():
 def set_directory():
     #global directory
     directory = app.select_folder(title="Select Sonic The Fighters USRDIR", folder=".")
-    config.set('main', 'path', directory)
+    config.set('main', 'usrdir', directory)
     honey_restart()
 
 # GUI
