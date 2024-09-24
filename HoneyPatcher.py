@@ -1,5 +1,8 @@
+#!/usr/bin/python
 from guizero import App, PushButton, Text
 from configparser import ConfigParser
+import tkinter as tk
+from tkinter import filedialog
 import os
 import sys
 config = ConfigParser()
@@ -7,24 +10,26 @@ config.read('HoneyConfig.ini')
 
 # VARS
 
+
 logoskip = config.getboolean('main', 'logoskip')
 
 # DEFS
 
-def honey_restart():
+def honey_write():
     with open('HoneyConfig.ini', 'w') as configfile:
         config.write(configfile)
-    #config.write('HoneyConfig.ini')
+
+def honey_restart():
+    honey_write()
+    app.info("info", "HoneyPatcher will now restart to apply changes.")
     os.execv(sys.executable, ['python'] + sys.argv)
 
 
 def toggle_logoskip():
     print("logoskip button pressed")
     if logoskip == True:
-        print('setting')
         config.set('main', 'logoskip', 'false')
     else:
-        print('setting')
         config.set('main', 'logoskip', 'true')
     honey_restart()
 
