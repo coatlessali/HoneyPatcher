@@ -1,8 +1,16 @@
 #!/usr/bin/python
-from guizero import App, PushButton, Text
+from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
+from pathlib import Path
 import os
 import sys
+import shutil
+
+# INIT
+
+configfile = Path("HoneyConfig.ini")
+if not configfile.is_file():
+    shutil.copy("HoneyConfig.default.ini", "HoneyConfig.ini")
 config = ConfigParser()
 config.read('HoneyConfig.ini')
 
@@ -44,13 +52,15 @@ def set_directory():
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 
+logo = Picture(app, image="explode.png")
+
 message = Text(app, text=f"Logoskip: {logoskip}")
 message.text_color = "#e7e7e7"
 
-button = PushButton(app, text="Toggle Logoskip (Disables n_advstf.farc customization)", command=toggle_logoskip)
+button = PushButton(app, text="Toggle Logoskip", command=toggle_logoskip)
 button.text_color = "#e7e7e7"
 
-select_folder_button = PushButton(app, text="Select STF USRDIR", command=set_directory)
+select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
 select_folder_button.text_color = "#e7e7e7"
 
 app.display()
