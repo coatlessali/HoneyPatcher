@@ -98,7 +98,7 @@ def honey_prep():
                 return
 
     # set the path to the rom.psarc
-    rom = os.path.join(usrdir, "rom.psarc")
+    rom = os.path.abspath(os.path.join(usrdir, "rom.psarc"))
     print(rom)
     # if rom.psarc doesn't exist, assume game is already prepped
     if not os.path.exists(rom):
@@ -117,11 +117,10 @@ def honey_prep():
             print(psarc)
             app.info("NOTICE", "This hasn't been tested, there may be bugs!")
         case "windows":
-            psarc_rel = os.path.join(".", "bin/win32/PSArcTool.exe")
+            psarc_rel = os.path.join(".", "bin/win32/UnPSARC.exe")
             psarc = os.path.abspath(psarc_rel)
             print(psarc)
             app.info("NOTICE", "This hasn't been tested, there may be bugs")
-            return
         case _:
             app.error("Oops!", "Your OS is not supported.")
             return
@@ -134,11 +133,16 @@ def honey_prep():
                 subprocess.run([psarc, rom])
             case _:
                 subprocess.run([psarc, '-x', rom])
-    except:
+    except Exception as e:
+        print("An exception occured:")
+        print(e)
         app.error("Oopsies!", "Something went wrong trying to extract rom.psarc.")
         return
     else:
         os.remove(rom)
+        if platform.system().lower() == "windows":
+            shutil.copytree("rom_Unpacked", "rom", dirs_exist_ok=True)
+            shutil.rmtree("rom_Unpacked")
         app.info("NOTICE", "Game files have been prepped for modding!")
     finally:
         os.chdir(wd)        
