@@ -3,8 +3,11 @@ from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
 from pathlib import Path
 import os
+import stat
 import sys
 import shutil
+import platform
+import subprocess
 
 ### INIT
 # Stuff that always should run on startup
@@ -13,6 +16,17 @@ if not Path("HoneyConfig.ini").is_file(): # Check if config exists
     shutil.copy("HoneyConfig.default.ini", "HoneyConfig.ini") # If not, make a new one
 config = ConfigParser()
 config.read('HoneyConfig.ini') # Read config file
+
+match platform.system().lower():
+    case "darwin":
+        st = os.stat('bin/macosx/psarc')
+        os.chmod('bin/macos/psarc', st.st_mode | stat.S_IEXEC)
+    case "linux":
+        st = os.stat('bin/linux/psarc')
+        os.chmod('bin/linux/psarc', st.st_mode | stat.S_IEXEC)
+    case _:
+        pass
+        
 
 ### VARS
 usrdir = config.get('main', 'usrdir')
@@ -73,7 +87,61 @@ def honey_restore():
 # psarc tool prob won't be too hard, farc tool is a different story
 # maybe implement the ability to target an already existing farcpack installation and wrapper?
 def honey_prep():
-    app.info("TODO", "Implement this")
+    # Check if a backup was made, give user the option to skip creation of one
+    if not os.path.exists("BACKUP"):
+        createbackup = app.yesno("Notice", "You don\'t have a backup available to restore. Would you like to create one now?")
+        if createbackup:
+            honey_backup()
+        else:
+            fuckitweball = app.yesno("WARNING!", "The tool will not be able to restore your game to an unmodified state unless a backup is present. Are you sure you wish to continue?")
+            if not fuckitweball:
+                return
+
+    # set the path to the rom.psarc
+    rom = os.path.join(usrdir, "rom.psarc")
+    print(rom)
+    # if rom.psarc doesn't exist, assume game is already prepped
+    if not os.path.exists(rom):
+        app.error("Error!", "rom.psarc not found! Your game is either already prepped, or corrupted!")
+        return
+
+    # set path for the psarc tool
+    match platform.system().lower():
+        case "linux":
+            psarc_rel = os.path.join(".", "bin/linux/psarc")
+            psarc = os.path.abspath(psarc_rel)
+            print(psarc)
+        case "darwin":
+            psarc_rel = os.path.join(".", "bin/macosx/psarc")
+            psarc = os.path.abspath(psarc_rel)
+            print(psarc)
+            app.info("NOTICE", "This hasn't been tested, there may be bugs!")
+        case "windows":
+            psarc_rel = os.path.join(".", "bin/win32/PSArcTool.exe")
+            psarc = os.path.abspath(psarc_rel)
+            print(psarc)
+            app.info("NOTICE", "This hasn't been tested, there may be bugs")
+            return
+        case _:
+            app.error("Oops!", "Your OS is not supported.")
+            return
+    # TODO: test all of this shit on macos/windows
+    wd = os.getcwd()
+    os.chdir(usrdir)
+    try:
+        match platform.system().lower():
+            case "windows":
+                subprocess.run([psarc, rom])
+            case _:
+                subprocess.run([psarc, '-x', rom])
+    except:
+        app.error("Oopsies!", "Something went wrong trying to extract rom.psarc.")
+        return
+    else:
+        os.remove(rom)
+        app.info("NOTICE", "Game files have been prepped for modding!")
+    finally:
+        os.chdir(wd)        
 
 # Handles whether or not to patch the eboot for logoskip
 def toggle_logoskip():
