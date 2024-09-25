@@ -82,10 +82,7 @@ def honey_restore():
         else:
             app.info("Notice", "Restore complete!")
 
-# TODO: will be used to prep the game files for modding.
-# Will require a psarc tool, and a farc tool.
-# psarc tool prob won't be too hard, farc tool is a different story
-# maybe implement the ability to target an already existing farcpack installation and wrapper?
+# Extract the rom.psarc and remove it
 def honey_prep():
     # Check if a backup was made, give user the option to skip creation of one
     if not os.path.exists("BACKUP"):
