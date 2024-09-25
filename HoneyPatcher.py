@@ -73,7 +73,7 @@ def honey_restore():
 # psarc tool prob won't be too hard, farc tool is a different story
 # maybe implement the ability to target an already existing farcpack installation and wrapper?
 def honey_prep():
-    pass
+    app.info("TODO", "Implement this")
 
 # Handles whether or not to patch the eboot for logoskip
 def toggle_logoskip():
@@ -111,5 +111,8 @@ backup_button.text_color = "#e7e7e7"
 
 restore_button = PushButton(app, text="Restore USRDIR...", command=honey_restore)
 restore_button.text_color = "#e7e7e7"
+
+prepare_button = PushButton(app, text="Prepare USRDIR for mods...", command=honey_prep)
+prepare_button.text_color = "#e7e7e7"
 
 app.display()
