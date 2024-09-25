@@ -164,6 +164,13 @@ def set_directory():
     else:
         honey_restart()
 
+def reset_config():
+    reset = app.yesno("WARNING!", "This will delete your config file and reset it to its default values. This will not delete your backup, if any. Are you sure you want to continue?")
+    if reset:
+        # TODO: this doesn't work, figure out why
+        os.remove('HoneyConfig.ini')
+        honey_restart()
+
 ### GUI
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
@@ -187,5 +194,8 @@ restore_button.text_color = "#e7e7e7"
 
 prepare_button = PushButton(app, text="Prepare USRDIR for mods...", command=honey_prep)
 prepare_button.text_color = "#e7e7e7"
+
+reset_button = PushButton(app, text="Reset Configuration...", command=reset_config)
+reset_button.text_color = "#e7e7e7"
 
 app.display()
