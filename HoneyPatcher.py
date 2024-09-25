@@ -100,7 +100,7 @@ def set_directory():
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 
-logo = Picture(app, image="explode.png")
+logo = Picture(app, image="assets/explode.png")
 
 message = Text(app, text=f"Logoskip: {logoskip}")
 message.text_color = "#e7e7e7"
