@@ -87,9 +87,14 @@ def toggle_logoskip():
 # Should be set to the USRDIR, for US this is dev_hdd0/game/NPUB30927/USRDIR
 def set_directory():
     #global directory
+    app.info("Notice", "Please select the USRDIR folder for your game.")
     directory = app.select_folder(title="Select Sonic The Fighters USRDIR", folder=usrdir)
-    config.set('main', 'usrdir', directory)
-    honey_restart()
+    try:
+        config.set('main', 'usrdir', directory)
+    except:
+        app.info("Notice", "Selection cancelled.")
+    else:
+        honey_restart()
 
 ### GUI
 
