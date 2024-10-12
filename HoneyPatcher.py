@@ -2,21 +2,16 @@
 from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
 from pathlib import Path
-import os
-import stat
-import sys
-import shutil
-import platform
-import subprocess
+import os, stat, sys, shutil, platform, subprocess
 
-### INIT
-# Stuff that always should run on startup
+### INIT - Stuff that should always run on startup
 
 if not Path("HoneyConfig.ini").is_file(): # Check if config exists
     shutil.copy("HoneyConfig.default.ini", "HoneyConfig.ini") # If not, make a new one
 config = ConfigParser()
 config.read('HoneyConfig.ini') # Read config file
 
+# Make psarc executable. There's probably a better way to do this.
 match platform.system().lower():
     case "darwin":
         st = os.stat('bin/macosx/psarc')
@@ -26,11 +21,18 @@ match platform.system().lower():
         os.chmod('bin/linux/psarc', st.st_mode | stat.S_IEXEC)
     case _:
         pass
-        
+
+# Check for mono on MacOS/Linux
+def mono_check():
+    if platform.system().lower() == "windows":
+        return True
+
+    if not shutil.which("mono"):
+        app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information. ")
+        return False
 
 ### VARS
 usrdir = config.get('main', 'usrdir')
-print(usrdir)
 logoskip = config.getboolean('main', 'logoskip')
 
 ### DEFS
@@ -71,7 +73,7 @@ def honey_restore():
     confirm_restore = app.yesno("Warning!", "This will erase your USRDIR and restore a backup. This will effectively uninstall all of your USRDIR mods and restore the game to a vanilla state.\n\nDo you want to continue?")
     if confirm_restore:
         if os.getcwd() == usrdir:
-            app.error("What?")
+            app.error("why did you put the app here")
             return
         if os.path.exists(usrdir):
             shutil.rmtree(usrdir)
@@ -82,7 +84,8 @@ def honey_restore():
         else:
             app.info("Notice", "Restore complete!")
 
-# Extract the rom.psarc and remove it
+# TODO: will be used to prep the game files for modding.
+# maybe implement the ability to target an already existing farcpack installation and wrapper?
 def honey_prep():
     # Check if a backup was made, give user the option to skip creation of one
     if not os.path.exists("BACKUP"):
@@ -107,17 +110,13 @@ def honey_prep():
         case "linux":
             psarc_rel = os.path.join(".", "bin/linux/psarc")
             psarc = os.path.abspath(psarc_rel)
-            print(psarc)
         case "darwin":
             psarc_rel = os.path.join(".", "bin/macosx/psarc")
             psarc = os.path.abspath(psarc_rel)
-            print(psarc)
             app.info("NOTICE", "This hasn't been tested, there may be bugs!")
         case "windows":
             psarc_rel = os.path.join(".", "bin/win32/UnPSARC.exe")
             psarc = os.path.abspath(psarc_rel)
-            print(psarc)
-            app.info("NOTICE", "This hasn't been tested, there may be bugs")
         case _:
             app.error("Oops!", "Your OS is not supported.")
             return
@@ -172,11 +171,22 @@ def reset_config():
         os.remove('HoneyConfig.ini')
         honey_restart()
 
+def honey_install():
+    # honey mob cemetery
+    if not mono_check():
+        return
+    app.info("todo", "ali needs to finish the packing function first")
+
+def honey_pack():
+    if not mono_check():
+        return
+    print("todo", "ali needs to write the specification for .stf packages first")
+
 ### GUI
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 
-logo = Picture(app, image="assets/explode.png")
+logo = Picture(app, image="assets/HONEYBADGER.png")
 
 message = Text(app, text=f"Logoskip: {logoskip}")
 message.text_color = "#e7e7e7"
@@ -195,6 +205,12 @@ restore_button.text_color = "#e7e7e7"
 
 prepare_button = PushButton(app, text="Prepare USRDIR for mods...", command=honey_prep)
 prepare_button.text_color = "#e7e7e7"
+
+install_button = PushButton(app, text="Install all mods...", command=honey_install)
+install_button.text_color = "#e7e7e7"
+
+pack_button = PushButton(app, text="Pack template into mod...", command=honey_pack)
+pack_button.text_color = "#e7e7e7"
 
 reset_button = PushButton(app, text="Reset Configuration...", command=reset_config)
 reset_button.text_color = "#e7e7e7"
