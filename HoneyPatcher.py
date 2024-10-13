@@ -2,7 +2,7 @@
 from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
 from pathlib import Path
-import os, stat, sys, shutil, platform, subprocess
+import os, stat, sys, shutil, platform, subprocess, xdelta3
 
 ### INIT - Stuff that should always run on startup
 
@@ -26,8 +26,13 @@ match platform.system().lower():
 def mono_check():
     if not platform.system().lower() == "windows":
         if not shutil.which("mono"):
-            app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information. ")
+            app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
             return False
+        if not shutil.which("xdelta3") and not shutil.which("xdelta"):
+            app.error("Error", "Could not find xdelta3 on your system.\nPlease install it - otherwise you won't be able to install mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
+            return False
+        print(shutil.which("mono"))
+        print(shutil.which("xdelta3"))
 
 ### VARS
 usrdir = config.get('main', 'usrdir')
@@ -91,7 +96,7 @@ def honey_prep():
         if createbackup:
             honey_backup()
         else:
-            fuckitweball = app.yesno("WARNING!", "The tool will not be able to restore your game to an unmodified state unless a backup is present. Are you sure you wish to continue?")
+            fuckitweball = app.yesno("WARNING!", "The tool will not be able to restore your game to an unmodified state unless a backup is present. It only takes a few seconds. Are you sure you wish to continue?")
             if not fuckitweball:
                 return
 
@@ -118,7 +123,7 @@ def honey_prep():
         case _:
             app.error("Oops!", "Your OS is not supported.")
             return
-    # TODO: test all of this shit on macos/windows
+    # TODO: test all of this shit on macos
     wd = os.getcwd()
     os.chdir(usrdir)
     try:
@@ -128,7 +133,6 @@ def honey_prep():
             case _:
                 subprocess.run([psarc, '-x', rom])
     except Exception as e:
-        print("An exception occured:")
         print(e)
         app.error("Oopsies!", "Something went wrong trying to extract rom.psarc.")
         return
@@ -152,7 +156,6 @@ def toggle_logoskip():
 
 # Should be set to the USRDIR, for US this is dev_hdd0/game/NPUB30927/USRDIR
 def set_directory():
-    #global directory
     app.info("Notice", "Please select the USRDIR folder for your game.")
     directory = app.select_folder(title="Select Sonic The Fighters USRDIR", folder=usrdir)
     try:
@@ -173,12 +176,70 @@ def honey_install():
     # honey mob cemetery
     if mono_check() == False:
         return
-    app.info("todo", "ali needs to finish the packing function first")
+
+    # Everything should go between here and the shutil.rmtree()
+    if not os.path.exists(".tmp"):
+        os.makedirs(".tmp")
+
+    # Vars for Extraction/Compression
+    rom_dir = os.path.join(usrdir, "rom")
+    farclist = ["sprite/n_advstf.farc", "sprite/n_cmn.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", "sprite/n_info.farc", "sprite/n_stf.farc", "string_array.farc", "sprite/n_advstf/texture.farc", "sprite/n_cmn/texture.farc", "sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc"]
+    dirlist = ["sprite/n_advstf/texture", "sprite/n_cmn/texture", "sprite/n_cmn/texture", "sprite/n_fnt/texture", "sprite/n_info/texture", "sprite/n_stf/texture", "string_array", "sprite/n_advstf", "sprite/n_cmn", "sprite/n_fnt", "sprite/n_info", "sprite/n_stf"]
+    farcpack = os.path.join(".", "bin/mono/FarcPack.exe")
+
+    # Extraction
+    for farc in farclist:
+        farcpath = os.path.join(rom_dir, farc)
+        # TODO: test this shit on windows and macos
+        if platform.system().lower() == "windows":
+            subprocess.run([farcpack, farcpath])
+        else:
+            subprocess.run(["mono", farcpack, farcpath])
+
+    app.info("Extraction", "Extracted FARC files.")
+
+    # ALL OF THE FILE PATCHING / REPLACEMENT LOGIC WILL GO HERE
+    # use xdelta3 for patching rom_code, ui assets and music/sounds can be provided in their entirety
+    if platform.system().lower() == "windows":
+        xdelta = os.path.join(".", "bin/win32/xdelta.exe")
+    else:
+        if shutil.which("xdelta3"):
+            xdelta = "xdelta3"
+        else:
+            xdelta = "xdelta"
+    # TODO: add part that extracts mods in alphabetical order to .tmp
+    # then, iterate through the files and apply the patches to files of the same name, minus the vcdiff extension
+
+    app.info("TODO", "put all file patching / replacement logic here")
+
+    # Compression
+    for fdir in dirlist:
+        dirpath = os.path.join(rom_dir, fdir)
+        if platform.system().lower() == "windows":
+            subprocess.run([farcpack, dirpath])
+        else:
+            subprocess.run(["mono", farcpack, dirpath])
+
+    app.info("Notice", "Repacked FARC files.")
+
+    # Cleanup    
+    for fdir in dirlist:
+        dirpath = os.path.join(rom_dir, fdir)
+        # So for some reason this fails with "texture" not found if I don't do it this way. What? Why? If I remove these lines texture remains.
+        try:
+            shutil.rmtree(dirpath)
+        except:
+            pass
+    
+    app.info("Notice", "Cleaned up directories.")
+
+    if os.path.exists(".tmp"):
+        shutil.rmtree(".tmp")
 
 def honey_pack():
     if mono_check() == False:
         return
-    print("todo", "ali needs to write the specification for .stf packages first")
+    app.info("todo", "ali needs to write the specification for .stf packages first")
 
 ### GUI
 

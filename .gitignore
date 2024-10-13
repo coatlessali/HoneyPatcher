@@ -14,8 +14,11 @@ dist/
 downloads/
 eggs/
 .eggs/
+.tmp/
+template/
 lib/
 lib64/
+mods/
 parts/
 sdist/
 var/
