@@ -24,12 +24,10 @@ match platform.system().lower():
 
 # Check for mono on MacOS/Linux
 def mono_check():
-    if platform.system().lower() == "windows":
-        return True
-
-    if not shutil.which("mono"):
-        app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information. ")
-        return False
+    if not platform.system().lower() == "windows":
+        if not shutil.which("mono"):
+            app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information. ")
+            return False
 
 ### VARS
 usrdir = config.get('main', 'usrdir')
@@ -173,12 +171,12 @@ def reset_config():
 
 def honey_install():
     # honey mob cemetery
-    if not mono_check():
+    if mono_check() == False:
         return
     app.info("todo", "ali needs to finish the packing function first")
 
 def honey_pack():
-    if not mono_check():
+    if mono_check() == False:
         return
     print("todo", "ali needs to write the specification for .stf packages first")
 
