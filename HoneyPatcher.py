@@ -2,7 +2,7 @@
 from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
 from pathlib import Path
-import os, stat, sys, shutil, platform, subprocess, xdelta3
+import os, stat, sys, shutil, platform, subprocess, random
 
 ### INIT - Stuff that should always run on startup
 
@@ -31,8 +31,6 @@ def mono_check():
         if not shutil.which("xdelta3") and not shutil.which("xdelta"):
             app.error("Error", "Could not find xdelta3 on your system.\nPlease install it - otherwise you won't be able to install mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
             return False
-        print(shutil.which("mono"))
-        print(shutil.which("xdelta3"))
 
 ### VARS
 usrdir = config.get('main', 'usrdir')
@@ -87,8 +85,6 @@ def honey_restore():
         else:
             app.info("Notice", "Restore complete!")
 
-# TODO: will be used to prep the game files for modding.
-# maybe implement the ability to target an already existing farcpack installation and wrapper?
 def honey_prep():
     # Check if a backup was made, give user the option to skip creation of one
     if not os.path.exists("BACKUP"):
@@ -177,7 +173,8 @@ def honey_install():
     if mono_check() == False:
         return
 
-    # Everything should go between here and the shutil.rmtree()
+    # Everything should go between here and the second shutil.rmtree()
+    shutil.rmtree(".tmp", ignore_errors=True)
     if not os.path.exists(".tmp"):
         os.makedirs(".tmp")
 
@@ -196,7 +193,7 @@ def honey_install():
         else:
             subprocess.run(["mono", farcpack, farcpath])
 
-    app.info("Extraction", "Extracted FARC files.")
+    #app.info("Extraction", "Extracted FARC files.")
 
     # ALL OF THE FILE PATCHING / REPLACEMENT LOGIC WILL GO HERE
     # use xdelta3 for patching rom_code, ui assets and music/sounds can be provided in their entirety
@@ -207,8 +204,39 @@ def honey_install():
             xdelta = "xdelta3"
         else:
             xdelta = "xdelta"
-    # TODO: add part that extracts mods in alphabetical order to .tmp
-    # then, iterate through the files and apply the patches to files of the same name, minus the vcdiff extension
+
+    # Check through zip files
+    pkglist = []
+    for (dirpath, dirnames, filenames) in os.walk("mods"):
+        pkglist.extend(filenames)
+        break
+    for pkg in pkglist:
+        if ".zip" in pkg:
+            shutil.unpack_archive(os.path.join("mods", pkg), ".tmp")
+    #print(pkglist)
+    
+    # Iterate through all vcdiff patches, then apply, then delete (oh boy)
+    difflist = []
+    for dirpath, dirnames, filenames in os.walk(".tmp"):
+        for filename in filenames:
+            if ".vcdiff" in filename:
+                difflist.append(os.path.join(dirpath, filename))
+    #print(difflist)
+
+    patchlist = []
+    for diff in difflist:
+        p = Path(diff)
+        #print("p:", p)
+        removed_toplevel_path = Path(*p.parts[1:])
+        #print("removed_toplevel_path:", removed_toplevel_path)
+        removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
+        final_path = os.path.join(rom_dir, removed_extension_path)
+        subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
+        #print(xdelta, "-d", "-f", "-s", final_path, diff, final_path)
+        patchlist.append(final_path)
+    #print(patchlist)
+
+    # Apply patches
 
     app.info("TODO", "put all file patching / replacement logic here")
 
@@ -233,19 +261,25 @@ def honey_install():
     
     app.info("Notice", "Cleaned up directories.")
 
-    if os.path.exists(".tmp"):
-        shutil.rmtree(".tmp")
+    #shutil.rmtree(".tmp", ignore_errors=True)
 
 def honey_pack():
     if mono_check() == False:
         return
     app.info("todo", "ali needs to write the specification for .stf packages first")
 
+### gato explotano
+
+
 ### GUI
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 
 logo = Picture(app, image="assets/HONEYBADGER.png")
+magic_number = random.randrange(0, 100)
+print(magic_number)
+if magic_number == 1:
+    logo.image = "assets/explode.png"
 
 message = Text(app, text=f"Logoskip: {logoskip}")
 message.text_color = "#e7e7e7"
