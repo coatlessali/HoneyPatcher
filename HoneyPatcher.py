@@ -231,7 +231,7 @@ def honey_install():
         #print("removed_toplevel_path:", removed_toplevel_path)
         removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
         final_path = os.path.join(rom_dir, removed_extension_path)
-        subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
+        subprocess.run([xdelta, "-n", "-d", "-f", "-s", final_path, diff, final_path])
         #print(xdelta, "-d", "-f", "-s", final_path, diff, final_path)
         patchlist.append(final_path)
     #print(patchlist)

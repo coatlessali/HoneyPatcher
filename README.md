@@ -6,11 +6,11 @@ Right now, it can:
 - Back up your game files
 - Restore your game files
 - Extract your rom.psarc
+- Install packages using vcdiff patches
 
 TODO:
-- create the .stf package specification
+- finalize package specification
 - write the packing function
-- write the installation function
 
 ### Installing Mono (MacOS/Linux/SteamOS)
 
