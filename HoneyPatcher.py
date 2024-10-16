@@ -211,9 +211,10 @@ def honey_install():
         pkglist.extend(filenames)
         break
     for pkg in pkglist:
-        if ".zip" in pkg:
+        if pkg.startswith("."):
+            pass
+        elif ".zip" in pkg:
             shutil.unpack_archive(os.path.join("mods", pkg), ".tmp")
-    #print(pkglist)
     
     # Iterate through all vcdiff patches, then apply, then delete (oh boy)
     difflist = []
@@ -221,24 +222,17 @@ def honey_install():
         for filename in filenames:
             if ".vcdiff" in filename:
                 difflist.append(os.path.join(dirpath, filename))
-    #print(difflist)
 
-    patchlist = []
+    patchlist = [] # Intending to use this for logs later
     for diff in difflist:
+        # Get the path of the original file, relative to rom_dir
         p = Path(diff)
-        #print("p:", p)
         removed_toplevel_path = Path(*p.parts[1:])
-        #print("removed_toplevel_path:", removed_toplevel_path)
         removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
         final_path = os.path.join(rom_dir, removed_extension_path)
-        subprocess.run([xdelta, "-n", "-d", "-f", "-s", final_path, diff, final_path])
-        #print(xdelta, "-d", "-f", "-s", final_path, diff, final_path)
+        # Apply Patch
+        subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
         patchlist.append(final_path)
-    #print(patchlist)
-
-    # Apply patches
-
-    app.info("TODO", "put all file patching / replacement logic here")
 
     # Compression
     for fdir in dirlist:
@@ -248,7 +242,7 @@ def honey_install():
         else:
             subprocess.run(["mono", farcpack, dirpath])
 
-    app.info("Notice", "Repacked FARC files.")
+    app.info("Notice", "Mod installation complete.")
 
     # Cleanup    
     for fdir in dirlist:
@@ -261,31 +255,31 @@ def honey_install():
     
     app.info("Notice", "Cleaned up directories.")
 
-    #shutil.rmtree(".tmp", ignore_errors=True)
+    shutil.rmtree(os.path.join(".", ".tmp"), ignore_errors=True)
 
 def honey_pack():
     if mono_check() == False:
         return
     app.info("todo", "ali needs to write the specification for .stf packages first")
 
-### gato explotano
-
-
 ### GUI
 
 app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 
 logo = Picture(app, image="assets/HONEYBADGER.png")
-magic_number = random.randrange(0, 100)
+
+magic_number = random.randrange(0, 99) # 1 in 100 chance of explode.png
 print(magic_number)
 if magic_number == 1:
     logo.image = "assets/explode.png"
 
-message = Text(app, text=f"Logoskip: {logoskip}")
-message.text_color = "#e7e7e7"
+# See below
+#message = Text(app, text=f"Logoskip: {logoskip}")
+#message.text_color = "#e7e7e7"
 
-button = PushButton(app, text="Toggle Logoskip", command=toggle_logoskip)
-button.text_color = "#e7e7e7"
+# I'll put this back once seek has a patch for me
+#button = PushButton(app, text="Toggle Logoskip", command=toggle_logoskip)
+#button.text_color = "#e7e7e7"
 
 select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
 select_folder_button.text_color = "#e7e7e7"
