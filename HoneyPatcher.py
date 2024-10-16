@@ -2,7 +2,7 @@
 from guizero import App, PushButton, Text, Picture
 from configparser import ConfigParser
 from pathlib import Path
-import os, stat, sys, shutil, platform, subprocess, random
+import os, stat, sys, shutil, platform, subprocess, random, hashlib
 
 # Check if config exists,
 # if not make a new one,
@@ -253,10 +253,30 @@ def honey_install():
     
     shutil.rmtree(os.path.join(".", ".tmp"), ignore_errors=True)
 
-def honey_pack():
+def honey_unpack():
+
     if mono_check() == False:
         return
-    app.info("todo", "ali needs to write the specification for .stf packages first")
+
+    rom = os.path.join(usrdir, "rom.psarc")
+    if os.path.exists(rom):
+        honey_prep()
+
+    rom_dir = os.path.join(usrdir, "rom")
+    farclist = ["sprite/n_advstf.farc", "sprite/n_cmn.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", "sprite/n_info.farc", "sprite/n_stf.farc", "string_array.farc", "sprite/n_advstf/texture.farc", "sprite/n_cmn/texture.farc", "sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc"]
+    farcpack = os.path.join(".", "bin/mono/FarcPack.exe")
+
+    for farc in farclist:
+        farcpath = os.path.join(rom_dir, farc)
+        if platform.system().lower() == "windows":
+            subprocess.run([farcpack, farcpath])
+        else:
+            subprocess.run(["mono", farcpack, farcpath])
+
+    if not os.path.exists("template"):
+        os.mkdirs("template")
+
+    shutil.copytree(rom_dir, "template", dirs_exist_ok=True)
 
 def checksum_off():
     checksum = app.yesno("WARNING", "Disabling checksum verification can allow installing hand-made, merged patches. However, these are prone to breakage. If something is wrong with your patch, it will be applied anyways.\n\nDo not come crying to me if it blows up in your face.\n\nDo you wish to continue?")
@@ -288,14 +308,6 @@ magic_number = random.randrange(0, 99) # 1 in 100 chance of explode.png
 if magic_number == 1:
     logo.image = "assets/explode.png"
 
-# See below
-#message = Text(app, text=f"Logoskip: {logoskip}")
-#message.text_color = "#e7e7e7"
-
-# I'll put this back once seek has a patch for me
-#button = PushButton(app, text="Toggle Logoskip", command=toggle_logoskip)
-#button.text_color = "#e7e7e7"
-
 select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
 select_folder_button.text_color = "#e7e7e7"
 
@@ -312,9 +324,8 @@ prepare_button.text_color = "#e7e7e7"
 install_button = PushButton(app, text="Install all mods...", command=honey_install)
 install_button.text_color = "#e7e7e7"
 
-# this isn't done yet
-#pack_button = PushButton(app, text="Pack template into mod...", command=honey_pack)
-#pack_button.text_color = "#e7e7e7"
+unpack_button = PushButton(app, text="Unpack game files into template...", command=honey_unpack)
+unpack_button.text_color = "#e7e7e7"
 
 checksum_on_button = PushButton(app, command=checksum_off, text="Checksum Verification: ON")
 checksum_on_button.text_color = "#2aa198"
