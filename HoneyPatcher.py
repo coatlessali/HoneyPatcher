@@ -4,12 +4,18 @@ from configparser import ConfigParser
 from pathlib import Path
 import os, stat, sys, shutil, platform, subprocess, random
 
-### INIT - Stuff that should always run on startup
-
-if not Path("HoneyConfig.ini").is_file(): # Check if config exists
-    shutil.copy("HoneyConfig.default.ini", "HoneyConfig.ini") # If not, make a new one
+# Check if config exists,
+# if not make a new one,
+# then read config file
+if not Path("HoneyConfig.ini").is_file():
+    shutil.copy("HoneyConfig.default.ini", "HoneyConfig.ini")
 config = ConfigParser()
-config.read('HoneyConfig.ini') # Read config file
+config.read('HoneyConfig.ini')
+
+# set usrdir, logoskip is unused
+usrdir = config.get('main', 'usrdir')
+logoskip = config.getboolean('main', 'logoskip')
+checksum_verif = config.getboolean('main', 'checksum')
 
 # Make psarc executable. There's probably a better way to do this.
 if platform.system().lower() != "windows":
@@ -18,6 +24,8 @@ if platform.system().lower() != "windows":
     st = os.stat('bin/linux/psarc')
     os.chmod('bin/linux/psarc', st.st_mode | stat.S_IEXEC)
     del st
+
+### DEFS
 
 # Check for mono on MacOS/Linux
 def mono_check():
@@ -28,12 +36,6 @@ def mono_check():
         if not shutil.which("xdelta3") and not shutil.which("xdelta"):
             app.error("Error", "Could not find xdelta3 on your system.\nPlease install it - otherwise you won't be able to install mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
             return False
-
-### VARS
-usrdir = config.get('main', 'usrdir')
-logoskip = config.getboolean('main', 'logoskip')
-
-### DEFS
 
 # Writes the config. Used automatically in honey_restart()
 def honey_write():
@@ -106,11 +108,11 @@ def honey_prep():
             app.info("NOTICE", "This hasn't been tested, there may be bugs!")
         case "windows":
             psarc_rel = os.path.join(".", "bin/win32/UnPSARC.exe")
+    # TODO: test all of this shit on macos
             psarc = os.path.abspath(psarc_rel)
         case _:
             app.error("Oops!", "Your OS is not supported.")
             return
-    # TODO: test all of this shit on macos
     wd = os.getcwd()
     os.chdir(usrdir)
     try:
@@ -162,8 +164,7 @@ def honey_install():
     # Check if game is prepped
     rom = os.path.join(usrdir, "rom.psarc")
     if os.path.exists(rom):
-        app.error("Error!", "Please prepare the USRDIR before continuing.")
-        return
+        honey_prep()
 
     # Everything should go between here and the second shutil.rmtree()
     shutil.rmtree(".tmp", ignore_errors=True)
@@ -222,8 +223,11 @@ def honey_install():
         removed_toplevel_path = Path(*p.parts[1:])
         removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
         final_path = os.path.join(rom_dir, removed_extension_path)
-        # Apply Patch - SPOOKY: forces no checksum verif to allow patch merging (dangerous)
-        subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, final_path])
+        # Apply Patches
+        if checksum_verif:
+            subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
+        else: # SPOOKY - forces no checksum verif to allow patch merging (dangerous)
+            subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, final_path])
         patchlist.append(final_path)
 
     # Compression
@@ -247,14 +251,32 @@ def honey_install():
         except:
             pass
     
-    app.info("Notice", "Cleaned up directories.")
-
     shutil.rmtree(os.path.join(".", ".tmp"), ignore_errors=True)
 
 def honey_pack():
     if mono_check() == False:
         return
     app.info("todo", "ali needs to write the specification for .stf packages first")
+
+def checksum_off():
+    checksum = app.yesno("WARNING", "Disabling checksum verification can allow installing hand-made, merged patches. However, these are prone to breakage. If something is wrong with your patch, it will be applied anyways.\n\nDo not come crying to me if it blows up in your face.\n\nDo you wish to continue?")
+    if checksum:
+        config.set('main', 'checksum', "false")
+        checksum_on_button.disable()
+        checksum_on_button.visible = False
+        checksum_off_button.enable()
+        checksum_off_button.visible = True
+        honey_restart()
+    else:
+        return
+
+def checksum_on():
+    config.set('main', 'checksum', "true")
+    checksum_off_button.disable()
+    checksum_off_button.visible = False
+    checksum_on_button.enable()
+    checksum_on_button.visible = True
+    honey_restart()
 
 ### GUI
 
@@ -277,6 +299,7 @@ if magic_number == 1:
 select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
 select_folder_button.text_color = "#e7e7e7"
 
+# automated backups, still can be reenabled if you uncomment the below two lines
 #backup_button = PushButton(app, text="Backup USRDIR...", command=honey_backup)
 #backup_button.text_color = "#e7e7e7"
 
@@ -289,7 +312,25 @@ prepare_button.text_color = "#e7e7e7"
 install_button = PushButton(app, text="Install all mods...", command=honey_install)
 install_button.text_color = "#e7e7e7"
 
-pack_button = PushButton(app, text="Pack template into mod...", command=honey_pack)
-pack_button.text_color = "#e7e7e7"
+# this isn't done yet
+#pack_button = PushButton(app, text="Pack template into mod...", command=honey_pack)
+#pack_button.text_color = "#e7e7e7"
+
+checksum_on_button = PushButton(app, command=checksum_off, text="Checksum Verification: ON")
+checksum_on_button.text_color = "#2aa198"
+
+checksum_off_button = PushButton(app, command=checksum_on, text="Checksum Verification: OFF")
+checksum_off_button.text_color = "#dc322f"
+
+if checksum_verif == True:
+    checksum_off_button.disable()
+    checksum_off_button.visible = False
+    checksum_on_button.enable()
+    checksum_on_button.visible = True
+else:
+    checksum_off_button.enable()
+    checksum_off_button.visible = True
+    checksum_on_button.disable()
+    checksum_on_button.visible = False
 
 app.display()
