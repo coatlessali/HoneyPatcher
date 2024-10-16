@@ -12,15 +12,12 @@ config = ConfigParser()
 config.read('HoneyConfig.ini') # Read config file
 
 # Make psarc executable. There's probably a better way to do this.
-match platform.system().lower():
-    case "darwin":
-        st = os.stat('bin/macosx/psarc')
-        os.chmod('bin/macos/psarc', st.st_mode | stat.S_IEXEC)
-    case "linux":
-        st = os.stat('bin/linux/psarc')
-        os.chmod('bin/linux/psarc', st.st_mode | stat.S_IEXEC)
-    case _:
-        pass
+if platform.system().lower() != "windows":
+    st = os.stat('bin/macosx/psarc')
+    os.chmod('bin/macosx/psarc', st.st_mode | stat.S_IEXEC)
+    st = os.stat('bin/linux/psarc')
+    os.chmod('bin/linux/psarc', st.st_mode | stat.S_IEXEC)
+    del st
 
 # Check for mono on MacOS/Linux
 def mono_check():
@@ -53,23 +50,22 @@ def honey_restart():
 def honey_backup():
     rom = os.path.join(usrdir, "rom.psarc")
     if not Path(rom).is_file():
-        app.error("Hey!", "Your rom.psarc is missing! This indicates your game has been modified. Please install a clean copy of the game before backing up.")
+        app.error("Hey!", "Your rom.psarc is missing! This indicates your game has been modified. Please install a clean copy of the game so I can make a backup.")
+        return False
     else:
-        confirm_backup = app.yesno("Warning!", "Please make sure you have a CLEAN copy of Sonic The Fighters.\nIf you\'re using RPCS3, you can simply delete the game and reinstall your PKG file.\n\nAre you sure you have a clean copy of the game, and want to continue? This will take up ~86 MB of additional storage.")
-        if confirm_backup:
-            if os.path.exists("BACKUP"):
-                shutil.rmtree("BACKUP")
-            try:
-                shutil.copytree(usrdir, "BACKUP")
-            except:
-                app.error("Oopsies", "An error occured. This really shouldn't be possible unless permissions are messed up, but anyways...\n\n Ping Ali with this error: backup copy failed")
-            else:
-                app.info("Notice", "Backup complete! It will be in a folder named \"BACKUP\" (Please don't mess with it.)")
+        if os.path.exists("BACKUP"):
+            shutil.rmtree("BACKUP")
+        try:
+            shutil.copytree(usrdir, "BACKUP")
+        except:
+            app.error("Oopsies", "An error occured. This really shouldn't be possible unless permissions are messed up, but anyways...\n\n Ping Ali with this error: backup copy failed")
+        else:
+            app.info("Notice", "I have created a backup of your game files in a folder named \"BACKUP\" (Please don't mess with it.)")
 
 # Restores your USRDIR backup.
 def honey_restore():
     if not os.path.exists("BACKUP"):
-        app.error("You don\'t have a backup available!")
+        app.error("Error!", "You don\'t have a backup available!")
         return
     confirm_restore = app.yesno("Warning!", "This will erase your USRDIR and restore a backup. This will effectively uninstall all of your USRDIR mods and restore the game to a vanilla state.\n\nDo you want to continue?")
     if confirm_restore:
@@ -86,19 +82,14 @@ def honey_restore():
             app.info("Notice", "Restore complete!")
 
 def honey_prep():
-    # Check if a backup was made, give user the option to skip creation of one
+    # Check if a backup was made, create one otherwise.
+    # If creation fails for some reason, don't continue.
     if not os.path.exists("BACKUP"):
-        createbackup = app.yesno("Notice", "You don\'t have a backup available to restore. Would you like to create one now?")
-        if createbackup:
-            honey_backup()
-        else:
-            fuckitweball = app.yesno("WARNING!", "The tool will not be able to restore your game to an unmodified state unless a backup is present. It only takes a few seconds. Are you sure you wish to continue?")
-            if not fuckitweball:
-                return
+        if honey_backup() == False:
+            return
 
     # set the path to the rom.psarc
     rom = os.path.abspath(os.path.join(usrdir, "rom.psarc"))
-    print(rom)
     # if rom.psarc doesn't exist, assume game is already prepped
     if not os.path.exists(rom):
         app.error("Error!", "rom.psarc not found! Your game is either already prepped, or corrupted!")
@@ -161,16 +152,17 @@ def set_directory():
     else:
         honey_restart()
 
-def reset_config():
-    reset = app.yesno("WARNING!", "This will delete your config file and reset it to its default values. This will not delete your backup, if any. Are you sure you want to continue?")
-    if reset:
-        # TODO: this doesn't work, figure out why
-        os.remove('HoneyConfig.ini')
-        honey_restart()
-
+# honey mob cemetery
 def honey_install():
-    # honey mob cemetery
+
+    # Check if mono/xdelta3 is installed
     if mono_check() == False:
+        return
+
+    # Check if game is prepped
+    rom = os.path.join(usrdir, "rom.psarc")
+    if os.path.exists(rom):
+        app.error("Error!", "Please prepare the USRDIR before continuing.")
         return
 
     # Everything should go between here and the second shutil.rmtree()
@@ -230,8 +222,8 @@ def honey_install():
         removed_toplevel_path = Path(*p.parts[1:])
         removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
         final_path = os.path.join(rom_dir, removed_extension_path)
-        # Apply Patch
-        subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
+        # Apply Patch - SPOOKY: forces no checksum verif to allow patch merging (dangerous)
+        subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, final_path])
         patchlist.append(final_path)
 
     # Compression
@@ -247,7 +239,9 @@ def honey_install():
     # Cleanup    
     for fdir in dirlist:
         dirpath = os.path.join(rom_dir, fdir)
-        # So for some reason this fails with "texture" not found if I don't do it this way. What? Why? If I remove these lines texture remains.
+        # So for some reason this fails with "texture" 
+        # not found if I don't do it this way. 
+        # What? Why? If I remove these lines texture remains.
         try:
             shutil.rmtree(dirpath)
         except:
@@ -269,7 +263,6 @@ app = App(title="HoneyPatcher: Arcade Stage", bg="#090F10")
 logo = Picture(app, image="assets/HONEYBADGER.png")
 
 magic_number = random.randrange(0, 99) # 1 in 100 chance of explode.png
-print(magic_number)
 if magic_number == 1:
     logo.image = "assets/explode.png"
 
@@ -284,8 +277,8 @@ if magic_number == 1:
 select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
 select_folder_button.text_color = "#e7e7e7"
 
-backup_button = PushButton(app, text="Backup USRDIR...", command=honey_backup)
-backup_button.text_color = "#e7e7e7"
+#backup_button = PushButton(app, text="Backup USRDIR...", command=honey_backup)
+#backup_button.text_color = "#e7e7e7"
 
 restore_button = PushButton(app, text="Restore USRDIR...", command=honey_restore)
 restore_button.text_color = "#e7e7e7"
@@ -298,8 +291,5 @@ install_button.text_color = "#e7e7e7"
 
 pack_button = PushButton(app, text="Pack template into mod...", command=honey_pack)
 pack_button.text_color = "#e7e7e7"
-
-reset_button = PushButton(app, text="Reset Configuration...", command=reset_config)
-reset_button.text_color = "#e7e7e7"
 
 app.display()
