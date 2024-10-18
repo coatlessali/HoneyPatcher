@@ -12,6 +12,11 @@ if not Path("HoneyConfig.ini").is_file():
 config = ConfigParser()
 config.read('HoneyConfig.ini')
 
+paths = ["mods", "template"]
+for path in paths:
+    if not os.path.exists(path):
+        os.mkdirs(path)
+
 # set usrdir, logoskip is unused
 usrdir = config.get('main', 'usrdir')
 logoskip = config.getboolean('main', 'logoskip')
