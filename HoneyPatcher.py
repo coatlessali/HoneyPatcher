@@ -15,7 +15,7 @@ config.read('HoneyConfig.ini')
 paths = ["mods", "template"]
 for path in paths:
     if not os.path.exists(path):
-        os.mkdirs(path)
+        os.mkdir(path)
 
 # set usrdir, logoskip is unused
 usrdir = config.get('main', 'usrdir')
@@ -174,7 +174,7 @@ def honey_install():
     # Everything should go between here and the second shutil.rmtree()
     shutil.rmtree(".tmp", ignore_errors=True)
     if not os.path.exists(".tmp"):
-        os.makedirs(".tmp")
+        os.mkdir(".tmp")
 
     # Vars for Extraction/Compression
     rom_dir = os.path.join(usrdir, "rom")
@@ -279,7 +279,7 @@ def honey_unpack():
             subprocess.run(["mono", farcpack, farcpath])
 
     if not os.path.exists("template"):
-        os.mkdirs("template")
+        os.makedirs("template")
 
     shutil.copytree(rom_dir, "template", dirs_exist_ok=True)
 
