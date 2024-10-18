@@ -322,23 +322,23 @@ if magic_number == 1:
     logo.image = "assets/explode.png"
 
 select_folder_button = PushButton(app, text="Select USRDIR...", command=set_directory)
-select_folder_button.text_color = "#e7e7e7"
+select_folder_button.text_color = "#4298f5"
 
 # automated backups, still can be reenabled if you uncomment the below two lines
 #backup_button = PushButton(app, text="Backup USRDIR...", command=honey_backup)
 #backup_button.text_color = "#e7e7e7"
 
 restore_button = PushButton(app, text="Restore USRDIR...", command=honey_restore)
-restore_button.text_color = "#e7e7e7"
+restore_button.text_color = "#4298f5"
 
 prepare_button = PushButton(app, text="Prepare USRDIR for mods...", command=honey_prep)
-prepare_button.text_color = "#e7e7e7"
+prepare_button.text_color = "#4298f5"
 
 install_button = PushButton(app, text="Install all mods...", command=honey_install)
-install_button.text_color = "#e7e7e7"
+install_button.text_color = "#4298f5"
 
 unpack_button = PushButton(app, text="Unpack game files into template...", command=honey_unpack)
-unpack_button.text_color = "#e7e7e7"
+unpack_button.text_color = "#4298f5"
 
 checksum_on_button = PushButton(app, command=checksum_off, text="Checksum Verification: ON")
 checksum_on_button.text_color = "#2aa198"
