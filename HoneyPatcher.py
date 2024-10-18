@@ -228,11 +228,19 @@ def honey_install():
         removed_toplevel_path = Path(*p.parts[1:])
         removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
         final_path = os.path.join(rom_dir, removed_extension_path)
+        # thanks to windows xdelta not being able to overwrite files in place, we have
+        # to delete the original and move the new one back where it belongs
+        stupid_windows_fix = os.path.join(rom_dir, removed_extension_path+".windoge")
         # Apply Patches
         if checksum_verif:
-            subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, final_path])
+            subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, stupid_windows_fix])
         else: # SPOOKY - forces no checksum verif to allow patch merging (dangerous)
-            subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, final_path])
+            subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, stupid_windows_fix])
+        # get rid of the original file
+        os.remove(final_path)
+        # rename the new one to the original
+        os.rename(stupid_windows_fix, final_path)
+        
         patchlist.append(final_path)
 
     # Compression
