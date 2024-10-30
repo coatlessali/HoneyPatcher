@@ -243,7 +243,7 @@ def honey_unpack():
 
 ### GUI
 
-app = App(title="HoneyPatcher: Arcade Stage Ver. 2", bg="#090F10")
+app = App(title="HoneyPatcher: Arcade Stage Ver. 2", bg="#090F10", height=660, width=488)
 
 logo = Picture(app, image="assets/HONEYBADGER.png")
 
