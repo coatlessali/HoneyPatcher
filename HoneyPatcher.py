@@ -185,6 +185,7 @@ def honey_install():
             subprocess.run(["mono", farcpack, farcpath])
 
     # Check through zip files
+    pkglist = []
     for (dirpath, dirnames, filenames) in os.walk("mods"):
         pkglist.extend(filenames)
         break
