@@ -16,6 +16,12 @@ Planned features:
 ### How do I install this?
 Check [the Wiki](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide).
 
+### I'm on Steam Deck and it says something about needing mono. What do I do?
+Check [here](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide#install-on-steam-deck-kde-plasma).
+
+### I'm on MacOS and get the same thing, what do I do?
+Check [here](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide#install-on-macos).
+
 ### Creating a Mod
 1. Unpack your game files to `template`.
 2. Make your changes.
