@@ -38,9 +38,6 @@ def mono_check():
         if not shutil.which("mono"):
             app.error("Error", "Could not find mono in your PATH.\nPlease install it - otherwise you won't be able to install farc mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
             return False
-        if not shutil.which("xdelta3") and not shutil.which("xdelta"):
-            app.error("Error", "Could not find xdelta3 on your system.\nPlease install it - otherwise you won't be able to install mods.\n\nPlease refer to the HoneyPatcher GitHub page for more information.")
-            return False
 
 # Writes the config. Used automatically in honey_restart()
 def honey_write():
@@ -162,7 +159,7 @@ def set_directory():
 # honey mob cemetery
 def honey_install():
 
-    # Check if mono/xdelta3 is installed
+    # Check if mono is installed
     if mono_check() == False:
         return
 
@@ -171,18 +168,14 @@ def honey_install():
     if os.path.exists(rom):
         honey_prep()
 
-    # Everything should go between here and the second shutil.rmtree()
-    shutil.rmtree(".tmp", ignore_errors=True)
-    if not os.path.exists(".tmp"):
-        os.mkdir(".tmp")
-
+    
     # Vars for Extraction/Compression
     rom_dir = os.path.join(usrdir, "rom")
     farclist = ["sprite/n_advstf.farc", "sprite/n_cmn.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", "sprite/n_info.farc", "sprite/n_stf.farc", "string_array.farc", "sprite/n_advstf/texture.farc", "sprite/n_cmn/texture.farc", "sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc"]
     dirlist = ["sprite/n_advstf/texture", "sprite/n_cmn/texture", "sprite/n_cmn/texture", "sprite/n_fnt/texture", "sprite/n_info/texture", "sprite/n_stf/texture", "string_array", "sprite/n_advstf", "sprite/n_cmn", "sprite/n_fnt", "sprite/n_info", "sprite/n_stf"]
     farcpack = os.path.join(".", "bin/mono/FarcPack.exe")
 
-    # Extraction
+    # Iterate through and extract farc files
     for farc in farclist:
         farcpath = os.path.join(rom_dir, farc)
         # TODO: test this shit on windows and macos
@@ -191,20 +184,7 @@ def honey_install():
         else:
             subprocess.run(["mono", farcpack, farcpath])
 
-    #app.info("Extraction", "Extracted FARC files.")
-
-    # ALL OF THE FILE PATCHING / REPLACEMENT LOGIC WILL GO HERE
-    # use xdelta3 for patching rom_code, ui assets and music/sounds can be provided in their entirety
-    if platform.system().lower() == "windows":
-        xdelta = os.path.join(".", "bin/win32/xdelta.exe")
-    else:
-        if shutil.which("xdelta3"):
-            xdelta = "xdelta3"
-        else:
-            xdelta = "xdelta"
-
     # Check through zip files
-    pkglist = []
     for (dirpath, dirnames, filenames) in os.walk("mods"):
         pkglist.extend(filenames)
         break
@@ -212,36 +192,7 @@ def honey_install():
         if pkg.startswith("."):
             pass
         elif ".zip" in pkg:
-            shutil.unpack_archive(os.path.join("mods", pkg), ".tmp")
-    
-    # Iterate through all vcdiff patches, then apply, then delete (oh boy)
-    difflist = []
-    for dirpath, dirnames, filenames in os.walk(".tmp"):
-        for filename in filenames:
-            if ".vcdiff" in filename:
-                difflist.append(os.path.join(dirpath, filename))
-
-    patchlist = [] # Intending to use this for logs later
-    for diff in difflist:
-        # Get the path of the original file, relative to rom_dir
-        p = Path(diff)
-        removed_toplevel_path = Path(*p.parts[1:])
-        removed_extension_path = str(removed_toplevel_path).replace(".vcdiff", "")
-        final_path = os.path.join(rom_dir, removed_extension_path)
-        # thanks to windows xdelta not being able to overwrite files in place, we have
-        # to delete the original and move the new one back where it belongs
-        stupid_windows_fix = os.path.join(rom_dir, removed_extension_path+".windoge")
-        # Apply Patches
-        if checksum_verif:
-            subprocess.run([xdelta, "-d", "-f", "-s", final_path, diff, stupid_windows_fix])
-        else: # SPOOKY - forces no checksum verif to allow patch merging (dangerous)
-            subprocess.run([xdelta, "-d", "-n", "-f", "-s", final_path, diff, stupid_windows_fix])
-        # get rid of the original file
-        os.remove(final_path)
-        # rename the new one to the original
-        os.rename(stupid_windows_fix, final_path)
-        
-        patchlist.append(final_path)
+            shutil.unpack_archive(os.path.join("mods", pkg), rom_dir)
 
     # Compression
     for fdir in dirlist:
@@ -263,8 +214,6 @@ def honey_install():
             shutil.rmtree(dirpath)
         except:
             pass
-    
-    shutil.rmtree(os.path.join(".", ".tmp"), ignore_errors=True)
 
 def honey_unpack():
 
@@ -290,26 +239,6 @@ def honey_unpack():
         os.makedirs("template")
 
     shutil.copytree(rom_dir, "template", dirs_exist_ok=True)
-
-def checksum_off():
-    checksum = app.yesno("WARNING", "Disabling checksum verification can allow installing hand-made, merged patches. However, these are prone to breakage. If something is wrong with your patch, it will be applied anyways.\n\nDo not come crying to me if it blows up in your face.\n\nDo you wish to continue?")
-    if checksum:
-        config.set('main', 'checksum', "false")
-        checksum_on_button.disable()
-        checksum_on_button.visible = False
-        checksum_off_button.enable()
-        checksum_off_button.visible = True
-        honey_restart()
-    else:
-        return
-
-def checksum_on():
-    config.set('main', 'checksum', "true")
-    checksum_off_button.disable()
-    checksum_off_button.visible = False
-    checksum_on_button.enable()
-    checksum_on_button.visible = True
-    honey_restart()
 
 ### GUI
 
@@ -339,22 +268,5 @@ install_button.text_color = "#4298f5"
 
 unpack_button = PushButton(app, text="Unpack game files into template...", command=honey_unpack)
 unpack_button.text_color = "#4298f5"
-
-checksum_on_button = PushButton(app, command=checksum_off, text="Checksum Verification: ON")
-checksum_on_button.text_color = "#2aa198"
-
-checksum_off_button = PushButton(app, command=checksum_on, text="Checksum Verification: OFF")
-checksum_off_button.text_color = "#dc322f"
-
-if checksum_verif == True:
-    checksum_off_button.disable()
-    checksum_off_button.visible = False
-    checksum_on_button.enable()
-    checksum_on_button.visible = True
-else:
-    checksum_off_button.enable()
-    checksum_off_button.visible = True
-    checksum_on_button.disable()
-    checksum_on_button.visible = False
 
 app.display()
