@@ -16,10 +16,10 @@ Planned features:
 ### How do I install this?
 Check [the Wiki](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide).
 
-### I'm on Steam Deck and it says something about needing mono. What do I do?
+### I'm on Steam Deck. What do I do?
 Check [here](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide#install-on-steam-deck-kde-plasma).
 
-### I'm on MacOS and get the same thing, what do I do?
+### I'm on MacOS, what do I do?
 Check [here](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide#install-on-macos).
 
 ### Creating a Mod
