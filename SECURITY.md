@@ -6,5 +6,5 @@ HoneyPatcher is a continuously updated program. Only the latest point release is
 ## Reporting a Vulnerability
 Please contact me via either of the following channels:
 
-Discord: @coatlessali
-Email: coatlessali@protonmail.com
+* Discord: @coatlessali
+* Email: coatlessali@protonmail.com
