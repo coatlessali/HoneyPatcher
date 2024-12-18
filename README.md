@@ -2,6 +2,9 @@
 
 A mod tool for Sonic the Fighters.
 
+### Hiatus
+I'm not working on this right now, due to personal reasons. If there are any critical bugs, feel free to open an issue. I'll get around to that rsrtools library at some point.
+
 Right now, it can:
 - Back up your game files
 - Restore your game files
