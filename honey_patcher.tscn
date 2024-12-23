@@ -85,8 +85,9 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_install", "_restoreusrdir")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_usrdirdialog", "_install", "_restoreusrdir")]
 script = ExtResource("1_72wd4")
+_usrdirdialog = NodePath("USRDIRDialog")
 _install = NodePath("Install")
 _restoreusrdir = NodePath("RestoreUSRDIR")
 

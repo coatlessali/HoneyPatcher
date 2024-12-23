@@ -23,47 +23,38 @@ public partial class HoneyPatcher : Node2D
 	
 	public override void _Ready()
 	{		
-		/* userProfile = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
-		// if we're on macOS we can actually assume with confidence where the files will be
-		if(OperatingSystem.IsMacOS())
-		{
-			defaultUsrdir = Path.Combine(userProfile, "Library/Application Support/rpcs3/dev_hdd0/game/NPUB30927/USRDIR");
-		}
-		else
-		{
-			defaultUsrdir = userProfile;
-		} */
 		
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
 		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		
-		GD.Print("1");
-		
 		if(!File.Exists("HoneyConfig.ini"))
 		{
 			File.Copy("HoneyConfig.default.ini", "HoneyConfig.ini");
 		}
-		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini");
-		usrdir = data["main"]["usrdir"];
 		
 		// https://github.com/rickyah/ini-parser
 		// MIT License
-		GD.Print("this is here to tell me if it failed or not");
+		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini");
+		usrdir = data["main"]["usrdir"];
+		
+		
+		GD.Print("it didn't fail??? peak....");
 	}
 
 	// Signals
 	private void OnUsrdirDialog(string dir){
-		GD.Print("pressed");
-		// usrdir = path;
-		GD.Print(dir);
+		usrdir = dir; // Set usrdir for current session
+		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini"); // Open config file
+		data["main"]["usrdir"] = dir; // Set usrdir
+		new FileIniDataParser().WriteFile("HoneyConfig.ini", data); // Write config file
 	}
 	private void OnInstallPressed(){
-		GD.Print("pressed");
+		GD.Print("todo: install button");
 	}
 	private void OnRestoreUsrdirPressed(){
-		GD.Print("pressed");
+		GD.Print("todo: uninstall button");
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
