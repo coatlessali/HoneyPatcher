@@ -116,6 +116,10 @@ public partial class HoneyPatcher : Node2D
 			string error = process.StandardError.ReadToEnd();
 			GD.Print(output);
 			GD.Print(error);
+			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
+			string romdir = Path.Combine(usrdir, "rom");
+			CopyFilesRecursively(unpacked_dir, romdir);
+			Directory.Delete(unpacked_dir);
 		}
 		// Extraction on *nix
 		else{
