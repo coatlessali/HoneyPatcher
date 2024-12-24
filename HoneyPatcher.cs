@@ -73,7 +73,7 @@ public partial class HoneyPatcher : Node2D
 
 	// Signals
 	private void OnUsrdirDialog(string dir){
-		usrdir = dir; // Set usrdir for current session
+		usrdir = Path.GetFullPath(dir); // Set usrdir for current session
 		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini"); // Open config file
 		data["main"]["usrdir"] = dir; // Set usrdir
 		new FileIniDataParser().WriteFile("HoneyConfig.ini", data); // Write config file
@@ -119,7 +119,7 @@ public partial class HoneyPatcher : Node2D
 			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
 			string romdir = Path.Combine(usrdir, "rom");
 			CopyFilesRecursively(unpacked_dir, romdir);
-			Directory.Delete(unpacked_dir);
+			Directory.Delete(unpacked_dir, true);
 		}
 		// Extraction on *nix
 		else{
@@ -276,7 +276,8 @@ public partial class HoneyPatcher : Node2D
 		foreach (string dir in dirlist)
 		{
 			// Important that these exist
-			string sourceFileName = Path.Combine(usrdir, "rom", dir);
+			string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
+			GD.Print(sourceFileName);
 			string destinationFileName = null;
 
 			// Same with this
@@ -289,8 +290,9 @@ public partial class HoneyPatcher : Node2D
 			
 			// Recompression
 			destinationFileName = Path.ChangeExtension(destinationFileName, "farc");
-				
-			var farcArchive = new FarcArchive { IsCompressed = compress, Alignment = alignment };
+			
+			// Modified by me, otherwise it throws access errors if you don't use "using"
+			using (var farcArchive = new FarcArchive { IsCompressed = compress, Alignment = alignment }){
 			
 			if (File.GetAttributes(sourceFileName).HasFlag(FileAttributes.Directory))
 			{
@@ -301,7 +303,10 @@ public partial class HoneyPatcher : Node2D
 			{
 				farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
 			}
-			farcArchive.Save(destinationFileName);
+			try{farcArchive.Save(destinationFileName);}
+			catch(Exception e){GD.Print(e.ToString());}
+			// Currently throws file already in use
+			}
 		}
 	}
 	
