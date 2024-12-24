@@ -49,21 +49,21 @@ public partial class HoneyPatcher : Node2D
 		// MIT License
 		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini");
 		usrdir = data["main"]["usrdir"];
-		GD.Print(usrdir);
+		//GD.Print(usrdir);
 		
 		// Define psarc path for each OS
 		switch(OS.GetName()){
 			case "Windows":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "win32", "UnPSARC.exe"));
-			  GD.Print(psarc);
+			  //GD.Print(psarc);
 			  break;
 			case "macOS":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "macosx", "psarc"));
-			  GD.Print(psarc);
+			  //GD.Print(psarc);
 			  break;
 			case "Linux":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "linux", "psarc"));
-			  GD.Print(psarc);
+			  //GD.Print(psarc);
 			  break;
 			default:
 			  ShowError("Error", "This platform is unsupported.");
@@ -114,8 +114,8 @@ public partial class HoneyPatcher : Node2D
 			process.WaitForExit();
 			string output = process.StandardOutput.ReadToEnd();
 			string error = process.StandardError.ReadToEnd();
-			GD.Print(output);
-			GD.Print(error);
+			// GD.Print(output);
+			// GD.Print(error);
 			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
 			string romdir = Path.Combine(usrdir, "rom");
 			CopyFilesRecursively(unpacked_dir, romdir);
@@ -141,14 +141,14 @@ public partial class HoneyPatcher : Node2D
 			process.WaitForExit();
 			string output = process.StandardOutput.ReadToEnd();
 			string error = process.StandardError.ReadToEnd();
-			GD.Print(output);
-			GD.Print(error);
+			// GD.Print(output);
+			// GD.Print(error);
 		}
 		File.Delete(psarc_path);
 		FarcUnpack();
 		ExtractMods();
 		FarcPack();
-		GD.Print("success?");
+		ShowError("Success!", "Mods have been installed!");
 	}
 	
 	// Uninstall Mods
@@ -184,7 +184,6 @@ public partial class HoneyPatcher : Node2D
 		ShowError("Success", "Files restored.");
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta){
 		// GD.Print(usrdir);
 	}
@@ -277,7 +276,7 @@ public partial class HoneyPatcher : Node2D
 		{
 			// Important that these exist
 			string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
-			GD.Print(sourceFileName);
+			// GD.Print(sourceFileName);
 			string destinationFileName = null;
 
 			// Same with this
@@ -322,9 +321,9 @@ public partial class HoneyPatcher : Node2D
 			string romdir = Path.Combine(usrdir, "rom");
 			if (Path.GetExtension(modpath) != ".zip")
 				return;
-			GD.Print("extracting");
+			//GD.Print("extracting");
 			ZipFile.ExtractToDirectory(modpath, romdir, true);
-			GD.Print("extracted");
+			//GD.Print("extracted");
 		}
 	}
 }

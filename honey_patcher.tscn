@@ -181,8 +181,8 @@ text = "Unpack game files..."
 
 [node name="USRDIRDialog" type="FileDialog" parent="."]
 title = "Open a Directory"
-initial_position = 2
-size = Vector2i(303, 200)
+initial_position = 1
+size = Vector2i(687, 426)
 ok_button_text = "Select Current Folder"
 file_mode = 2
 access = 2
