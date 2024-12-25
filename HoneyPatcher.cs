@@ -25,10 +25,20 @@ public partial class HoneyPatcher : Node2D
 	string userProfile;
 	string psarc;
 	string usrdir;
+	string osx = "";
 	IniData data;
 	
 	public override void _Ready()
-	{		
+	{	
+		// Dumb hack until I can get around to this
+		if (!Engine.IsEditorHint()){
+			if (OS.GetName() == "macOS")
+				Directory.SetCurrentDirectory(Path.Combine(OS.GetExecutablePath(), "../../../.."));
+				// It is officially 12:15 AM on Christmas. I'm tired.
+				// Should I run over this liberal, or drive around them?
+				// What do you think?
+		}
+		
 		
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
@@ -122,7 +132,7 @@ public partial class HoneyPatcher : Node2D
 			Directory.Delete(unpacked_dir, true);
 		}
 		// Extraction on *nix
-		else{
+		else if (OS.GetName() == "macOS"){
 			using Process process = new Process
 			{
 				StartInfo = new ProcessStartInfo
@@ -132,6 +142,36 @@ public partial class HoneyPatcher : Node2D
 					RedirectStandardOutput = true,
 					RedirectStandardError = true,
 					RedirectStandardInput = true,
+					CreateNoWindow = true,
+					WorkingDirectory = usrdir,
+				}
+			};
+			// This was for some reason a necessary fix to get this working on macOS.
+			// It probably works on Linux too. Personally, I don't care to find out until the next
+			// update, because it's currently 11:22 PM on Christmas Eve and I need this out soon.
+			// This also means technically, the Windows and Linux builds are actually out of date
+			// by a commit. I honestly don't care though. It works.
+			process.StartInfo.ArgumentList.Add("-x");
+			process.StartInfo.ArgumentList.Add(psarc_path);
+			try{process.Start();}
+			catch(Exception e){GD.Print(e.ToString());}
+			process.WaitForExit();
+			//string output = process.StandardOutput.ReadToEnd();
+			//string error = process.StandardError.ReadToEnd();
+			//GD.Print(output);
+			//GD.Print(error);
+		}
+		else if (OS.GetName() == "Linux"){
+			using Process process = new Process
+			{
+				StartInfo = new ProcessStartInfo
+				{
+					FileName = psarc,
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					RedirectStandardInput = true,
+					// Thank you Linux for processing arguments in a sane manner.
 					Arguments = "-x " + psarc_path,
 					CreateNoWindow = true,
 					WorkingDirectory = usrdir,
@@ -139,10 +179,10 @@ public partial class HoneyPatcher : Node2D
 			};
 			process.Start();
 			process.WaitForExit();
-			string output = process.StandardOutput.ReadToEnd();
-			string error = process.StandardError.ReadToEnd();
-			// GD.Print(output);
-			// GD.Print(error);
+			//string output = process.StandardOutput.ReadToEnd();
+			//string error = process.StandardError.ReadToEnd();
+			//GD.Print(output);
+			//GD.Print(error);
 		}
 		File.Delete(psarc_path);
 		FarcUnpack();

@@ -7,10 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MikuMikuLibrary">
-      <HintPath>/home/ali/.src/HoneyPatcher/MikuMikuLibrary.dll</HintPath>
+      <HintPath>/Users/ali/Desktop/HoneyPatcher/MikuMikuLibrary.dll</HintPath>
     </Reference>
     <Reference Include="IniParser">
-      <HintPath>/home/ali/.src/HoneyPatcher/INIFileParser.dll</HintPath>
+      <HintPath>/Users/ali/Desktop/HoneyPatcher/INIFileParser.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

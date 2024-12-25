@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bj5cwia2q07ly"
 path.s3tc="res://.godot/imported/explotano07.png-c955e75fa32da3e8af07a72ea0ec0d43.s3tc.ctex"
+path.etc2="res://.godot/imported/explotano07.png-c955e75fa32da3e8af07a72ea0ec0d43.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/explotano/explotano07.png"
-dest_files=["res://.godot/imported/explotano07.png-c955e75fa32da3e8af07a72ea0ec0d43.s3tc.ctex"]
+dest_files=["res://.godot/imported/explotano07.png-c955e75fa32da3e8af07a72ea0ec0d43.s3tc.ctex", "res://.godot/imported/explotano07.png-c955e75fa32da3e8af07a72ea0ec0d43.etc2.ctex"]
 
 [params]
 
