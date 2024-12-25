@@ -28,4 +28,8 @@ HoneyPatcher uses a few external programs to manage the game's compressed file a
 It also heavily references the FarcPack Tool.
 - [FarcPack](https://github.com/blueskythlikesclouds/MikuMikuLibrary/releases) from [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
 
+And uses the following libraries:
+- [ini-parser](https://github.com/rickyah/ini-parser) by [rickyah](https://github.com/rickyah). Licensed under the [MIT License](https://github.com/rickyah/ini-parser/blob/development/LICENSE).
+- [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
+
 <sub>*...because if you don't look sweet, you're not wearing Honey!*</sub>
