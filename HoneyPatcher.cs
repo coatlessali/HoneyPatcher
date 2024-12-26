@@ -121,8 +121,8 @@ public partial class HoneyPatcher : Node2D
 			};
 			process.Start();
 			process.WaitForExit();
-			string output = process.StandardOutput.ReadToEnd();
-			string error = process.StandardError.ReadToEnd();
+			// string output = process.StandardOutput.ReadToEnd();
+			// string error = process.StandardError.ReadToEnd();
 			// GD.Print(output);
 			// GD.Print(error);
 			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
@@ -131,7 +131,7 @@ public partial class HoneyPatcher : Node2D
 			Directory.Delete(unpacked_dir, true);
 		}
 		// Extraction on *nix
-		else if (OS.GetName() == "macOS"){
+		else {
 			using Process process = new Process
 			{
 				StartInfo = new ProcessStartInfo
@@ -145,36 +145,12 @@ public partial class HoneyPatcher : Node2D
 					WorkingDirectory = usrdir,
 				}
 			};
-			// This was for some reason a necessary fix to get this working on macOS.
-			// It probably works on Linux too. Personally, I don't care to find out until the next
-			// update, because it's currently 11:22 PM on Christmas Eve and I need this out soon.
-			// This also means technically, the Windows and Linux builds are actually out of date
-			// by a commit. I honestly don't care though. It works.
+			// Using ArgumentList.Add() instead of setting Arguments directly was necessary
+			// to get this working on macOS. It seems to work on Linux just fine, and
+			// if somehow a BSD port ever becomes a thing this will probably help there too,
+			// if I had to guess.
 			process.StartInfo.ArgumentList.Add("-x");
 			process.StartInfo.ArgumentList.Add(psarc_path);
-			process.Start();
-			process.WaitForExit();
-			//string output = process.StandardOutput.ReadToEnd();
-			//string error = process.StandardError.ReadToEnd();
-			//GD.Print(output);
-			//GD.Print(error);
-		}
-		else if (OS.GetName() == "Linux"){
-			using Process process = new Process
-			{
-				StartInfo = new ProcessStartInfo
-				{
-					FileName = psarc,
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true,
-					// Thank you Linux for processing arguments in a sane manner.
-					Arguments = "-x " + psarc_path,
-					CreateNoWindow = true,
-					WorkingDirectory = usrdir,
-				}
-			};
 			process.Start();
 			process.WaitForExit();
 			//string output = process.StandardOutput.ReadToEnd();
