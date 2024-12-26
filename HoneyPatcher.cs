@@ -240,20 +240,13 @@ public partial class HoneyPatcher : Node2D
 	
 		foreach (string farc in farcs )
 		{
-			// Important that these exist
+			// Set source and destination filename
 			string sourceFileName = Path.Combine(usrdir, "rom", farc);
-			string destinationFileName = null;
+			string destinationFileName = Path.ChangeExtension(sourceFileName, null);
 
-			// Same with this
+			// Default arguments, don't change, these work with STF
 			bool compress = false;
 			int alignment = 16;
-		
-			// This should basically always be true
-			if (destinationFileName == null)
-				destinationFileName = sourceFileName;
-			
-			// Extraction, one of the juicy bits
-			destinationFileName = Path.ChangeExtension(destinationFileName, null);
 					
 			using (var stream = File.OpenRead(sourceFileName))
 			{
@@ -287,21 +280,13 @@ public partial class HoneyPatcher : Node2D
 	
 		foreach (string dir in dirlist)
 		{
-			// Important that these exist
+			// Set source and destination file name
 			string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
-			// GD.Print(sourceFileName);
-			string destinationFileName = null;
+			string destinationFileName = Path.ChangeExtension(sourceFileName, "farc");;
 
-			// Same with this
+			// These arguments should never change, as they seem to work fine with STF
 			bool compress = false;
 			int alignment = 16;
-		
-			// This should basically always be true
-			if (destinationFileName == null)
-				destinationFileName = sourceFileName;
-			
-			// Recompression
-			destinationFileName = Path.ChangeExtension(destinationFileName, "farc");
 			
 			// Modified by me, otherwise it throws access errors if you don't use "using"
 			using (var farcArchive = new FarcArchive { IsCompressed = compress, Alignment = alignment }){
@@ -315,8 +300,7 @@ public partial class HoneyPatcher : Node2D
 			{
 				farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
 			}
-			try{farcArchive.Save(destinationFileName);}
-			catch(Exception e){GD.Print(e.ToString());}
+			farcArchive.Save(destinationFileName);
 			// Currently throws file already in use
 			}
 		}
