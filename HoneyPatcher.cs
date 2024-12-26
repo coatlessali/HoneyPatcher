@@ -25,7 +25,6 @@ public partial class HoneyPatcher : Node2D
 	string userProfile;
 	string psarc;
 	string usrdir;
-	string osx = "";
 	IniData data;
 	
 	public override void _Ready()
