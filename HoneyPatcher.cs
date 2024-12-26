@@ -152,8 +152,7 @@ public partial class HoneyPatcher : Node2D
 			// by a commit. I honestly don't care though. It works.
 			process.StartInfo.ArgumentList.Add("-x");
 			process.StartInfo.ArgumentList.Add(psarc_path);
-			try{process.Start();}
-			catch(Exception e){GD.Print(e.ToString());}
+			process.Start();
 			process.WaitForExit();
 			//string output = process.StandardOutput.ReadToEnd();
 			//string error = process.StandardError.ReadToEnd();
