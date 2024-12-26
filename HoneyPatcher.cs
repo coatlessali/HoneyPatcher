@@ -301,7 +301,6 @@ public partial class HoneyPatcher : Node2D
 				farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
 			}
 			farcArchive.Save(destinationFileName);
-			// Currently throws file already in use
 			}
 		}
 	}
@@ -318,9 +317,7 @@ public partial class HoneyPatcher : Node2D
 			string romdir = Path.Combine(usrdir, "rom");
 			if (Path.GetExtension(modpath) != ".zip")
 				return;
-			//GD.Print("extracting");
 			ZipFile.ExtractToDirectory(modpath, romdir, true);
-			//GD.Print("extracted");
 		}
 	}
 }
