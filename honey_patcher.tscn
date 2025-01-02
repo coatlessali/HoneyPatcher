@@ -195,6 +195,16 @@ initial_position = 1
 size = Vector2i(674, 106)
 dialog_text = "if you see this ping ali and tell her what you were doing bc that means she messed up"
 
+[node name="ItemList" type="ItemList" parent="."]
+offset_left = 503.0
+offset_top = 101.0
+offset_right = 672.0
+offset_bottom = 359.0
+select_mode = 1
+item_count = 2
+item_0/text = "Example"
+item_1/text = "Example2"
+
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
 [connection signal="pressed" from="SelectUSRDIR" to="USRDIRDialog" method="_on_select_usrdir_pressed"]
