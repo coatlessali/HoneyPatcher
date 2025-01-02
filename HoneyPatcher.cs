@@ -106,6 +106,7 @@ public partial class HoneyPatcher : Node2D
 		
 		// Extraction on Windows
 		if (OS.GetName() == "Windows"){
+			string psarc_path_windows_fuck_stupid = "\"" + psarc_path + "\"";
 			using Process process = new Process
 			{
 				StartInfo = new ProcessStartInfo
@@ -115,17 +116,18 @@ public partial class HoneyPatcher : Node2D
 					RedirectStandardOutput = true,
 					RedirectStandardError = true,
 					RedirectStandardInput = true,
-					Arguments = psarc_path,
+					Arguments = psarc_path_windows_fuck_stupid,
 					CreateNoWindow = true,
 					WorkingDirectory = usrdir,
 				}
 			};
+			
 			process.Start();
 			process.WaitForExit();
 			string output = process.StandardOutput.ReadToEnd();
 			string error = process.StandardError.ReadToEnd();
-			// GD.Print(output);
-			// GD.Print(error);
+			GD.Print(output);
+			GD.Print(error);
 			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
 			string romdir = Path.Combine(usrdir, "rom");
 			CopyFilesRecursively(unpacked_dir, romdir);
