@@ -352,6 +352,7 @@ public partial class HoneyPatcher : Node2D
 					default:
 						return;
 				}
+				// Currently this has a false positive checksum error on rom_data.bin. I don't know why.
 				try{GD.Print(patchdest + modpath);
 				using var input = new FileStream(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.None);
 				using var patch = new FileStream(modpath, FileMode.Open);
