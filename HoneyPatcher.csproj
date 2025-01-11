@@ -13,4 +13,7 @@
       <HintPath>C:\Users\coatlessali\Documents\GitHub\HoneyPatcher\INIFileParser.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PleOps.XdeltaSharp" Version="1.3.0" />
+  </ItemGroup>
 </Project>
