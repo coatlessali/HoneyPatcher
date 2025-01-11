@@ -7,13 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MikuMikuLibrary">
-      <HintPath>C:\Users\coatlessali\Documents\GitHub\HoneyPatcher\MikuMikuLibrary.dll</HintPath>
+      <HintPath>/home/ali/.src/HoneyPatcher/MikuMikuLibrary.dll</HintPath>
     </Reference>
     <Reference Include="IniParser">
-      <HintPath>C:\Users\coatlessali\Documents\GitHub\HoneyPatcher\INIFileParser.dll</HintPath>
+      <HintPath>/home/ali/.src/HoneyPatcher/INIFileParser.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="PleOps.XdeltaSharp" Version="1.3.0" />
   </ItemGroup>
 </Project>
