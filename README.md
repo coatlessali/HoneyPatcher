@@ -8,14 +8,9 @@ Right now, it can:
 - Back up your game files
 - Restore your game files
 
-Planned features:
-- Easy creation of templates for editing
-- Packing templates into packages
-- Check and warn for file conflicts
-- Integration of fixheader.py for DDS files
+![coollogo_com-1489161](https://github.com/user-attachments/assets/49e20382-172d-4719-9afd-50e0a74755f5)
 
-### How do I install/use this?
-Check [the Wiki](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide).
+See ***THE ALMIGHTY ~~LANCIA STRATOS~~ GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide)
 
 ### Creating a Mod
 Not yet implemented on the Godot rewrite. Working on it.
