@@ -12,5 +12,8 @@
     <Reference Include="IniParser">
       <HintPath>/home/ali/.src/HoneyPatcher/INIFileParser.dll</HintPath>
     </Reference>
+    <Reference Include="PleOps.XdeltaSharp">
+      <HintPath>/home/ali/.src/HoneyPatcher/PleOps.XdeltaSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

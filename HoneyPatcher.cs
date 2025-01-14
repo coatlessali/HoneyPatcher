@@ -22,6 +22,8 @@ public partial class HoneyPatcher : Node2D
 	public Button _install; // Restore USRDIR button
 	[Export]
 	public Button _restoreusrdir; // Restore USRDIR button
+	[Export]
+	public Label _progress; // Progress label
 	
 	string userProfile;
 	string psarc;
@@ -45,21 +47,25 @@ public partial class HoneyPatcher : Node2D
 		_install.Pressed += OnInstallPressed;
 		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		
+		_progress.Text = "Signals connected.";
+		
 		// Generate default config
 		if(!File.Exists("HoneyConfig.ini")){
 			File.Copy("HoneyConfig.default.ini", "HoneyConfig.ini");
+			_progress.Text = "Created default configuration file.";
 		}
 		
 		// Create mods folder
 		if(!Directory.Exists("mods")){
 			Directory.CreateDirectory("mods");
+			_progress.Text = "Created mods directory.";
 		}
 		
 		// https://github.com/rickyah/ini-parser
 		// MIT License
 		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini");
 		usrdir = data["main"]["usrdir"];
-		//GD.Print(usrdir);
+		_progress.Text = "loaded HoneyConfig.ini.";
 		
 		// Define psarc path for each OS
 		switch(OS.GetName()){
@@ -87,6 +93,7 @@ public partial class HoneyPatcher : Node2D
 		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini"); // Open config file
 		data["main"]["usrdir"] = dir; // Set usrdir
 		new FileIniDataParser().WriteFile("HoneyConfig.ini", data); // Write config file
+		_progress.Text = "Saved changes.";
 	}
 	
 	// Install mods
@@ -95,14 +102,17 @@ public partial class HoneyPatcher : Node2D
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			ShowError("Error", "rom.psarc could not be found. Please ensure you have a clean copy of Sonic the Fighters if this\nis your first time, or Uninstall mods before proceeding.");
+			_progress.Text = "rom.psarc not found.";
 			return;
 		}
 		
 		// Make backup if valid stf found and no backup exists
 		if(!Directory.Exists("BACKUP")){
 			Directory.CreateDirectory("BACKUP");
+			_progress.Text = "Created backup directory.";
 		}
 		CopyFilesRecursively(usrdir, "BACKUP");
+		_progress.Text = "Created backup.";
 		
 		// Extraction on Windows
 		if (OS.GetName() == "Windows"){
@@ -161,10 +171,15 @@ public partial class HoneyPatcher : Node2D
 			//GD.Print(output);
 			//GD.Print(error);
 		}
+		_progress.Text = "Extracted rom.psarc.";
 		File.Delete(psarc_path);
+		_progress.Text = "Extracted and removed rom.psarc.";
 		FarcUnpack();
+		_progress.Text = "Unpacked farc files.";
 		ExtractMods();
+		_progress.Text = "Extracted mods.";
 		FarcPack();
+		_progress.Text = "Repacked farc files.";
 		ShowError("Success!", "Mods have been installed!");
 	}
 	
@@ -173,6 +188,7 @@ public partial class HoneyPatcher : Node2D
 		// Check if backup exists
 		if (!Directory.Exists("BACKUP")){
 			ShowError("Error", "No backup found.");
+			_progress.Text = "No backup found.";
 			return;
 		}
 		
@@ -199,6 +215,7 @@ public partial class HoneyPatcher : Node2D
 			ShowError("Exception", e.ToString());
 		}
 		ShowError("Success", "Files restored.");
+		_progress.Text = "Restored game files.";
 	}
 
 	public override void _Process(double delta){
@@ -310,6 +327,60 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ExtractMods(){
+		string[] files = Directory.GetFiles("mods");
+		if (files.Length == 0){
+			ShowError("Error", "You don't have any mods!");
+			return;
+		}
+		foreach (string mod in files)
+		{
+			string modpath = mod;
+			string romdir = Path.Combine(usrdir, "rom");
+			string stf_rom = Path.Combine(romdir, "stf_rom");
+			if (Path.GetExtension(modpath) == ".zip")
+				ZipFile.ExtractToDirectory(modpath, romdir, true);
+			else
+			{
+				string patchdest;
+				GD.Print(modpath);
+				switch(Path.GetExtension(modpath))
+				{
+					case ".rom_code1":
+						patchdest = Path.Combine(stf_rom, "rom_code1.bin");
+						break;
+					case ".rom_data":
+						patchdest = Path.Combine(stf_rom, "rom_data.bin");
+						break;
+					case ".rom_ep":
+						patchdest = Path.Combine(stf_rom, "rom_ep.bin");
+						break;
+					case ".rom_pol":
+						patchdest = Path.Combine(stf_rom, "rom_pol.bin");
+						break;
+					case ".rom_tex":
+						patchdest = Path.Combine(stf_rom, "rom_tex.bin");
+						break;
+					case ".string_array_en":
+						patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin");
+						break;
+					case ".string_array_jp":
+						patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin");
+						break;
+					default:
+						return;
+				}
+				// Currently this has a false positive checksum error on rom_data.bin. I don't know why.
+				try{GD.Print(patchdest + modpath);
+				using var input = new FileStream(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.None);
+				using var patch = new FileStream(modpath, FileMode.Open);
+				using var decoder = new Decoder(input, patch, input);
+				decoder.Run();}
+				catch(Exception e){GD.Print(e.ToString());}
+			}
+		}
+	}
+	
+	private void ApplyPatches(){
 		string[] files = Directory.GetFiles("mods");
 		if (files.Length == 0){
 			ShowError("Error", "You don't have any mods!");
