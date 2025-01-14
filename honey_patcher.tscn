@@ -85,12 +85,13 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_progress")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_progress")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
 _install = NodePath("Install")
 _restoreusrdir = NodePath("RestoreUSRDIR")
+_modsfolder = NodePath("Mods")
 _progress = NodePath("Progress")
 
 [node name="Background" type="Sprite2D" parent="."]
@@ -149,28 +150,27 @@ offset_right = 436.0
 offset_bottom = 289.0
 text = "Select USRDIR..."
 
-[node name="Install" type="Button" parent="."]
+[node name="Mods" type="Button" parent="."]
 offset_left = 268.0
 offset_top = 289.0
 offset_right = 436.0
 offset_bottom = 328.0
-text = "Install all mods..."
+text = "Open mods folder...
+"
 
-[node name="RestoreUSRDIR" type="Button" parent="."]
+[node name="Install" type="Button" parent="."]
 offset_left = 268.0
 offset_top = 328.0
 offset_right = 436.0
 offset_bottom = 367.0
-text = "Uninstall all mods..."
+text = "Install all mods..."
 
-[node name="PSARC" type="Button" parent="."]
-visible = false
+[node name="RestoreUSRDIR" type="Button" parent="."]
 offset_left = 268.0
 offset_top = 367.0
 offset_right = 436.0
 offset_bottom = 406.0
-text = "Extract rom.psarc...
-"
+text = "Uninstall all mods..."
 
 [node name="Unpack" type="Button" parent="."]
 visible = false
@@ -209,10 +209,10 @@ text_overrun_behavior = 3
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
 [connection signal="pressed" from="SelectUSRDIR" to="USRDIRDialog" method="_on_select_usrdir_pressed"]
+[connection signal="mouse_entered" from="Mods" to="Description" method="_on_psarc_mouse_entered"]
 [connection signal="mouse_entered" from="Install" to="Description" method="_on_install_mouse_entered"]
 [connection signal="pressed" from="Install" to="." method="_on_install_pressed"]
 [connection signal="mouse_entered" from="RestoreUSRDIR" to="Description" method="_on_restore_usrdir_mouse_entered"]
 [connection signal="pressed" from="RestoreUSRDIR" to="." method="_on_restore_usrdir_pressed"]
-[connection signal="mouse_entered" from="PSARC" to="Description" method="_on_psarc_mouse_entered"]
 [connection signal="mouse_entered" from="Unpack" to="Description" method="_on_unpack_mouse_entered"]
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
