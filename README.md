@@ -26,5 +26,5 @@ It also heavily references the FarcPack Tool.
 And uses the following libraries:
 - [ini-parser](https://github.com/rickyah/ini-parser) by [rickyah](https://github.com/rickyah). Licensed under the [MIT License](https://github.com/rickyah/ini-parser/blob/development/LICENSE).
 - [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
-
+- [xdelta-sharp](https://github.com/pleonex/xdelta-sharp) by [pleonex](https://github.com/pleonex). Licensed under the [MIT License](https://github.com/pleonex/xdelta-sharp/blob/main/LICENSE).
 <sub>*...because if you don't look sweet, you're not wearing Honey!*</sub>

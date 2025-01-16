@@ -23,7 +23,7 @@ public partial class HoneyPatcher : Node2D
 	[Export]
 	public Button _restoreusrdir; // Restore USRDIR button
 	[Export]
-	public Button _modsfolder;
+	public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
 	[Export]
 	public Label _progress; // Progress label
 	
@@ -117,6 +117,8 @@ public partial class HoneyPatcher : Node2D
 		CopyFilesRecursively(usrdir, "BACKUP");
 		_progress.Text = "Created backup.";
 		
+		// Extract rom.psarc
+		
 		// Extraction on Windows
 		if (OS.GetName() == "Windows"){
 			string psarc_path_windows_fuck_stupid = "\"" + psarc_path + "\"";
@@ -181,6 +183,8 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text = "Unpacked farc files.";
 		ExtractMods();
 		_progress.Text = "Extracted mods.";
+		ApplyPatches();
+		_progress.Text = "Applied patches.";
 		FarcPack();
 		_progress.Text = "Repacked farc files.";
 		ShowError("Success!", "Mods have been installed!");
@@ -222,6 +226,7 @@ public partial class HoneyPatcher : Node2D
 	}
 
 	private void OpenModsFolder(){
+		// Currently doesn't work on Linux properly
 		OS.ShellShowInFileManager("mods", true);
 	}
 	public override void _Process(double delta){
@@ -334,6 +339,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void ExtractMods(){
 		string[] files = Directory.GetFiles("mods");
+		Array.Sort(files);
 		if (files.Length == 0){
 			ShowError("Error", "You don't have any mods!");
 			return;
@@ -345,43 +351,59 @@ public partial class HoneyPatcher : Node2D
 			string stf_rom = Path.Combine(romdir, "stf_rom");
 			if (Path.GetExtension(modpath) == ".zip")
 				ZipFile.ExtractToDirectory(modpath, romdir, true);
-			else
+		}
+	}
+	
+	private void ApplyPatches(){
+		// Get list of files in rom folder
+		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
+		// Apply in alphabetical order
+		Array.Sort(files);
+		foreach (string mod in files)
+		{
+			string modpath = mod;
+			string romdir = Path.Combine(usrdir, "rom");
+			string stf_rom = Path.Combine(romdir, "stf_rom");
+			string patchdest;
+			switch(Path.GetExtension(modpath))
 			{
-				string patchdest;
-				GD.Print(modpath);
-				switch(Path.GetExtension(modpath))
-				{
-					case ".rom_code1":
-						patchdest = Path.Combine(stf_rom, "rom_code1.bin");
-						break;
-					case ".rom_data":
-						patchdest = Path.Combine(stf_rom, "rom_data.bin");
-						break;
-					case ".rom_ep":
-						patchdest = Path.Combine(stf_rom, "rom_ep.bin");
-						break;
-					case ".rom_pol":
-						patchdest = Path.Combine(stf_rom, "rom_pol.bin");
-						break;
-					case ".rom_tex":
-						patchdest = Path.Combine(stf_rom, "rom_tex.bin");
-						break;
-					case ".string_array_en":
-						patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin");
-						break;
-					case ".string_array_jp":
-						patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin");
-						break;
-					default:
-						return;
-				}
-				
-				try{GD.Print(patchdest + modpath);
-				using var input = new FileStream(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.None);
-				using var patch = new FileStream(modpath, FileMode.Open);
-				using var decoder = new Decoder(input, patch, input);
-				decoder.Run();}
-				catch(Exception e){GD.Print(e.ToString());}
+				// Check the file extension, which should be the name of the file you want to patch
+				case ".rom_code1":
+					patchdest = Path.Combine(stf_rom, "rom_code1.bin");
+					break;
+				case ".rom_data":
+					patchdest = Path.Combine(stf_rom, "rom_data.bin");
+					break;
+				case ".rom_ep":
+					patchdest = Path.Combine(stf_rom, "rom_ep.bin");
+					break;
+				case ".rom_pol":
+					patchdest = Path.Combine(stf_rom, "rom_pol.bin");
+					break;
+				case ".rom_tex":
+					patchdest = Path.Combine(stf_rom, "rom_tex.bin");
+					break;
+				// At some point we'll handle these with actual XML extraction/injection!
+				// For now, this will do.
+				case ".string_array_en":
+					patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin");
+					break;
+				case ".string_array_jp":
+					patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin");
+					break;
+				default:
+					patchdest = null;
+					break;
+			}
+			if (patchdest != null){
+				try{
+					using var input = new FileStream(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.None);
+					using var patch = new FileStream(modpath, FileMode.Open);
+					using var decoder = new Decoder(input, patch, input);
+					decoder.Run();}
+				catch(Exception e){
+					// Need to write error handling here later, this will do for now
+					GD.Print(e.ToString());}
 			}
 		}
 	}
