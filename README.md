@@ -4,7 +4,7 @@ A mod installer and tool for Sonic the Fighters.
 
 Right now, it can:
 
-- Install mod packages
+- Install mods
 - Back up your game files
 - Restore your game files
 
@@ -13,7 +13,7 @@ Right now, it can:
 See ***THE ALMIGHTY ~~LANCIA STRATOS~~ GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide)
 
 ### Creating a Mod
-Not yet implemented on the Godot rewrite. Working on it.
+Coming soon.
 
 ### Credits
 HoneyPatcher uses a few external programs to manage the game's compressed file archives.
