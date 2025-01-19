@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using MikuMikuLibrary.Archives;
-using MikuMikuLibrary.Archives.CriMw;
+// using MikuMikuLibrary.Archives.CriMw;
 using MikuMikuLibrary.IO;
 using IniParser;
 using IniParser.Model;
@@ -27,30 +27,22 @@ public partial class HoneyPatcher : Node2D
 	[Export]
 	public Label _progress; // Progress label
 	
-	string userProfile;
 	string psarc;
 	string usrdir;
-	IniData data;
+	bool nomods = false;
 	
-	public override void _Ready()
-	{	
-		// Dumb hack until I can get around to this
+	public override void _Ready(){	
+		// Dumb hack. Will be required until I can implement psarc.
 		if (!Engine.IsEditorHint()){
 			if (OS.GetName() == "macOS")
 				Directory.SetCurrentDirectory(Path.Combine(OS.GetExecutablePath(), "../../../.."));
-				// It is officially 12:15 AM on Christmas. I'm tired.
-				// Should I run over this liberal, or drive around them?
-				// What do you think?
 		}
-		
 		
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
 		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		_modsfolder.Pressed += OpenModsFolder;
-		
-		_progress.Text = "Signals connected.";
 		
 		// Generate default config
 		if(!File.Exists("HoneyConfig.ini")){
@@ -71,18 +63,16 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text = "loaded HoneyConfig.ini.";
 		
 		// Define psarc path for each OS
+		// TODO: Implement psarc in HP to remove the dependency
 		switch(OS.GetName()){
 			case "Windows":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "win32", "UnPSARC.exe"));
-			  //GD.Print(psarc);
 			  break;
 			case "macOS":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "macosx", "psarc"));
-			  //GD.Print(psarc);
 			  break;
 			case "Linux":
 			  psarc = Path.GetFullPath(Path.Combine("bin", "linux", "psarc"));
-			  //GD.Print(psarc);
 			  break;
 			default:
 			  ShowError("Error", "This platform is unsupported.");
@@ -187,7 +177,10 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text = "Applied patches.";
 		FarcPack();
 		_progress.Text = "Repacked farc files.";
-		ShowError("Success!", "Mods have been installed!");
+		if (nomods)
+			ShowError("Success?", "No mods were found, but I extracted rom.psarc for you anyways.");
+		else
+			ShowError("Success!", "Mods have been installed!");
 	}
 	
 	// Uninstall Mods
@@ -212,6 +205,8 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			ShowError("Exception", e.ToString());
+			_progress.Text = "Error restoring files. (Couldn't wipe game files.)";
+			return;
 		}
 		
 		// Restore backup
@@ -220,6 +215,8 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			ShowError("Exception", e.ToString());
+			_progress.Text = "Error restoring files. (Couldn't copy backup.)";
+			return;
 		}
 		ShowError("Success", "Files restored.");
 		_progress.Text = "Restored game files.";
@@ -229,9 +226,8 @@ public partial class HoneyPatcher : Node2D
 		// Currently doesn't work on Linux properly
 		OS.ShellShowInFileManager("mods", true);
 	}
-	public override void _Process(double delta){
-		// GD.Print(usrdir);
-	}
+	
+	public override void _Process(double delta){}
 
 	public void ShowError(string title, string text){
 		_acceptdialog.Title = title;
@@ -253,7 +249,7 @@ public partial class HoneyPatcher : Node2D
 	
 	/* The code for the next two functions was almost entirely ripped from
 	Skyth's FarcPack utility, and uses MikuMikuLibrary to unpack/repack game 
-	files. It is licensed under the MIT license. Please show him your support,
+	files. It is licensed under the MIT license. Please show him your support.
 	https://github.com/blueskythlikesclouds/MikuMikuLibrary */
 	
 	private void FarcUnpack(){
@@ -275,10 +271,6 @@ public partial class HoneyPatcher : Node2D
 			// Set source and destination filename
 			string sourceFileName = Path.Combine(usrdir, "rom", farc);
 			string destinationFileName = Path.ChangeExtension(sourceFileName, null);
-
-			// Default arguments, don't change, these work with STF
-			bool compress = false;
-			int alignment = 16;
 					
 			using (var stream = File.OpenRead(sourceFileName))
 			{
@@ -341,7 +333,7 @@ public partial class HoneyPatcher : Node2D
 		string[] files = Directory.GetFiles("mods");
 		Array.Sort(files);
 		if (files.Length == 0){
-			ShowError("Error", "You don't have any mods!");
+			nomods = true;
 			return;
 		}
 		foreach (string mod in files)
