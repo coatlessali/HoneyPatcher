@@ -223,8 +223,9 @@ public partial class HoneyPatcher : Node2D
 	}
 
 	private void OpenModsFolder(){
-		// Currently doesn't work on Linux properly
-		OS.ShellShowInFileManager("mods", true);
+		//OS.ShellShowInFileManager("mods", true);
+		// This will need some work once we move to using user://
+		OS.ShellOpen("mods");
 	}
 	
 	public override void _Process(double delta){}
