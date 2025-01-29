@@ -256,7 +256,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void CreatePatches(){
 		if (_patchname.Text != "")
-		  patchname = _patchname.Text;
+i		  patchname = _patchname.Text;
 		List<string> files = new List<string>();
 		GD.Print("creating patches");
 		string[] roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin"};
