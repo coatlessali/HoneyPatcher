@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -9,8 +10,6 @@ using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
 using IniParser;
 using IniParser.Model;
-using PleOps.XdeltaSharp;
-using PleOps.XdeltaSharp.Decoder;
 
 public partial class HoneyPatcher : Node2D
 {	
@@ -25,10 +24,15 @@ public partial class HoneyPatcher : Node2D
 	[Export]
 	public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
 	[Export]
+	public Button _genpatches; // Generate Patches button
+	[Export]
 	public Label _progress; // Progress label
+	[Export]
+	public LineEdit _patchname; // Name of patch
 	
 	string psarc;
 	string usrdir;
+	string patchname = "Default";
 	bool nomods = false;
 	
 	public override void _Ready(){	
@@ -43,6 +47,8 @@ public partial class HoneyPatcher : Node2D
 		_install.Pressed += OnInstallPressed;
 		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		_modsfolder.Pressed += OpenModsFolder;
+		_genpatches.Pressed += CreatePatches;
+		// _patchname.TextSubmitted += ChangeNameTheSequel;
 		
 		// Generate default config
 		if(!File.Exists("HoneyConfig.ini")){
@@ -54,6 +60,26 @@ public partial class HoneyPatcher : Node2D
 		if(!Directory.Exists("mods")){
 			Directory.CreateDirectory("mods");
 			_progress.Text = "Created mods directory.";
+		}
+		
+		if(!Directory.Exists("workbench")){
+			Directory.CreateDirectory("workbench");
+			_progress.Text = "Created workbench directory.";
+		}
+		
+		if(!Directory.Exists("workbench/original")){
+			Directory.CreateDirectory("workbench/original");
+			_progress.Text = "Created workbench/original directory.";
+		}
+		
+		if(!Directory.Exists("workbench/modified")){
+			Directory.CreateDirectory("workbench/modified");
+			_progress.Text = "Created workbench/modified directory.";
+		}
+		
+		if(!Directory.Exists("workbench/patches")){
+			Directory.CreateDirectory("workbench/patches");
+			_progress.Text = "Created workbench/patches directory.";
 		}
 		
 		// https://github.com/rickyah/ini-parser
@@ -228,6 +254,61 @@ public partial class HoneyPatcher : Node2D
 		OS.ShellOpen("mods");
 	}
 	
+	private void CreatePatches(){
+		if (_patchname.Text != "")
+		  patchname = _patchname.Text;
+		List<string> files = new List<string>();
+		GD.Print("creating patches");
+		string[] roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin"};
+		foreach (string rawhm in roms){
+			if (!File.Exists("workbench/original/" + rawhm)){
+				GD.Print("original " + rawhm + " not found");
+				ShowError("Error", "Original " + rawhm + "not found.");
+				return;
+			}
+			if (File.Exists("workbench/modified/" + rawhm)){
+				GD.Print("modified " + rawhm + " found");
+				files.Add(rawhm);
+			}
+		}
+		foreach (string filename in files){
+			uint count = 0;
+			//uint changecount = 0;
+			List<string> locations = new List<string>();
+			List<byte> changes = new List<byte>();
+			GD.Print("Patch Name: " + patchname);
+			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine("workbench/original", filename));
+			GD.Print("Patch Extension: " + patchextension);
+			byte[] original = File.ReadAllBytes(Path.Combine("workbench/original", filename));
+			byte[] modified = File.ReadAllBytes(Path.Combine("workbench/modified", filename));
+			foreach (byte b in original)
+			{
+				if (b != modified[count]){
+					locations.Add(count.ToString());
+					changes.Add(modified[count]);
+					//changecount++;
+				}
+				count++;
+			}
+			GD.Print("Change Locations: " + locations.Count.ToString());
+			GD.Print("Changes: " + changes.Count.ToString());
+			string patch = Path.Combine("workbench/patches", patchname + "." + patchextension);
+			string patchloc = patch + ".loc";
+			GD.Print("Patch: " + patch);
+			GD.Print("Patch Locations: " + patchloc);
+			File.WriteAllBytes(patch, changes.ToArray());
+			_progress.Text = "Created " + patch + ".";
+			File.WriteAllLines(patchloc, locations.ToArray());
+			_progress.Text = "Created " + patchloc + ".";
+		}
+	}
+	
+	// private void ChangeNameTheSequel(){
+		// patchname = _patchname.Text;
+		// if (patchname == "")
+		  // patchname = "Default";
+	// }
+	
 	public override void _Process(double delta){}
 
 	public void ShowError(string title, string text){
@@ -354,10 +435,10 @@ public partial class HoneyPatcher : Node2D
 		Array.Sort(files);
 		foreach (string mod in files)
 		{
-			string modpath = mod;
+			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, "stf_rom");
-			string patchdest;
+			string patchdest; // file to be patched
 			switch(Path.GetExtension(modpath))
 			{
 				// Check the file extension, which should be the name of the file you want to patch
@@ -389,14 +470,26 @@ public partial class HoneyPatcher : Node2D
 					break;
 			}
 			if (patchdest != null){
+				// modpath = patch
+				// patchdest = file to be patched
 				try{
-					using var input = new FileStream(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.None);
-					using var patch = new FileStream(modpath, FileMode.Open);
-					using var decoder = new Decoder(input, patch, input);
-					decoder.Run();}
+					byte[] changes = File.ReadAllBytes(modpath);
+					string[] locations = File.ReadAllLines(modpath+".loc");
+					uint inc = 0;
+					foreach (string i in locations){
+						long loc = Int64.Parse(i);
+						using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+							fs.Seek(loc, SeekOrigin.Begin);
+							// GD.Print(loc.ToString());
+							fs.WriteByte(changes[inc]);
+							inc++;
+						}
+					}
+				}
 				catch(Exception e){
 					// Need to write error handling here later, this will do for now
-					GD.Print(e.ToString());}
+					GD.Print(e.ToString());
+				}
 			}
 		}
 	}

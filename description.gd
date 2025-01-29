@@ -1,6 +1,5 @@
 extends Label
 
-
 func _ready() -> void:
 	pass
 func _process(delta: float) -> void:
@@ -15,3 +14,5 @@ func _on_install_mouse_entered() -> void:
 	text = "Install all mods present in the \"mods\" folder. (Priority is alphanumerical order.)"
 func _on_unpack_mouse_entered() -> void:
 	text = "Unpack all game files into a HoneyPatcher compatible package."
+func _on_gen_patches_mouse_entered() -> void:
+	text = "Generate patches for rom_*.bin. See GitHub wiki for more details."

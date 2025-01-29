@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://bsjcg2emguurk"]
+[gd_scene load_steps=34 format=3 uid="uid://bsjcg2emguurk"]
 
 [ext_resource type="Script" path="res://HoneyPatcher.cs" id="1_72wd4"]
 [ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/merge_nocomp_1.png" id="2_clxbb"]
@@ -24,7 +24,14 @@
 [ext_resource type="Texture2D" uid="uid://bil4r8s58dipx" path="res://assets/explotano/explotano06.png" id="21_3ibrs"]
 [ext_resource type="Texture2D" uid="uid://bj5cwia2q07ly" path="res://assets/explotano/explotano07.png" id="22_215ki"]
 [ext_resource type="AudioStream" uid="uid://cfgjpqrcyrimq" path="res://explotano.ogg" id="23_1qnki"]
+[ext_resource type="Script" path="res://gen_patches.gd" id="25_7sdjr"]
 [ext_resource type="Script" path="res://usrdir_dialog.gd" id="25_61viv"]
+[ext_resource type="Script" path="res://lightning.gd" id="27_0b2i5"]
+[ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/HONEYNOW.png" id="27_iaya5"]
+[ext_resource type="Texture2D" uid="uid://c2icqgth1gib0" path="res://assets/lightning-png-transparent-4.png" id="27_vnpkj"]
+[ext_resource type="Script" path="res://honey_now.gd" id="28_alpvu"]
+[ext_resource type="Script" path="res://honey_now_big.gd" id="28_kwxox"]
+[ext_resource type="AudioStream" uid="uid://8m6yi6fogqc2" path="res://assets/now.ogg" id="32_a42q4"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_dcw1t"]
 animations = [{
@@ -85,14 +92,16 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_progress")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_patchname")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
 _install = NodePath("Install")
 _restoreusrdir = NodePath("RestoreUSRDIR")
 _modsfolder = NodePath("Mods")
+_genpatches = NodePath("GenPatches")
 _progress = NodePath("Progress")
+_patchname = NodePath("PatchName")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -1
@@ -127,15 +136,15 @@ stream = ExtResource("23_1qnki")
 volume_db = -19.81
 
 [node name="Title" type="Label" parent="."]
-offset_left = 228.0
+offset_left = 232.0
 offset_top = 51.0
-offset_right = 470.0
+offset_right = 474.0
 offset_bottom = 74.0
-text = "HoneyPatcher: EXTREME STAGE"
+text = "HoneyPatcher: Arcade Stage 5"
 
 [node name="Description" type="Label" parent="."]
 offset_left = 91.0
-offset_top = 448.0
+offset_top = 453.0
 offset_right = 620.0
 offset_bottom = 515.0
 text = "Hover over a button for more details..."
@@ -180,6 +189,27 @@ offset_right = 436.0
 offset_bottom = 445.0
 text = "Unpack game files..."
 
+[node name="GenPatches" type="Button" parent="." node_paths=PackedStringArray("lightning", "honeynow", "honeynowbig", "lightningsound", "explotano")]
+offset_left = 479.0
+offset_top = 250.0
+offset_right = 648.0
+offset_bottom = 289.0
+text = "Create patches...."
+autowrap_mode = 2
+script = ExtResource("25_7sdjr")
+lightning = NodePath("../Lightning")
+honeynow = NodePath("../HoneyNOW")
+honeynowbig = NodePath("../HoneyNOWBig")
+lightningsound = NodePath("../LightningSound")
+explotano = NodePath("../Explode")
+
+[node name="PatchName" type="LineEdit" parent="."]
+offset_left = 479.0
+offset_top = 210.0
+offset_right = 648.0
+offset_bottom = 250.0
+placeholder_text = "Patch name..."
+
 [node name="USRDIRDialog" type="FileDialog" parent="."]
 title = "Open a Directory"
 initial_position = 1
@@ -206,6 +236,30 @@ vertical_alignment = 2
 clip_text = true
 text_overrun_behavior = 3
 
+[node name="Lightning" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(346, 264)
+scale = Vector2(2.15, 1.66875)
+texture = ExtResource("27_vnpkj")
+script = ExtResource("27_0b2i5")
+
+[node name="HoneyNOW" type="Sprite2D" parent="."]
+position = Vector2(352, 167.5)
+scale = Vector2(0.532051, 0.522436)
+texture = ExtResource("27_iaya5")
+script = ExtResource("28_alpvu")
+
+[node name="HoneyNOWBig" type="Sprite2D" parent="."]
+visible = false
+z_index = 3
+position = Vector2(344, 258)
+scale = Vector2(2.20513, 1.65385)
+texture = ExtResource("27_iaya5")
+script = ExtResource("28_kwxox")
+
+[node name="LightningSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("32_a42q4")
+
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
 [connection signal="pressed" from="SelectUSRDIR" to="USRDIRDialog" method="_on_select_usrdir_pressed"]
@@ -215,4 +269,6 @@ text_overrun_behavior = 3
 [connection signal="mouse_entered" from="RestoreUSRDIR" to="Description" method="_on_restore_usrdir_mouse_entered"]
 [connection signal="pressed" from="RestoreUSRDIR" to="." method="_on_restore_usrdir_pressed"]
 [connection signal="mouse_entered" from="Unpack" to="Description" method="_on_unpack_mouse_entered"]
+[connection signal="mouse_entered" from="GenPatches" to="Description" method="_on_gen_patches_mouse_entered"]
+[connection signal="pressed" from="GenPatches" to="." method="_on_gen_patches_pressed"]
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
