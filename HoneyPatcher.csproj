@@ -12,8 +12,5 @@
     <Reference Include="IniParser">
       <HintPath>INIFileParser.dll</HintPath>
     </Reference>
-    <Reference Include="PleOps.XdeltaSharp">
-      <HintPath>PleOps.XdeltaSharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
