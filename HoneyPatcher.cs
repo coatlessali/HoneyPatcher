@@ -256,7 +256,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void CreatePatches(){
 		if (_patchname.Text != "")
-i		  patchname = _patchname.Text;
+		  patchname = _patchname.Text;
 		List<string> files = new List<string>();
 		GD.Print("creating patches");
 		string[] roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin"};
@@ -476,9 +476,9 @@ i		  patchname = _patchname.Text;
 					byte[] changes = File.ReadAllBytes(modpath);
 					string[] locations = File.ReadAllLines(modpath+".loc");
 					uint inc = 0;
-					foreach (string i in locations){
-						long loc = Int64.Parse(i);
-						using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+					using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+						foreach (string i in locations){
+							long loc = Int64.Parse(i);
 							fs.Seek(loc, SeekOrigin.Begin);
 							// GD.Print(loc.ToString());
 							fs.WriteByte(changes[inc]);
