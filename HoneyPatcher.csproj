@@ -12,5 +12,8 @@
     <Reference Include="IniParser">
       <HintPath>INIFileParser.dll</HintPath>
     </Reference>
+    <Reference Include="PsarcSharp">
+      <HintPath>PsarcSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

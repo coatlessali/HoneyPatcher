@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MikuMikuLibrary.Archives;
 // using MikuMikuLibrary.Archives.CriMw;
 using MikuMikuLibrary.IO;
+using PsarcSharp;
 using IniParser;
 using IniParser.Model;
 
@@ -255,6 +256,8 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void CreatePatches(){
+		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		// Psarc.Extract(psarc_path);
 		if (_patchname.Text != "")
 		  patchname = _patchname.Text;
 		List<string> files = new List<string>();
