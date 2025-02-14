@@ -1,4 +1,5 @@
 using Godot;
+using Gibbed.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,9 +9,10 @@ using System.Threading.Tasks;
 using MikuMikuLibrary.Archives;
 // using MikuMikuLibrary.Archives.CriMw;
 using MikuMikuLibrary.IO;
-using PsarcSharp;
+// using PsarcSharp;
 using IniParser;
 using IniParser.Model;
+using UnPSARC;
 
 public partial class HoneyPatcher : Node2D
 {	
@@ -89,22 +91,6 @@ public partial class HoneyPatcher : Node2D
 		usrdir = data["main"]["usrdir"];
 		_progress.Text = "loaded HoneyConfig.ini.";
 		
-		// Define psarc path for each OS
-		// TODO: Implement psarc in HP to remove the dependency
-		switch(OS.GetName()){
-			case "Windows":
-			  psarc = Path.GetFullPath(Path.Combine("bin", "win32", "UnPSARC.exe"));
-			  break;
-			case "macOS":
-			  psarc = Path.GetFullPath(Path.Combine("bin", "macosx", "psarc"));
-			  break;
-			case "Linux":
-			  psarc = Path.GetFullPath(Path.Combine("bin", "linux", "psarc"));
-			  break;
-			default:
-			  ShowError("Error", "This platform is unsupported.");
-			  break;
-		}
 	}
 
 	// Signals
@@ -118,7 +104,7 @@ public partial class HoneyPatcher : Node2D
 	
 	// Install mods
 	private void OnInstallPressed(){
-		// Check for valid stf
+		// Check for clean copy of stf w/ rom.psarc still intact
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			ShowError("Error", "rom.psarc could not be found. Please ensure you have a clean copy of Sonic the Fighters if this\nis your first time, or Uninstall mods before proceeding.");
@@ -134,65 +120,12 @@ public partial class HoneyPatcher : Node2D
 		CopyFilesRecursively(usrdir, "BACKUP");
 		_progress.Text = "Created backup.";
 		
-		// Extract rom.psarc
+		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
+		// and turned it into a DLL. It's honestly still really bloated and could do with
+		// a bit more cleanup.
 		
-		// Extraction on Windows
-		if (OS.GetName() == "Windows"){
-			string psarc_path_windows_fuck_stupid = "\"" + psarc_path + "\"";
-			using Process process = new Process
-			{
-				StartInfo = new ProcessStartInfo
-				{
-					FileName = psarc,
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true,
-					Arguments = psarc_path_windows_fuck_stupid,
-					CreateNoWindow = true,
-					WorkingDirectory = usrdir,
-				}
-			};
-			
-			process.Start();
-			process.WaitForExit();
-			string output = process.StandardOutput.ReadToEnd();
-			string error = process.StandardError.ReadToEnd();
-			GD.Print(output);
-			GD.Print(error);
-			string unpacked_dir = Path.Combine(usrdir, "rom_Unpacked");
-			string romdir = Path.Combine(usrdir, "rom");
-			CopyFilesRecursively(unpacked_dir, romdir);
-			Directory.Delete(unpacked_dir, true);
-		}
-		// Extraction on *nix
-		else {
-			using Process process = new Process
-			{
-				StartInfo = new ProcessStartInfo
-				{
-					FileName = psarc,
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true,
-					CreateNoWindow = true,
-					WorkingDirectory = usrdir,
-				}
-			};
-			// Using ArgumentList.Add() instead of setting Arguments directly was necessary
-			// to get this working on macOS. It seems to work on Linux just fine, and
-			// if somehow a BSD port ever becomes a thing this will probably help there too,
-			// if I had to guess.
-			process.StartInfo.ArgumentList.Add("-x");
-			process.StartInfo.ArgumentList.Add(psarc_path);
-			process.Start();
-			process.WaitForExit();
-			//string output = process.StandardOutput.ReadToEnd();
-			//string error = process.StandardError.ReadToEnd();
-			//GD.Print(output);
-			//GD.Print(error);
-		}
+		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
+		
 		_progress.Text = "Extracted rom.psarc.";
 		File.Delete(psarc_path);
 		_progress.Text = "Extracted and removed rom.psarc.";
@@ -256,8 +189,6 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void CreatePatches(){
-		string psarc_path = Path.Combine(usrdir, "rom.psarc");
-		// Psarc.Extract(psarc_path);
 		if (_patchname.Text != "")
 		  patchname = _patchname.Text;
 		List<string> files = new List<string>();

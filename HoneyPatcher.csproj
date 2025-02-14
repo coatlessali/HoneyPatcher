@@ -15,5 +15,14 @@
     <Reference Include="PsarcSharp">
       <HintPath>PsarcSharp.dll</HintPath>
     </Reference>
+    <Reference Include="UnPSARC">
+      <HintPath>UnPSARC.dll</HintPath>
+    </Reference>
+    <Reference Include="Gibbed.IO">
+      <HintPath>Gibbed.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
