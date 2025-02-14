@@ -7,9 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using MikuMikuLibrary.Archives;
-// using MikuMikuLibrary.Archives.CriMw;
 using MikuMikuLibrary.IO;
-// using PsarcSharp;
 using IniParser;
 using IniParser.Model;
 using UnPSARC;
@@ -32,18 +30,20 @@ public partial class HoneyPatcher : Node2D
 	public Label _progress; // Progress label
 	[Export]
 	public LineEdit _patchname; // Name of patch
+	[Export]
+	public Button _patchesfolder; // Opens patches folder
 	
-	string psarc;
+	// Static directories
+	string modsDir = ProjectSettings.GlobalizePath("user://mods");
+	string workbenchDir = ProjectSettings.GlobalizePath("user://workbench");
+	string backupDir = ProjectSettings.GlobalizePath("user://BACKUP");
+	string honeyConfig = ProjectSettings.GlobalizePath("user://HoneyConfig.ini");
+	
 	string usrdir;
 	string patchname = "Default";
 	bool nomods = false;
 	
 	public override void _Ready(){	
-		// Dumb hack. Will be required until I can implement psarc.
-		if (!Engine.IsEditorHint()){
-			if (OS.GetName() == "macOS")
-				Directory.SetCurrentDirectory(Path.Combine(OS.GetExecutablePath(), "../../../.."));
-		}
 		
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
@@ -51,43 +51,28 @@ public partial class HoneyPatcher : Node2D
 		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		_modsfolder.Pressed += OpenModsFolder;
 		_genpatches.Pressed += CreatePatches;
+		_patchesfolder.Pressed += OpenPatchesFolder;
 		// _patchname.TextSubmitted += ChangeNameTheSequel;
 		
 		// Generate default config
-		if(!File.Exists("HoneyConfig.ini")){
-			File.Copy("HoneyConfig.default.ini", "HoneyConfig.ini");
+		if(!File.Exists(honeyConfig)){
+			string defaultConfig = "[main]\nlogoskip = false\nusrdir = .";
+			File.WriteAllText(honeyConfig, defaultConfig);
 			_progress.Text = "Created default configuration file.";
 		}
 		
-		// Create mods folder
-		if(!Directory.Exists("mods")){
-			Directory.CreateDirectory("mods");
-			_progress.Text = "Created mods directory.";
-		}
+		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
 		
-		if(!Directory.Exists("workbench")){
-			Directory.CreateDirectory("workbench");
-			_progress.Text = "Created workbench directory.";
-		}
-		
-		if(!Directory.Exists("workbench/original")){
-			Directory.CreateDirectory("workbench/original");
-			_progress.Text = "Created workbench/original directory.";
-		}
-		
-		if(!Directory.Exists("workbench/modified")){
-			Directory.CreateDirectory("workbench/modified");
-			_progress.Text = "Created workbench/modified directory.";
-		}
-		
-		if(!Directory.Exists("workbench/patches")){
-			Directory.CreateDirectory("workbench/patches");
-			_progress.Text = "Created workbench/patches directory.";
+		foreach (string h in essentialDirs){
+			if (!Directory.Exists(h)){
+				Directory.CreateDirectory(h);
+				_progress.Text = "Created directory " + h + ".";
+			}
 		}
 		
 		// https://github.com/rickyah/ini-parser
 		// MIT License
-		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini");
+		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
 		usrdir = data["main"]["usrdir"];
 		_progress.Text = "loaded HoneyConfig.ini.";
 		
@@ -96,9 +81,9 @@ public partial class HoneyPatcher : Node2D
 	// Signals
 	private void OnUsrdirDialog(string dir){
 		usrdir = Path.GetFullPath(dir); // Set usrdir for current session
-		IniData data = new FileIniDataParser().ReadFile("HoneyConfig.ini"); // Open config file
+		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
 		data["main"]["usrdir"] = dir; // Set usrdir
-		new FileIniDataParser().WriteFile("HoneyConfig.ini", data); // Write config file
+		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
 		_progress.Text = "Saved changes.";
 	}
 	
@@ -113,11 +98,11 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		// Make backup if valid stf found and no backup exists
-		if(!Directory.Exists("BACKUP")){
-			Directory.CreateDirectory("BACKUP");
+		if(!Directory.Exists(backupDir)){
+			Directory.CreateDirectory(backupDir);
 			_progress.Text = "Created backup directory.";
 		}
-		CopyFilesRecursively(usrdir, "BACKUP");
+		CopyFilesRecursively(usrdir, backupDir);
 		_progress.Text = "Created backup.";
 		
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
@@ -146,7 +131,7 @@ public partial class HoneyPatcher : Node2D
 	// Uninstall Mods
 	private void OnRestoreUsrdirPressed(){
 		// Check if backup exists
-		if (!Directory.Exists("BACKUP")){
+		if (!Directory.Exists(backupDir)){
 			ShowError("Error", "No backup found.");
 			_progress.Text = "No backup found.";
 			return;
@@ -171,7 +156,7 @@ public partial class HoneyPatcher : Node2D
 		
 		// Restore backup
 		try{
-			CopyFilesRecursively("BACKUP", usrdir);
+			CopyFilesRecursively(backupDir, usrdir);
 		}
 		catch (Exception e){
 			ShowError("Exception", e.ToString());
@@ -183,9 +168,11 @@ public partial class HoneyPatcher : Node2D
 	}
 
 	private void OpenModsFolder(){
-		//OS.ShellShowInFileManager("mods", true);
-		// This will need some work once we move to using user://
-		OS.ShellOpen("mods");
+		OS.ShellOpen(modsDir);
+	}
+	
+	private void OpenPatchesFolder(){
+		OS.ShellOpen(workbenchDir);
 	}
 	
 	private void CreatePatches(){
@@ -195,12 +182,12 @@ public partial class HoneyPatcher : Node2D
 		GD.Print("creating patches");
 		string[] roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin"};
 		foreach (string rawhm in roms){
-			if (!File.Exists("workbench/original/" + rawhm)){
+			if (!File.Exists(Path.Combine(workbenchDir, "original", rawhm))){
 				GD.Print("original " + rawhm + " not found");
 				ShowError("Error", "Original " + rawhm + "not found.");
 				return;
 			}
-			if (File.Exists("workbench/modified/" + rawhm)){
+			if (File.Exists(Path.Combine(workbenchDir, "modified", rawhm))){
 				GD.Print("modified " + rawhm + " found");
 				files.Add(rawhm);
 			}
@@ -211,10 +198,10 @@ public partial class HoneyPatcher : Node2D
 			List<string> locations = new List<string>();
 			List<byte> changes = new List<byte>();
 			GD.Print("Patch Name: " + patchname);
-			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine("workbench/original", filename));
+			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine(workbenchDir, "original", filename));
 			GD.Print("Patch Extension: " + patchextension);
-			byte[] original = File.ReadAllBytes(Path.Combine("workbench/original", filename));
-			byte[] modified = File.ReadAllBytes(Path.Combine("workbench/modified", filename));
+			byte[] original = File.ReadAllBytes(Path.Combine(workbenchDir, "original", filename));
+			byte[] modified = File.ReadAllBytes(Path.Combine(workbenchDir, "modified", filename));
 			foreach (byte b in original)
 			{
 				if (b != modified[count]){
@@ -226,7 +213,7 @@ public partial class HoneyPatcher : Node2D
 			}
 			GD.Print("Change Locations: " + locations.Count.ToString());
 			GD.Print("Changes: " + changes.Count.ToString());
-			string patch = Path.Combine("workbench/patches", patchname + "." + patchextension);
+			string patch = Path.Combine(workbenchDir, "patches", patchname + "." + patchextension);
 			string patchloc = patch + ".loc";
 			GD.Print("Patch: " + patch);
 			GD.Print("Patch Locations: " + patchloc);
@@ -236,12 +223,6 @@ public partial class HoneyPatcher : Node2D
 			_progress.Text = "Created " + patchloc + ".";
 		}
 	}
-	
-	// private void ChangeNameTheSequel(){
-		// patchname = _patchname.Text;
-		// if (patchname == "")
-		  // patchname = "Default";
-	// }
 	
 	public override void _Process(double delta){}
 
@@ -346,7 +327,7 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ExtractMods(){
-		string[] files = Directory.GetFiles("mods");
+		string[] files = Directory.GetFiles(modsDir);
 		Array.Sort(files);
 		if (files.Length == 0){
 			nomods = true;

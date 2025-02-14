@@ -92,7 +92,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_patchname")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_patchname", "_patchesfolder")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -102,15 +102,16 @@ _modsfolder = NodePath("Mods")
 _genpatches = NodePath("GenPatches")
 _progress = NodePath("Progress")
 _patchname = NodePath("PatchName")
+_patchesfolder = NodePath("PatchesFolder")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(344, 258)
-scale = Vector2(86, 1)
+position = Vector2(480, 270)
+scale = Vector2(120, 1.04651)
 texture = ExtResource("2_clxbb")
 
 [node name="HoneyBadger" type="Sprite2D" parent="." node_paths=PackedStringArray("explode", "explotano", "explodesound")]
-position = Vector2(352, 168)
+position = Vector2(471, 164)
 scale = Vector2(0.532051, 0.522436)
 texture = ExtResource("3_uvcbp")
 script = ExtResource("4_vxq1r")
@@ -120,14 +121,14 @@ explodesound = NodePath("../ExplodeSound")
 
 [node name="Explode" type="Sprite2D" parent="."]
 visible = false
-position = Vector2(352, 168)
+position = Vector2(471, 163)
 scale = Vector2(0.517134, 0.552542)
 texture = ExtResource("5_idu76")
 
 [node name="Explotano" type="AnimatedSprite2D" parent="."]
 visible = false
 z_index = 1
-position = Vector2(353, 158)
+position = Vector2(472, 158)
 scale = Vector2(1.54, 1.51241)
 sprite_frames = SubResource("SpriteFrames_dcw1t")
 
@@ -136,49 +137,49 @@ stream = ExtResource("23_1qnki")
 volume_db = -19.81
 
 [node name="Title" type="Label" parent="."]
-offset_left = 232.0
-offset_top = 51.0
-offset_right = 474.0
-offset_bottom = 74.0
+offset_left = 351.0
+offset_top = 47.0
+offset_right = 593.0
+offset_bottom = 70.0
 text = "HoneyPatcher: Arcade Stage 5"
 
 [node name="Description" type="Label" parent="."]
-offset_left = 91.0
-offset_top = 453.0
-offset_right = 620.0
-offset_bottom = 515.0
+offset_left = 210.0
+offset_top = 449.0
+offset_right = 739.0
+offset_bottom = 511.0
 text = "Hover over a button for more details..."
 horizontal_alignment = 1
 autowrap_mode = 3
 script = ExtResource("6_mif06")
 
 [node name="SelectUSRDIR" type="Button" parent="."]
-offset_left = 268.0
-offset_top = 250.0
-offset_right = 436.0
-offset_bottom = 289.0
+offset_left = 387.0
+offset_top = 246.0
+offset_right = 555.0
+offset_bottom = 285.0
 text = "Select USRDIR..."
 
 [node name="Mods" type="Button" parent="."]
-offset_left = 268.0
-offset_top = 289.0
-offset_right = 436.0
-offset_bottom = 328.0
+offset_left = 387.0
+offset_top = 285.0
+offset_right = 555.0
+offset_bottom = 324.0
 text = "Open mods folder...
 "
 
 [node name="Install" type="Button" parent="."]
-offset_left = 268.0
-offset_top = 328.0
-offset_right = 436.0
-offset_bottom = 367.0
+offset_left = 387.0
+offset_top = 324.0
+offset_right = 555.0
+offset_bottom = 363.0
 text = "Install all mods..."
 
 [node name="RestoreUSRDIR" type="Button" parent="."]
-offset_left = 268.0
-offset_top = 367.0
-offset_right = 436.0
-offset_bottom = 406.0
+offset_left = 387.0
+offset_top = 363.0
+offset_right = 555.0
+offset_bottom = 402.0
 text = "Uninstall all mods..."
 
 [node name="Unpack" type="Button" parent="."]
@@ -190,10 +191,10 @@ offset_bottom = 445.0
 text = "Unpack game files..."
 
 [node name="GenPatches" type="Button" parent="." node_paths=PackedStringArray("lightning", "honeynow", "honeynowbig", "lightningsound", "explotano")]
-offset_left = 479.0
-offset_top = 250.0
-offset_right = 648.0
-offset_bottom = 289.0
+offset_left = 693.0
+offset_top = 252.0
+offset_right = 862.0
+offset_bottom = 291.0
 text = "Create patches...."
 autowrap_mode = 2
 script = ExtResource("25_7sdjr")
@@ -203,11 +204,18 @@ honeynowbig = NodePath("../HoneyNOWBig")
 lightningsound = NodePath("../LightningSound")
 explotano = NodePath("../Explode")
 
+[node name="PatchesFolder" type="Button" parent="."]
+offset_left = 693.0
+offset_top = 291.0
+offset_right = 862.0
+offset_bottom = 330.0
+text = "Open workbench..."
+
 [node name="PatchName" type="LineEdit" parent="."]
-offset_left = 479.0
-offset_top = 210.0
-offset_right = 648.0
-offset_bottom = 250.0
+offset_left = 693.0
+offset_top = 212.0
+offset_right = 862.0
+offset_bottom = 252.0
 placeholder_text = "Patch name..."
 
 [node name="USRDIRDialog" type="FileDialog" parent="."]
@@ -227,9 +235,10 @@ size = Vector2i(674, 106)
 dialog_text = "if you see this ping ali and tell her what you were doing bc that means she messed up"
 
 [node name="Progress" type="Label" parent="."]
-offset_top = 493.0
-offset_right = 688.0
-offset_bottom = 516.0
+offset_left = 271.0
+offset_top = 518.0
+offset_right = 959.0
+offset_bottom = 541.0
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 2
 vertical_alignment = 2
@@ -238,13 +247,13 @@ text_overrun_behavior = 3
 
 [node name="Lightning" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(346, 264)
-scale = Vector2(2.15, 1.66875)
+position = Vector2(416.5, 264)
+scale = Vector2(2.59063, 1.66875)
 texture = ExtResource("27_vnpkj")
 script = ExtResource("27_0b2i5")
 
 [node name="HoneyNOW" type="Sprite2D" parent="."]
-position = Vector2(352, 167.5)
+position = Vector2(471, 163.5)
 scale = Vector2(0.532051, 0.522436)
 texture = ExtResource("27_iaya5")
 script = ExtResource("28_alpvu")
@@ -252,8 +261,8 @@ script = ExtResource("28_alpvu")
 [node name="HoneyNOWBig" type="Sprite2D" parent="."]
 visible = false
 z_index = 3
-position = Vector2(344, 258)
-scale = Vector2(2.20513, 1.65385)
+position = Vector2(480, 270)
+scale = Vector2(3.07692, 1.73077)
 texture = ExtResource("27_iaya5")
 script = ExtResource("28_kwxox")
 
@@ -271,4 +280,5 @@ stream = ExtResource("32_a42q4")
 [connection signal="mouse_entered" from="Unpack" to="Description" method="_on_unpack_mouse_entered"]
 [connection signal="mouse_entered" from="GenPatches" to="Description" method="_on_gen_patches_mouse_entered"]
 [connection signal="pressed" from="GenPatches" to="." method="_on_gen_patches_pressed"]
+[connection signal="pressed" from="PatchesFolder" to="." method="_on_button_pressed"]
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
