@@ -14,11 +14,11 @@ func _ready() -> void:
 	pressed.connect(self._button_pressed)
 
 func _button_pressed():
-	magic_number = rng.randi_range(1, 3)
-	if magic_number == 1:
-		lightning.modulate.a = 1.0
-		if explotano.visible == false:
-			honeynow.modulate.a = 1.0
-		honeynowbig.modulate.a = 1.0
-		honeynowbig.show()
-		lightningsound.play()
+	#magic_number = rng.randi_range(1, 2)
+	#if magic_number == 1:
+	lightning.modulate.a = 1.0
+	if explotano.visible == false:
+		honeynow.modulate.a = 1.0
+	honeynowbig.modulate.a = 1.0
+	honeynowbig.show()
+	lightningsound.play()

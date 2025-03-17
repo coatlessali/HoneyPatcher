@@ -333,6 +333,10 @@ public partial class HoneyPatcher : Node2D
 			nomods = true;
 			return;
 		}
+		else{
+			nomods = false;
+		}
+		
 		foreach (string mod in files)
 		{
 			string modpath = mod;

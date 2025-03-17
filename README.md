@@ -11,7 +11,7 @@ Right now, it can:
 
 ![coollogo_com-1489161](https://github.com/user-attachments/assets/49e20382-172d-4719-9afd-50e0a74755f5)
 
-See ***THE ALMIGHTY ~~LANCIA STRATOS~~ GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide)
+See ***THE ALMIGHTY ~~LANCIA STRATOS~~ GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide-(V5))
 
 ### Creating a Mod
 Coming soon.
