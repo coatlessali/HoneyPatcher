@@ -27,7 +27,7 @@ public partial class HoneyPatcher : Node2D
 	[Export]
 	public Button _genpatches; // Generate Patches button
 	[Export]
-	public Label _progress; // Progress label
+	public RichTextLabel _progress; // Progress label
 	[Export]
 	public LineEdit _patchname; // Name of patch
 	[Export]
@@ -52,13 +52,12 @@ public partial class HoneyPatcher : Node2D
 		_modsfolder.Pressed += OpenModsFolder;
 		_genpatches.Pressed += CreatePatches;
 		_patchesfolder.Pressed += OpenPatchesFolder;
-		// _patchname.TextSubmitted += ChangeNameTheSequel;
 		
 		// Generate default config
 		if(!File.Exists(honeyConfig)){
 			string defaultConfig = "[main]\nlogoskip = false\nusrdir = .";
 			File.WriteAllText(honeyConfig, defaultConfig);
-			_progress.Text = "Created default configuration file.";
+			_progress.Text += "[I] Created default configuration file.\n";
 		}
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
@@ -66,7 +65,7 @@ public partial class HoneyPatcher : Node2D
 		foreach (string h in essentialDirs){
 			if (!Directory.Exists(h)){
 				Directory.CreateDirectory(h);
-				_progress.Text = "Created directory " + h + ".";
+				_progress.Text += $"[I] Created directory {h}.\n";
 			}
 		}
 		
@@ -74,7 +73,7 @@ public partial class HoneyPatcher : Node2D
 		// MIT License
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
 		usrdir = data["main"]["usrdir"];
-		_progress.Text = "loaded HoneyConfig.ini.";
+		_progress.Text += "[I] loaded HoneyConfig.ini.\n";
 		
 	}
 
@@ -84,7 +83,7 @@ public partial class HoneyPatcher : Node2D
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
 		data["main"]["usrdir"] = dir; // Set usrdir
 		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
-		_progress.Text = "Saved changes.";
+		_progress.Text += "[I] Saved changes.\n";
 	}
 	
 	// Install mods
@@ -93,17 +92,17 @@ public partial class HoneyPatcher : Node2D
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			ShowError("Error", "rom.psarc could not be found. Please ensure you have a clean copy of Sonic the Fighters if this\nis your first time, or Uninstall mods before proceeding.");
-			_progress.Text = "rom.psarc not found.";
+			_progress.Text += "[E] rom.psarc not found.\n";
 			return;
 		}
 		
 		// Make backup if valid stf found and no backup exists
 		if(!Directory.Exists(backupDir)){
 			Directory.CreateDirectory(backupDir);
-			_progress.Text = "Created backup directory.";
+			_progress.Text += "[I] Created backup directory.\n";
 		}
 		CopyFilesRecursively(usrdir, backupDir);
-		_progress.Text = "Created backup.";
+		_progress.Text += "[I] Created backup.\n";
 		
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
 		// and turned it into a DLL. It's honestly still really bloated and could do with
@@ -111,17 +110,17 @@ public partial class HoneyPatcher : Node2D
 		
 		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 		
-		_progress.Text = "Extracted rom.psarc.";
+		_progress.Text += "[I] Extracted rom.psarc.\n";
 		File.Delete(psarc_path);
-		_progress.Text = "Extracted and removed rom.psarc.";
+		_progress.Text += "[I] Extracted and removed rom.psarc.\n";
 		FarcUnpack();
-		_progress.Text = "Unpacked farc files.";
+		_progress.Text += "[I] Unpacked farc files.\n";
 		ExtractMods();
-		_progress.Text = "Extracted mods.";
+		_progress.Text += "[I] Extracted mods.\n";
 		ApplyPatches();
-		_progress.Text = "Applied patches.";
+		_progress.Text += "[I] Applied patches.\n";
 		FarcPack();
-		_progress.Text = "Repacked farc files.";
+		_progress.Text += "[I] Repacked farc files.\n";
 		if (nomods)
 			ShowError("Success?", "No mods were found, but I extracted rom.psarc for you anyways.");
 		else
@@ -133,7 +132,7 @@ public partial class HoneyPatcher : Node2D
 		// Check if backup exists
 		if (!Directory.Exists(backupDir)){
 			ShowError("Error", "No backup found.");
-			_progress.Text = "No backup found.";
+			_progress.Text += "[E] No backup found.\n";
 			return;
 		}
 		
@@ -141,16 +140,14 @@ public partial class HoneyPatcher : Node2D
 		try{
 			// https://stackoverflow.com/questions/1288718/how-to-delete-all-files-and-folders-in-a-directory
 			System.IO.DirectoryInfo di = new DirectoryInfo(usrdir);
-			foreach (FileInfo file in di.GetFiles()){
+			foreach (FileInfo file in di.GetFiles())
 				file.Delete(); 
-			}
-			foreach (DirectoryInfo dir in di.GetDirectories()){
+			foreach (DirectoryInfo dir in di.GetDirectories())
 				dir.Delete(true); 
-			}
 		}
 		catch (Exception e){
 			ShowError("Exception", e.ToString());
-			_progress.Text = "Error restoring files. (Couldn't wipe game files.)";
+			_progress.Text += "[E] Error restoring files. (Couldn't wipe game files.)\n";
 			return;
 		}
 		
@@ -160,11 +157,11 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			ShowError("Exception", e.ToString());
-			_progress.Text = "Error restoring files. (Couldn't copy backup.)";
+			_progress.Text += "[E] Error restoring files. (Couldn't copy backup.)\n";
 			return;
 		}
 		ShowError("Success", "Files restored.");
-		_progress.Text = "Restored game files.";
+		_progress.Text += "[I] Restored game files.\n";
 	}
 
 	private void OpenModsFolder(){
@@ -218,9 +215,9 @@ public partial class HoneyPatcher : Node2D
 			GD.Print("Patch: " + patch);
 			GD.Print("Patch Locations: " + patchloc);
 			File.WriteAllBytes(patch, changes.ToArray());
-			_progress.Text = "Created " + patch + ".";
+			_progress.Text += $"[I] Created {patch}.\n";
 			File.WriteAllLines(patchloc, locations.ToArray());
-			_progress.Text = "Created " + patchloc + ".";
+			_progress.Text += $"[I] Created {patchloc}.\n";
 		}
 	}
 	
