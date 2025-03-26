@@ -1,3 +1,6 @@
+HoneyPatcher: Arcade Stage 6AA
+- Changed how the log works.
+
 HoneyPatcher: Arcade Stage 5
 - Added support for a new patching system based on xdelta/vcdiff.
 - Fixed a few bugs.
