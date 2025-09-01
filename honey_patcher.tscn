@@ -92,7 +92,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_patchname", "_patchesfolder")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -101,8 +101,10 @@ _restoreusrdir = NodePath("RestoreUSRDIR")
 _modsfolder = NodePath("Mods")
 _genpatches = NodePath("GenPatches")
 _progress = NodePath("Progress")
+_game = NodePath("game")
 _patchname = NodePath("PatchName")
 _patchesfolder = NodePath("PatchesFolder")
+_gameselector = NodePath("MenuBar/PopupMenu")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -1
@@ -200,8 +202,8 @@ autowrap_mode = 2
 script = ExtResource("25_7sdjr")
 lightning = NodePath("../Lightning")
 honeynow = NodePath("../HoneyNOW")
-honeynowbig = NodePath("../HoneyNOWBig")
-lightningsound = NodePath("../LightningSound")
+honeynowbig = NodePath("../HoneyNOW/HoneyNOWBig")
+lightningsound = NodePath("../HoneyNOW/HoneyNOWBig/LightningSound")
 explotano = NodePath("../Explode")
 
 [node name="PatchesFolder" type="Button" parent="."]
@@ -217,6 +219,32 @@ offset_top = 212.0
 offset_right = 862.0
 offset_bottom = 252.0
 placeholder_text = "Patch name..."
+
+[node name="game" type="Label" parent="."]
+offset_top = 517.0
+offset_right = 960.0
+offset_bottom = 540.0
+text = "Current Game: Initial D Ver. 2"
+horizontal_alignment = 2
+
+[node name="MenuBar" type="MenuBar" parent="."]
+offset_left = 413.0
+offset_top = 412.0
+offset_right = 530.0
+offset_bottom = 443.0
+tooltip_text = "Select the game you would like to mod."
+
+[node name="PopupMenu" type="PopupMenu" parent="MenuBar"]
+title = "Select Game..."
+item_count = 4
+item_0/text = "Sonic the Fighters"
+item_0/id = 0
+item_1/text = "Virtua Fighter 2"
+item_1/id = 1
+item_2/text = "Fighting Vipers"
+item_2/id = 2
+item_3/text = "Cyber-Troopers Virtual-On: Operation Moongate"
+item_3/id = 3
 
 [node name="USRDIRDialog" type="FileDialog" parent="."]
 title = "Open a Directory"
@@ -254,15 +282,15 @@ scale = Vector2(0.532051, 0.522436)
 texture = ExtResource("27_iaya5")
 script = ExtResource("28_alpvu")
 
-[node name="HoneyNOWBig" type="Sprite2D" parent="."]
+[node name="HoneyNOWBig" type="Sprite2D" parent="HoneyNOW"]
 visible = false
 z_index = 3
-position = Vector2(480, 270)
-scale = Vector2(3.07692, 1.73077)
+position = Vector2(16.9157, 203.853)
+scale = Vector2(5.78313, 3.31288)
 texture = ExtResource("27_iaya5")
 script = ExtResource("28_kwxox")
 
-[node name="LightningSound" type="AudioStreamPlayer" parent="."]
+[node name="LightningSound" type="AudioStreamPlayer" parent="HoneyNOW/HoneyNOWBig"]
 stream = ExtResource("32_a42q4")
 
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
@@ -277,4 +305,6 @@ stream = ExtResource("32_a42q4")
 [connection signal="mouse_entered" from="GenPatches" to="Description" method="_on_gen_patches_mouse_entered"]
 [connection signal="pressed" from="GenPatches" to="." method="_on_gen_patches_pressed"]
 [connection signal="pressed" from="PatchesFolder" to="." method="_on_button_pressed"]
+[connection signal="mouse_entered" from="MenuBar" to="Description" method="_on_menu_bar_mouse_entered"]
+[connection signal="id_pressed" from="MenuBar/PopupMenu" to="." method="_on_popup_menu_id_pressed"]
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]

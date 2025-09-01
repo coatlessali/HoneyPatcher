@@ -16,3 +16,5 @@ func _on_unpack_mouse_entered() -> void:
 	text = "Unpack all game files into a HoneyPatcher compatible package."
 func _on_gen_patches_mouse_entered() -> void:
 	text = "Generate patches for rom_*.bin. See GitHub wiki for more details."
+func _on_menu_bar_mouse_entered() -> void:
+	text = "Select the game you would like to install mods to."
