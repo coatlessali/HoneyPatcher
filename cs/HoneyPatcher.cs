@@ -39,6 +39,12 @@ public partial class HoneyPatcher : Node2D
 	string backupDir = ProjectSettings.GlobalizePath("user://BACKUP");
 	string honeyConfig = ProjectSettings.GlobalizePath("user://HoneyConfig.ini");
 	
+	// model 2 game file lists for patch creation
+	string[] stf_og_roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
+	string[] fv_og_roms = {"rom_code1.bin", "rom_code2.bin", "rom_data.bin", "rom_ep1.bin", "rom_ep2.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
+	string[] vf2_og_roms = {"ic12_13.bin", "ic12_15.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
+	string[] omg_og_roms = {"farc_tex.bin", "rom_code.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
+	
 	string usrdir;
 	string patchname = "Default";
 	bool nomods = false;
@@ -408,5 +414,9 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 		}
+	}
+	
+	private void InjectModels(){
+		_progress.Text += $"[W] InjectModels(): TODO.\n";
 	}
 }
