@@ -1,6 +1,6 @@
 # *HoneyPatcher!*
 
-A mod installer and tool for Sonic the Fighters.
+A mod installer and tool for Sonic the Fighters, available for Windows and Linux/SteamOS.
 
 Right now, it can:
 
