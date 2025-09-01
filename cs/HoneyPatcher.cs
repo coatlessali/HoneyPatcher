@@ -84,7 +84,8 @@ public partial class HoneyPatcher : Node2D
 			foreach (string file in Directory.GetFiles(modsDir)){
 				File.Delete(file);
 			}
-			// Directory.Delete(Path.Combine(modsDir, "stf", "stf"), true);
+			try{Directory.Delete(Path.Combine(modsDir, "stf", "stf"), true);}
+			catch{GD.Print("error deleting stf/stf");}
 		}
 		// Migrate workbench
 		if (Directory.GetFiles(Path.Combine(workbenchDir, "original")).Length != 0){
@@ -341,7 +342,7 @@ public partial class HoneyPatcher : Node2D
 	}
 
 	private void OpenModsFolder(){
-		OS.ShellOpen(modsDir);
+		OS.ShellOpen(Path.Combine(modsDir, game));
 	}
 	
 	private void OpenPatchesFolder(){
