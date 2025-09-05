@@ -690,7 +690,7 @@ public partial class HoneyPatcher : Node2D
 		}
 	}
 	
-	private void DDSFixHeader(){d
+	private void DDSFixHeader(){
 		string[] ddsList = Directory.EnumerateFiles(usrdir, "*.dds", SearchOption.AllDirectories).ToArray();
 		foreach (string dds in ddsList){
 			using (FileStream fs = File.Open(dds, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
