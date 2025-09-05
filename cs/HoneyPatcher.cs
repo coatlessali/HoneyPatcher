@@ -690,7 +690,7 @@ public partial class HoneyPatcher : Node2D
 		}
 	}
 	
-	private void DDSFixHeader(){
+	private void DDSFixHeader(){d
 		string[] ddsList = Directory.EnumerateFiles(usrdir, "*.dds", SearchOption.AllDirectories).ToArray();
 		foreach (string dds in ddsList){
 			using (FileStream fs = File.Open(dds, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
@@ -724,6 +724,8 @@ public partial class HoneyPatcher : Node2D
 		}
 	}
 	
+	/* Original Code by Bekzii, ported with permission */
+	
 	private void InjectModels(){
 		_progress.Text += $"[W] InjectModels(): TODO.\n";
 		// Get list of files in rom folder
@@ -740,8 +742,6 @@ public partial class HoneyPatcher : Node2D
 			  return;
 		}
 	}
-	
-	/* Original Code by Bekzii, ported with permission */
 	
 	const string EXT_MODEL = ".stfmdl";
 	const string EXT_TH = ".stfmat";
