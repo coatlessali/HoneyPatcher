@@ -225,7 +225,7 @@ public partial class HoneyPatcher : Node2D
 				pretty_game = "Cyber Troopers Virtual-On: Operation Moongate";
 				break;
 		}
-		_game.Text = $"Current Game: {pretty_game}";
+		// _game.Text = $"Current Game: {pretty_game}";
 	}
 	
 	private void GameSelector(long id){
@@ -674,5 +674,49 @@ public partial class HoneyPatcher : Node2D
 	
 	private void InjectModels(){
 		_progress.Text += $"[W] InjectModels(): TODO.\n";
+		// Get list of files in rom folder
+		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
+		// Apply in alphabetical order
+		Array.Sort(files);
+		foreach (string mod in files)
+		{
+			string modpath = mod; // patch
+			string romdir = Path.Combine(usrdir, "rom");
+			string stf_rom = Path.Combine(romdir, $"{game}_rom");
+			
+			if (Path.GetExtension(modpath) != ".stfmdl")
+			  return;
+		}
+	}
+	
+	/* Original Code by Bekzii, ported with permission */
+	
+	const string EXT_MODEL = ".stfmdl";
+	const string EXT_TH = ".stfmat";
+	const string EXT_TP = ".stfuvs";
+	
+	const uint MODEL_TABLE_ADDR = 0xE0004;
+	const uint POL_BASE_ADDR = 0xEC25E0;
+	const uint TEX_BASE_ADDR = 0x790000;
+	
+	private static uint Swap32(uint x) {
+		return ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
+	}
+	
+	private static uint GetModelTableAddr(uint i){
+		return MODEL_TABLE_ADDR + (i*0x10);
+	}
+	
+	private uint GetTexAddr(uint addr){
+		addr /= 2;
+		addr = Swap32(addr);
+		return addr;
+	}
+	
+	private void InjectData(string file, uint addr, byte[] data){
+		using (FileStream fs = File.Open(file, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+			fs.Seek(addr, SeekOrigin.Begin);
+			fs.Write(data);
+		}
 	}
 }
