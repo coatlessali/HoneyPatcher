@@ -1,46 +1,56 @@
-[gd_scene load_steps=43 format=3 uid="uid://bsjcg2emguurk"]
+[gd_scene load_steps=53 format=3 uid="uid://bsjcg2emguurk"]
 
 [ext_resource type="Script" uid="uid://dwnoc572rbxo0" path="res://cs/HoneyPatcher.cs" id="1_72wd4"]
-[ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/merge_nocomp_1.png" id="2_clxbb"]
-[ext_resource type="Texture2D" uid="uid://c3jme3r8tpumq" path="res://assets/HONEYBADGER.png" id="3_uvcbp"]
+[ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/background.png" id="2_clxbb"]
+[ext_resource type="Texture2D" uid="uid://c3jme3r8tpumq" path="res://assets/sprites/honeybadger/HONEYBADGER.png" id="3_uvcbp"]
 [ext_resource type="Script" uid="uid://4aefcieh1bhm" path="res://gd/honey_badger.gd" id="4_vxq1r"]
-[ext_resource type="Texture2D" uid="uid://bvut6magca8we" path="res://assets/explode.png" id="5_idu76"]
+[ext_resource type="Texture2D" uid="uid://bvut6magca8we" path="res://assets/sprites/honeybadger/explode.png" id="5_idu76"]
 [ext_resource type="Script" uid="uid://bfth36gmn7y18" path="res://gd/description.gd" id="6_mif06"]
-[ext_resource type="Texture2D" uid="uid://dwmvkiyktnvft" path="res://assets/explotano/explotano08.png" id="6_y4hxk"]
-[ext_resource type="Texture2D" uid="uid://caab5im6xbu1m" path="res://assets/explotano/explotano09.png" id="7_pvwf1"]
-[ext_resource type="Texture2D" uid="uid://dxw2gjnjsn3kk" path="res://assets/explotano/explotano10.png" id="8_t525e"]
-[ext_resource type="Texture2D" uid="uid://cdjgj5ub4n8ta" path="res://assets/explotano/explotano11.png" id="9_wqh0f"]
-[ext_resource type="Texture2D" uid="uid://bpjkc4ybr40g8" path="res://assets/explotano/explotano12.png" id="10_6hmc5"]
-[ext_resource type="Texture2D" uid="uid://c5f3cdl1y14pg" path="res://assets/explotano/explotano13.png" id="11_fculv"]
-[ext_resource type="Texture2D" uid="uid://cwstr4tnqscph" path="res://assets/explotano/explotano14.png" id="12_ixcyh"]
-[ext_resource type="Texture2D" uid="uid://8p1kix6ddhks" path="res://assets/explotano/explotano15.png" id="13_f5t1a"]
-[ext_resource type="Texture2D" uid="uid://bngkboxeb3n3g" path="res://assets/explotano/explotano16.png" id="14_j6888"]
-[ext_resource type="Texture2D" uid="uid://6xtcwqktfams" path="res://assets/explotano/explotano00.png" id="15_np61q"]
-[ext_resource type="Texture2D" uid="uid://x4ugymkgdojg" path="res://assets/explotano/explotano01.png" id="16_3m2l0"]
-[ext_resource type="Texture2D" uid="uid://vq8q0bi7r8gp" path="res://assets/explotano/explotano02.png" id="17_8h525"]
-[ext_resource type="Texture2D" uid="uid://btyr3ah81udoq" path="res://assets/explotano/explotano03.png" id="18_wrbbu"]
-[ext_resource type="Texture2D" uid="uid://duwywld4vp4bi" path="res://assets/explotano/explotano04.png" id="19_2issm"]
-[ext_resource type="Texture2D" uid="uid://cgors0gnmli82" path="res://assets/explotano/explotano05.png" id="20_331ft"]
-[ext_resource type="Texture2D" uid="uid://bil4r8s58dipx" path="res://assets/explotano/explotano06.png" id="21_3ibrs"]
-[ext_resource type="Texture2D" uid="uid://bj5cwia2q07ly" path="res://assets/explotano/explotano07.png" id="22_215ki"]
-[ext_resource type="AudioStream" uid="uid://cfgjpqrcyrimq" path="res://assets/explotano.ogg" id="23_1qnki"]
+[ext_resource type="Texture2D" uid="uid://dwmvkiyktnvft" path="res://assets/sprites/explotano/explotano08.png" id="6_y4hxk"]
+[ext_resource type="Texture2D" uid="uid://caab5im6xbu1m" path="res://assets/sprites/explotano/explotano09.png" id="7_pvwf1"]
+[ext_resource type="Texture2D" uid="uid://dxw2gjnjsn3kk" path="res://assets/sprites/explotano/explotano10.png" id="8_t525e"]
+[ext_resource type="Texture2D" uid="uid://cdjgj5ub4n8ta" path="res://assets/sprites/explotano/explotano11.png" id="9_wqh0f"]
+[ext_resource type="Texture2D" uid="uid://bpjkc4ybr40g8" path="res://assets/sprites/explotano/explotano12.png" id="10_6hmc5"]
+[ext_resource type="Texture2D" uid="uid://c5f3cdl1y14pg" path="res://assets/sprites/explotano/explotano13.png" id="11_fculv"]
+[ext_resource type="Texture2D" uid="uid://cwstr4tnqscph" path="res://assets/sprites/explotano/explotano14.png" id="12_ixcyh"]
+[ext_resource type="Texture2D" uid="uid://8p1kix6ddhks" path="res://assets/sprites/explotano/explotano15.png" id="13_f5t1a"]
+[ext_resource type="Texture2D" uid="uid://bngkboxeb3n3g" path="res://assets/sprites/explotano/explotano16.png" id="14_j6888"]
+[ext_resource type="Texture2D" uid="uid://6xtcwqktfams" path="res://assets/sprites/explotano/explotano00.png" id="15_np61q"]
+[ext_resource type="Texture2D" uid="uid://x4ugymkgdojg" path="res://assets/sprites/explotano/explotano01.png" id="16_3m2l0"]
+[ext_resource type="Texture2D" uid="uid://vq8q0bi7r8gp" path="res://assets/sprites/explotano/explotano02.png" id="17_8h525"]
+[ext_resource type="Texture2D" uid="uid://btyr3ah81udoq" path="res://assets/sprites/explotano/explotano03.png" id="18_wrbbu"]
+[ext_resource type="Texture2D" uid="uid://duwywld4vp4bi" path="res://assets/sprites/explotano/explotano04.png" id="19_2issm"]
+[ext_resource type="Texture2D" uid="uid://cgors0gnmli82" path="res://assets/sprites/explotano/explotano05.png" id="20_331ft"]
+[ext_resource type="Texture2D" uid="uid://bil4r8s58dipx" path="res://assets/sprites/explotano/explotano06.png" id="21_3ibrs"]
+[ext_resource type="Texture2D" uid="uid://bj5cwia2q07ly" path="res://assets/sprites/explotano/explotano07.png" id="22_215ki"]
+[ext_resource type="AudioStream" uid="uid://cfgjpqrcyrimq" path="res://assets/sounds/explotano.ogg" id="23_1qnki"]
 [ext_resource type="Script" uid="uid://ru6t8wmkm4sm" path="res://gd/gen_patches.gd" id="25_7sdjr"]
 [ext_resource type="Script" uid="uid://b1gngepcl1vf2" path="res://gd/usrdir_dialog.gd" id="25_61viv"]
-[ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/stf-big.png" id="26_8beqc"]
-[ext_resource type="Script" uid="uid://7sj8o8ydv082" path="res://game.gd" id="26_x8lee"]
+[ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/sprites/icons/stf-big.png" id="26_8beqc"]
+[ext_resource type="Script" uid="uid://7sj8o8ydv082" path="res://gd/game.gd" id="26_x8lee"]
 [ext_resource type="Script" uid="uid://dmt3ma53sykab" path="res://gd/lightning.gd" id="27_0b2i5"]
-[ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/HONEYNOW.png" id="27_iaya5"]
-[ext_resource type="Texture2D" uid="uid://c2icqgth1gib0" path="res://assets/lightning-png-transparent-4.png" id="27_vnpkj"]
-[ext_resource type="Texture2D" uid="uid://dppr4ebih5p3r" path="res://assets/fv-big.png" id="27_x8lee"]
+[ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/sprites/honeybadger/HONEYNOW.png" id="27_iaya5"]
+[ext_resource type="Texture2D" uid="uid://c2icqgth1gib0" path="res://assets/sprites/honeybadger/lightning-png-transparent-4.png" id="27_vnpkj"]
+[ext_resource type="Texture2D" uid="uid://dppr4ebih5p3r" path="res://assets/sprites/icons/fv-big.png" id="27_x8lee"]
 [ext_resource type="Script" uid="uid://cfw7siled7tvq" path="res://gd/honey_now.gd" id="28_alpvu"]
 [ext_resource type="Script" uid="uid://bg4y2v77257p5" path="res://gd/honey_now_big.gd" id="28_kwxox"]
-[ext_resource type="Texture2D" uid="uid://bft24ndo8s0ca" path="res://assets/vf2-big.png" id="28_pgyg1"]
-[ext_resource type="Texture2D" uid="uid://boiwwd1wino80" path="res://assets/omg-big.png" id="29_71v7s"]
-[ext_resource type="Texture2D" uid="uid://dxfjgcyytb1e8" path="res://assets/stf.png" id="31_3kfbe"]
-[ext_resource type="AudioStream" uid="uid://8m6yi6fogqc2" path="res://assets/now.ogg" id="32_a42q4"]
-[ext_resource type="Texture2D" uid="uid://bi6224y775rkr" path="res://assets/vf2.png" id="32_io7ka"]
-[ext_resource type="Texture2D" uid="uid://da2amo7v0fguv" path="res://assets/fv.png" id="33_kdmha"]
-[ext_resource type="Texture2D" uid="uid://dknn6c0wrr48" path="res://assets/omg.png" id="34_ct2dv"]
+[ext_resource type="Texture2D" uid="uid://bft24ndo8s0ca" path="res://assets/sprites/icons/vf2-big.png" id="28_pgyg1"]
+[ext_resource type="Texture2D" uid="uid://boiwwd1wino80" path="res://assets/sprites/icons/omg-big.png" id="29_71v7s"]
+[ext_resource type="Texture2D" uid="uid://dxfjgcyytb1e8" path="res://assets/sprites/icons/stf.png" id="31_3kfbe"]
+[ext_resource type="AudioStream" uid="uid://8m6yi6fogqc2" path="res://assets/sounds/now.ogg" id="32_a42q4"]
+[ext_resource type="Texture2D" uid="uid://bi6224y775rkr" path="res://assets/sprites/icons/vf2.png" id="32_io7ka"]
+[ext_resource type="Texture2D" uid="uid://da2amo7v0fguv" path="res://assets/sprites/icons/fv.png" id="33_kdmha"]
+[ext_resource type="Texture2D" uid="uid://dknn6c0wrr48" path="res://assets/sprites/icons/omg.png" id="34_ct2dv"]
+[ext_resource type="AudioStream" uid="uid://ceyekxnhf0vsk" path="res://assets/sounds/m2_confirm.wav" id="42_ct2dv"]
+[ext_resource type="Script" uid="uid://bbhm0cla3xc67" path="res://confirm.gd" id="43_24roi"]
+[ext_resource type="AudioStream" uid="uid://c6mgn4fpyh35b" path="res://assets/sounds/m2_back.wav" id="43_242uk"]
+[ext_resource type="AudioStream" uid="uid://dsophfplnw3dd" path="res://assets/sounds/m2_select.wav" id="44_wwrar"]
+[ext_resource type="Script" uid="uid://d3srbhwm6fuh" path="res://back.gd" id="45_hph0u"]
+[ext_resource type="AudioStream" uid="uid://c83od0c41u6d8" path="res://assets/sounds/stf.ogg" id="45_l0yo4"]
+[ext_resource type="AudioStream" uid="uid://drl8r45rlg11s" path="res://assets/sounds/vf2.ogg" id="46_5cc5n"]
+[ext_resource type="Script" uid="uid://b4tfoobiw1147" path="res://select.gd" id="47_iwxrx"]
+[ext_resource type="AudioStream" uid="uid://ixlepfnpodue" path="res://assets/sounds/fv.ogg" id="47_stow7"]
+[ext_resource type="AudioStream" uid="uid://510y6d5vln7n" path="res://assets/sounds/omg.ogg" id="48_24roi"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_dcw1t"]
 animations = [{
@@ -101,7 +111,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -114,6 +124,13 @@ _game = NodePath("game")
 _patchname = NodePath("PatchName")
 _patchesfolder = NodePath("PatchesFolder")
 _gameselector = NodePath("MenuBar/PopupMenu")
+_confirm = NodePath("AudioPlayers/Confirm")
+_back = NodePath("AudioPlayers/Back")
+_select = NodePath("AudioPlayers/Select")
+_stfa = NodePath("AudioPlayers/STF")
+_fva = NodePath("AudioPlayers/FV")
+_vf2a = NodePath("AudioPlayers/VF2")
+_omga = NodePath("AudioPlayers/OMG")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -2
@@ -193,14 +210,6 @@ offset_right = 555.0
 offset_bottom = 402.0
 text = "Uninstall all mods..."
 
-[node name="Unpack" type="Button" parent="."]
-visible = false
-offset_left = 268.0
-offset_top = 406.0
-offset_right = 436.0
-offset_bottom = 445.0
-text = "Unpack game files..."
-
 [node name="GenPatches" type="Button" parent="." node_paths=PackedStringArray("lightning", "honeynow", "honeynowbig", "lightningsound", "explotano")]
 offset_left = 693.0
 offset_top = 252.0
@@ -229,7 +238,7 @@ offset_right = 862.0
 offset_bottom = 252.0
 placeholder_text = "Patch name..."
 
-[node name="game" type="Label" parent="." node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "hp")]
+[node name="game" type="Label" parent="." node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "hp", "stfa", "vf2a", "fva", "omga")]
 offset_top = 517.0
 offset_right = 960.0
 offset_bottom = 540.0
@@ -240,6 +249,10 @@ fv = NodePath("FV")
 vf2 = NodePath("VF2")
 omg = NodePath("OMG")
 hp = NodePath("..")
+stfa = NodePath("../AudioPlayers/STF")
+vf2a = NodePath("../AudioPlayers/VF2")
+fva = NodePath("../AudioPlayers/FV")
+omga = NodePath("../AudioPlayers/OMG")
 
 [node name="STF" type="Sprite2D" parent="game"]
 visible = false
@@ -340,19 +353,65 @@ script = ExtResource("28_kwxox")
 [node name="LightningSound" type="AudioStreamPlayer" parent="HoneyNOW/HoneyNOWBig"]
 stream = ExtResource("32_a42q4")
 
+[node name="AudioPlayers" type="Node" parent="."]
+
+[node name="Confirm" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("42_ct2dv")
+volume_db = -30.875
+script = ExtResource("43_24roi")
+
+[node name="Back" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("43_242uk")
+volume_db = -30.924
+script = ExtResource("45_hph0u")
+
+[node name="Select" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("44_wwrar")
+volume_db = -30.082
+script = ExtResource("47_iwxrx")
+
+[node name="STF" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("45_l0yo4")
+volume_db = -29.828
+
+[node name="VF2" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("46_5cc5n")
+volume_db = -30.103
+
+[node name="FV" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("47_stow7")
+volume_db = -30.103
+
+[node name="OMG" type="AudioStreamPlayer" parent="AudioPlayers"]
+stream = ExtResource("48_24roi")
+volume_db = -16.817
+
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
+[connection signal="mouse_entered" from="SelectUSRDIR" to="AudioPlayers/Select" method="_on_select_usrdir_mouse_entered"]
 [connection signal="pressed" from="SelectUSRDIR" to="USRDIRDialog" method="_on_select_usrdir_pressed"]
 [connection signal="mouse_entered" from="Mods" to="Description" method="_on_psarc_mouse_entered"]
+[connection signal="mouse_entered" from="Mods" to="AudioPlayers/Select" method="_on_mods_mouse_entered"]
+[connection signal="pressed" from="Mods" to="AudioPlayers/Confirm" method="_on_mods_pressed"]
 [connection signal="mouse_entered" from="Install" to="Description" method="_on_install_mouse_entered"]
+[connection signal="mouse_entered" from="Install" to="AudioPlayers/Select" method="_on_install_mouse_entered"]
 [connection signal="pressed" from="Install" to="." method="_on_install_pressed"]
+[connection signal="pressed" from="Install" to="AudioPlayers/Confirm" method="_on_install_pressed"]
 [connection signal="mouse_entered" from="RestoreUSRDIR" to="Description" method="_on_restore_usrdir_mouse_entered"]
+[connection signal="mouse_entered" from="RestoreUSRDIR" to="AudioPlayers/Select" method="_on_restore_usrdir_mouse_entered"]
 [connection signal="pressed" from="RestoreUSRDIR" to="." method="_on_restore_usrdir_pressed"]
-[connection signal="mouse_entered" from="Unpack" to="Description" method="_on_unpack_mouse_entered"]
 [connection signal="mouse_entered" from="GenPatches" to="Description" method="_on_gen_patches_mouse_entered"]
+[connection signal="mouse_entered" from="GenPatches" to="AudioPlayers/Select" method="_on_gen_patches_mouse_entered"]
 [connection signal="pressed" from="GenPatches" to="." method="_on_gen_patches_pressed"]
+[connection signal="mouse_entered" from="PatchesFolder" to="AudioPlayers/Select" method="_on_patches_folder_mouse_entered"]
 [connection signal="pressed" from="PatchesFolder" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="PatchesFolder" to="AudioPlayers/Confirm" method="_on_patches_folder_pressed"]
 [connection signal="mouse_entered" from="MenuBar" to="Description" method="_on_menu_bar_mouse_entered"]
+[connection signal="mouse_entered" from="MenuBar" to="AudioPlayers/Select" method="_on_menu_bar_mouse_entered"]
 [connection signal="id_pressed" from="MenuBar/PopupMenu" to="." method="_on_popup_menu_id_pressed"]
 [connection signal="id_pressed" from="MenuBar/PopupMenu" to="game" method="_on_popup_menu_id_pressed"]
+[connection signal="canceled" from="USRDIRDialog" to="AudioPlayers/Back" method="_on_usrdir_dialog_canceled"]
+[connection signal="confirmed" from="USRDIRDialog" to="AudioPlayers/Confirm" method="_on_usrdir_dialog_confirmed"]
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
+[connection signal="canceled" from="AcceptDialog" to="AudioPlayers/Back" method="_on_accept_dialog_canceled"]
+[connection signal="confirmed" from="AcceptDialog" to="AudioPlayers/Confirm" method="_on_accept_dialog_confirmed"]

@@ -37,6 +37,20 @@ public partial class HoneyPatcher : Node2D
 	public Button _patchesfolder; // Opens patches folder
 	[Export]
 	public PopupMenu _gameselector; // Selects a game
+	[Export]
+	public AudioStreamPlayer _confirm;
+	[Export]
+	public AudioStreamPlayer _back;
+	[Export]
+	public AudioStreamPlayer _select;
+	[Export]
+	public AudioStreamPlayer _stfa;
+	[Export]
+	public AudioStreamPlayer _fva;
+	[Export]
+	public AudioStreamPlayer _vf2a;
+	[Export]
+	public AudioStreamPlayer _omga;
 	
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
 	byte[] d5comp = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -298,6 +312,7 @@ public partial class HoneyPatcher : Node2D
 	private void OnInstallPressed(){
 		// Check if usrdir is set.
 		if (usrdir == "."){
+			_back.Play();
 			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
 			_progress.Text += "[E] usrdir unset.\n";
 			return;
@@ -305,6 +320,7 @@ public partial class HoneyPatcher : Node2D
 		// Check for clean copy of game w/ rom.psarc still intact
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
+			_back.Play();
 			ShowError("Error", $"rom.psarc could not be found. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
 			_progress.Text += "[E] rom.psarc not found.\n";
 			return;
@@ -337,16 +353,21 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text += "[I] Sanitized DDS headers.\n";
 		FarcPack();
 		_progress.Text += "[I] Repacked farc files.\n";
-		if (nomods)
+		if (nomods){
+			GameSound();
 			ShowError("Success?", "No mods were found, but I extracted rom.psarc for you anyways.");
-		else
+		}
+		else{
+			GameSound();
 			ShowError("Success!", "Mods have been installed!");
+		}
 	}
 	
 	// Uninstall Mods
 	private void OnRestoreUsrdirPressed(){
 		// Check if backup exists
 		if (!Directory.Exists(Path.Combine(backupDir, game))){
+			_back.Play();
 			ShowError("Error", "No backup found.");
 			_progress.Text += "[E] No backup found.\n";
 			return;
@@ -362,6 +383,7 @@ public partial class HoneyPatcher : Node2D
 				dir.Delete(true); 
 		}
 		catch (Exception e){
+			_back.Play();
 			ShowError("Exception", e.ToString());
 			_progress.Text += "[E] Error restoring files. (Couldn't wipe game files.)\n";
 			return;
@@ -372,10 +394,12 @@ public partial class HoneyPatcher : Node2D
 			CopyFilesRecursively(Path.Combine(backupDir, game), usrdir);
 		}
 		catch (Exception e){
+			_back.Play();
 			ShowError("Exception", e.ToString());
 			_progress.Text += "[E] Error restoring files. (Couldn't copy backup.)\n";
 			return;
 		}
+		GameSound();
 		ShowError("Success", "Files restored.");
 		_progress.Text += "[I] Restored game files.\n";
 	}
@@ -416,6 +440,7 @@ public partial class HoneyPatcher : Node2D
 			if (!File.Exists(Path.Combine(workbenchDir, "original", game, rawhm))){
 				GD.Print(Path.Combine(workbenchDir, "original", game, rawhm));
 				GD.Print("original " + rawhm + " not found");
+				_back.Play();
 				ShowError("Error", "Original " + rawhm + "not found.");
 				return;
 			}
@@ -742,6 +767,23 @@ public partial class HoneyPatcher : Node2D
 					_progress.Text += $"[W] Could not determine compression type of file {dds}. Skipping.\n";
 				}
 			}
+		}
+	}
+	
+	private void GameSound(){
+		switch (game){
+			case "stf":
+				_stfa.Play();
+				break;
+			case "fv":
+				_fva.Play();
+				break;
+			case "vf2":
+				_vf2a.Play();
+				break;
+			case "omg":
+				_omga.Play();
+				break;
 		}
 	}
 	
