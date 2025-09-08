@@ -91,7 +91,34 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
-		string[] gameslist = {"stf", "vf2", "fv", "omg"};
+		string[] gamesList = {"stf", "vf2", "fv", "omg"};
+		
+		// This is so fucking dumb can someone please tell me a better way to do this
+		foreach (string h in essentialDirs){
+			if (!Directory.Exists(h)){
+				Directory.CreateDirectory(h);
+				_progress.Text += $"[I] Created directory {h}.\n";
+			}
+		}
+		foreach (string h in gamesList){
+			if (!Directory.Exists(Path.Combine(modsDir, h))){
+				Directory.CreateDirectory(h);
+				_progress.Text += $"[I] Created directory {h}.\n";
+			}
+			if (!Directory.Exists(Path.Combine(workbenchDir, "original", h))){
+				Directory.CreateDirectory(h);
+				_progress.Text += $"[I] Created directory {h}.\n";
+			}
+			if (!Directory.Exists(Path.Combine(workbenchDir, "modified", h))){
+				Directory.CreateDirectory(h);
+				_progress.Text += $"[I] Created directory {h}.\n";
+			}
+			if (!Directory.Exists(Path.Combine(workbenchDir, "patches", h))){
+				Directory.CreateDirectory(h);
+				_progress.Text += $"[I] Created directory {h}.\n";
+			}
+		}
+		
 		/* TO BE DELETED BY V8 */
 		// Migrate mods folder
 		if (Directory.GetFiles(modsDir).Length != 0){
@@ -129,13 +156,7 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		
-		foreach (string h in essentialDirs){
-			if (!Directory.Exists(h)){
-				Directory.CreateDirectory(h);
-				_progress.Text += $"[I] Created directory {h}.\n";
-			}
-		}
-		foreach (string gayme in gameslist){
+		foreach (string gayme in gamesList){
 			if (!Directory.Exists(Path.Combine(modsDir, gayme))){
 				Directory.CreateDirectory(Path.Combine(modsDir, gayme));
 				_progress.Text += $"[I] Created directory {Path.Combine(modsDir, gayme)}.\n";
