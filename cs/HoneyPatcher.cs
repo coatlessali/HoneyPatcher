@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Threading.Tasks;
 using System.Linq;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
@@ -17,40 +16,23 @@ public partial class HoneyPatcher : Node2D
 {	
 	[Export]
 	public AcceptDialog _acceptdialog; // Errors and whatnot
-	[Export]
-	public FileDialog _usrdirdialog; // Restore USRDIR button
-	[Export]
-	public Button _install; // Restore USRDIR button
-	[Export]
-	public Button _restoreusrdir; // Restore USRDIR button
-	[Export]
-	public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
-	[Export]
-	public Button _genpatches; // Generate Patches button
-	[Export]
-	public RichTextLabel _progress; // Progress label
-	[Export]
-	public Label _game; // game label
-	[Export]
-	public LineEdit _patchname; // Name of patch
-	[Export]
-	public Button _patchesfolder; // Opens patches folder
-	[Export]
-	public PopupMenu _gameselector; // Selects a game
-	[Export]
-	public AudioStreamPlayer _confirm;
-	[Export]
-	public AudioStreamPlayer _back;
-	[Export]
-	public AudioStreamPlayer _select;
-	[Export]
-	public AudioStreamPlayer _stfa;
-	[Export]
-	public AudioStreamPlayer _fva;
-	[Export]
-	public AudioStreamPlayer _vf2a;
-	[Export]
-	public AudioStreamPlayer _omga;
+	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
+	[Export] public Button _install; // Restore USRDIR button
+	[Export] public Button _restoreusrdir; // Restore USRDIR button
+	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
+	[Export] public Button _genpatches; // Generate Patches button
+	[Export] public RichTextLabel _progress; // Progress label
+	[Export] public Label _game; // game label
+	[Export] public LineEdit _patchname; // Name of patch
+	[Export] public Button _patchesfolder; // Opens patches folder
+	[Export] public PopupMenu _gameselector; // Selects a game
+	[Export] public AudioStreamPlayer _confirm;
+	[Export] public AudioStreamPlayer _back;
+	[Export] public AudioStreamPlayer _select;
+	[Export] public AudioStreamPlayer _stfa;
+	[Export] public AudioStreamPlayer _fva;
+	[Export] public AudioStreamPlayer _vf2a;
+	[Export] public AudioStreamPlayer _omga;
 	
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
 	byte[] d5comp = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -171,22 +153,14 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		foreach (string gayme in gamesList){
-			if (!Directory.Exists(Path.Combine(modsDir, gayme))){
-				Directory.CreateDirectory(Path.Combine(modsDir, gayme));
-				_progress.Text += $"[I] Created directory {Path.Combine(modsDir, gayme)}.\n";
-			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "original", gayme))){
-				Directory.CreateDirectory(Path.Combine(workbenchDir, "original", gayme));
-				_progress.Text += $"[I] Created directory {Path.Combine(workbenchDir, "original", gayme)}.\n";
-			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "modified", gayme))){
-				Directory.CreateDirectory(Path.Combine(workbenchDir, "modified", gayme));
-				_progress.Text += $"[I] Created directory {Path.Combine(workbenchDir, "modified", gayme)}.\n";
-			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "patches", gayme))){
-				Directory.CreateDirectory(Path.Combine(workbenchDir, "patches", gayme));
-				_progress.Text += $"[I] Created directory {Path.Combine(workbenchDir, "patches", gayme)}.\n";
-			}
+			Directory.CreateDirectory(Path.Combine(modsDir, gayme));
+			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(modsDir, gayme)}.\n";
+			Directory.CreateDirectory(Path.Combine(workbenchDir, "original", gayme));
+			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(workbenchDir, "original", gayme)}.\n";
+			Directory.CreateDirectory(Path.Combine(workbenchDir, "modified", gayme));
+			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(workbenchDir, "modified", gayme)}.\n";
+			Directory.CreateDirectory(Path.Combine(workbenchDir, "patches", gayme));
+			// _progress.Text += $"[D] Created directory {Path.Combine(workbenchDir, "patches", gayme)}.\n";
 		}
 		
 		// Migrate backup folder.
@@ -229,9 +203,6 @@ public partial class HoneyPatcher : Node2D
 				_progress.Text += "[I] Migrated old config.\n";
 				new FileIniDataParser().WriteFile(honeyConfig, data);
 			}
-			else{
-				// _progress.Text += "[D] Usrdir already migrated.\n";
-			}
 		}
 		catch{
 			// _progress.Text += "[D] Skipping migration.\n";
@@ -263,48 +234,26 @@ public partial class HoneyPatcher : Node2D
 	
 	private void UpdateGame(){
 		switch (game){
-			case "stf":
-				pretty_game = "Sonic the Fighters";
-				break;
-			case "vf2":
-				pretty_game = "Virtua Fighter 2";
-				break;
-			case "fv":
-				pretty_game = "Fighting Vipers";
-				break;
-			case "omg":
-				pretty_game = "Cyber Troopers Virtual-On: Operation Moongate";
-				break;
+			case "stf": pretty_game = "Sonic the Fighters"; break;
+			case "vf2": pretty_game = "Virtua Fighter 2"; break;
+			case "fv": pretty_game = "Fighting Vipers"; break;
+			case "omg": pretty_game = "Cyber Troopers Virtual-On: Operation Moongate"; break;
 		}
-		// _game.Text = $"Current Game: {pretty_game}";
 	}
 	
 	private void GameSelector(long id){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
 		switch (id)
 		{
-			case 0:
-				game = "stf";
-				break;
-			case 1:
-				game = "vf2";
-				break;
-			case 2:
-				game = "fv";
-				break;
-			case 3:
-				game = "omg";
-				break;
-			default:
-				break; 
+			case 0: game = "stf"; break;
+			case 1: game = "vf2"; break;
+			case 2: game = "fv"; break;
+			case 3: game = "omg"; break;
 		}
 		UpdateGame();
 		data["main"]["game"] = game;
 		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
 		usrdir = data["main"][$"{game}usrdir"];
-		// _progress.Text = $"[D] Changed usrdir to {usrdir}.\n";
-		// _progress.Text += $"[D] Game ID: {id.ToString()}.\n";
-		// _progress.Text += $"[D] Game Name: {game}.\n";
 		_progress.Text += $"[I] Changed Game: {pretty_game}.\n";
 	}
 	
@@ -327,11 +276,9 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		// Make backup if valid stf found and no backup exists
-		if(!Directory.Exists(Path.Combine(backupDir, game))){
-			Directory.CreateDirectory(Path.Combine(backupDir, game));
-			_progress.Text += "[I] Created backup directory.\n";
-		}
-		CopyFilesRecursively(usrdir, Path.Combine(backupDir, game));
+		string gameBackupDir = Path.Combine(backupDir, game);
+		Directory.CreateDirectory(gameBackupDir);
+		CopyFilesRecursively(usrdir, gameBackupDir);
 		_progress.Text += "[I] Created backup.\n";
 		
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
@@ -420,32 +367,20 @@ public partial class HoneyPatcher : Node2D
 		// string[] roms;
 		List<string> roms = new List<string>();
 		switch (game){
-			case "stf":
-				roms = stf_roms.ToList();
-				break;
-			case "vf2":
-				roms = vf2_roms.ToList();
-				break;
-			case "fv":
-				roms = fv_roms.ToList();
-				break;
-			case "omg":
-				roms = omg_roms.ToList();
-				break;
-			default:
-				break;
+			case "stf": roms = stf_roms.ToList(); break;
+			case "vf2": roms = vf2_roms.ToList(); break;
+			case "fv": roms = fv_roms.ToList(); break;
+			case "omg": roms = omg_roms.ToList(); break;
 		}
-		// string[] roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin"};
+		
 		foreach (string rawhm in roms){
 			if (!File.Exists(Path.Combine(workbenchDir, "original", game, rawhm))){
-				GD.Print(Path.Combine(workbenchDir, "original", game, rawhm));
-				GD.Print("original " + rawhm + " not found");
+				_progress.Text += $"[E] Couldn't find {rawhm}.";
 				_back.Play();
 				ShowError("Error", "Original " + rawhm + "not found.");
 				return;
 			}
-			if (File.Exists(Path.Combine(workbenchDir, "modified", game, rawhm))){
-				GD.Print("modified " + rawhm + " found");
+			else{
 				files.Add(rawhm);
 			}
 		}
@@ -454,9 +389,7 @@ public partial class HoneyPatcher : Node2D
 			//uint changecount = 0;
 			List<string> locations = new List<string>();
 			List<byte> changes = new List<byte>();
-			GD.Print("Patch Name: " + patchname);
 			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine(workbenchDir, "original", game, filename));
-			GD.Print("Patch Extension: " + patchextension);
 			byte[] original = File.ReadAllBytes(Path.Combine(workbenchDir, "original", game, filename));
 			byte[] modified = File.ReadAllBytes(Path.Combine(workbenchDir, "modified", game, filename));
 			foreach (byte b in original)
@@ -464,16 +397,11 @@ public partial class HoneyPatcher : Node2D
 				if (b != modified[count]){
 					locations.Add(count.ToString());
 					changes.Add(modified[count]);
-					//changecount++;
 				}
 				count++;
 			}
-			GD.Print("Change Locations: " + locations.Count.ToString());
-			GD.Print("Changes: " + changes.Count.ToString());
 			string patch = Path.Combine(workbenchDir, "patches", game, patchname + "." + patchextension);
 			string patchloc = patch + ".loc";
-			GD.Print("Patch: " + patch);
-			GD.Print("Patch Locations: " + patchloc);
 			File.WriteAllBytes(patch, changes.ToArray());
 			_progress.Text += $"[I] Created {patch}.\n";
 			File.WriteAllLines(patchloc, locations.ToArray());
@@ -507,27 +435,13 @@ public partial class HoneyPatcher : Node2D
 	https://github.com/blueskythlikesclouds/MikuMikuLibrary */
 	
 	private void FarcUnpack(){
-		string[] farcs =   {"sprite/n_advstf.farc", 
-							"sprite/n_advfv.farc",
-							"sprite/n_advvf2.farc",
-							"sprite/n_adv.farc",
-							"sprite/n_cmn.farc", 
-							"sprite/n_fnt.farc", 
-							"sprite/n_info.farc", 
-							"sprite/n_stf.farc",
-							"sprite/n_fv.farc",
-							"sprite/n_advfv2.farc",
-							"sprite/n_omg.farc",
-							"string_array.farc", 
-							"sprite/n_advstf/texture.farc",
-							"sprite/n_advfv/texture.farc",
-							"sprite/n_advvf2/texture.farc",
-							"sprite/n_adv/texture.farc",
-							"sprite/n_omg/texture.farc", 
-							"sprite/n_cmn/texture.farc", 
-							"sprite/n_fnt/texture.farc", 
-							"sprite/n_info/texture.farc", 
-							"sprite/n_stf/texture.farc",};
+		string[] farcs =   {"sprite/n_advstf.farc", "sprite/n_advfv.farc", "sprite/n_advvf2.farc",
+							"sprite/n_adv.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", 
+							"sprite/n_info.farc", "sprite/n_stf.farc", "sprite/n_fv.farc",
+							"sprite/n_advfv2.farc", "sprite/n_omg.farc", "string_array.farc", 
+							"sprite/n_advstf/texture.farc", "sprite/n_advfv/texture.farc", "sprite/n_advvf2/texture.farc",
+							"sprite/n_adv/texture.farc", "sprite/n_omg/texture.farc", "sprite/n_cmn/texture.farc", 
+							"sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc",};
 	
 		foreach (string farc in farcs )
 		{
@@ -551,11 +465,7 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 			catch (Exception e){
-				// GD.Print(e.ToString());
-				if (!File.Exists(sourceFileName)){
-					// _progress.Text += $"[D] {sourceFileName} not found. Skipping.\n";
-				}
-				else{
+				if (File.Exists(sourceFileName)){
 					_progress.Text += $"[E] {sourceFileName} could not be unpacked.\n";
 				}
 			}
@@ -563,25 +473,12 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void FarcPack(){
-		string[] dirlist = {"sprite/n_advstf/texture",
-							"sprite/n_advfv/texture",
-							"sprite/n_advvf2/texture",
-							"sprite/n_adv/texture",
-							"sprite/n_omg/texture", 
-							"sprite/n_cmn/texture", 
-							"sprite/n_fnt/texture", 
-							"sprite/n_info/texture", 
-							"sprite/n_stf/texture", 
-							"string_array", 
-							"sprite/n_advstf",
-							"sprite/n_advfv",
-							"sprite/n_advvf2",
-							"sprite/n_adv",
-							"sprite/n_omg", 
-							"sprite/n_cmn", 
-							"sprite/n_fnt", 
-							"sprite/n_info", 
-							"sprite/n_stf"};
+		string[] dirlist = {"sprite/n_advstf/texture", "sprite/n_advfv/texture", "sprite/n_advvf2/texture",
+							"sprite/n_adv/texture", "sprite/n_omg/texture", "sprite/n_cmn/texture", 
+							"sprite/n_fnt/texture", "sprite/n_info/texture", "sprite/n_stf/texture", 
+							"string_array", "sprite/n_advstf", "sprite/n_advfv",
+							"sprite/n_advvf2", "sprite/n_adv", "sprite/n_omg", 
+							"sprite/n_cmn", "sprite/n_fnt", "sprite/n_info", "sprite/n_stf"};
 	
 		foreach (string dir in dirlist)
 		{
@@ -589,13 +486,9 @@ public partial class HoneyPatcher : Node2D
 			try{
 				// Set source and destination file name
 				string destinationFileName = Path.ChangeExtension(sourceFileName, "farc");;
-	
-				// These arguments should never change, as they seem to work fine with STF
-				bool compress = false;
-				int alignment = 16;
 				
 				// Modified by me, otherwise it throws access errors if you don't use "using"
-				using (var farcArchive = new FarcArchive { IsCompressed = compress, Alignment = alignment }){
+				using (var farcArchive = new FarcArchive { IsCompressed = false, Alignment = 16 }){
 				
 					if (File.GetAttributes(sourceFileName).HasFlag(FileAttributes.Directory))
 					{
@@ -610,13 +503,10 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 			catch (Exception e){
-				// GD.Print(e.ToString());
-				if (!Directory.Exists(sourceFileName)){
-					// _progress.Text += $"[D] {sourceFileName} does not exist. Skipping.\n";
-				}
-				else{
+				if (!Directory.Exists(sourceFileName))
+					_progress.Text += $"[I] {sourceFileName} does not exist. Skipping.\n";
+				else
 					_progress.Text += $"[E] {sourceFileName} could not be repacked.\n";
-				}
 			}
 		}
 	}
@@ -624,12 +514,9 @@ public partial class HoneyPatcher : Node2D
 	private void ExtractMods(){
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		Array.Sort(files);
-		if (files.Length == 0){
-			nomods = true;
-			return;
-		}
-		else{
-			nomods = false;
+		switch (files.Length){
+			case 0: nomods = true; return;
+			default: nomods = false; break;
 		}
 		
 		foreach (string mod in files)
@@ -649,6 +536,7 @@ public partial class HoneyPatcher : Node2D
 		Array.Sort(files);
 		foreach (string mod in files)
 		{
+			GD.Print("mod = " + mod);
 			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
@@ -656,61 +544,28 @@ public partial class HoneyPatcher : Node2D
 			switch(Path.GetExtension(modpath))
 			{
 				// Check the file extension, which should be the name of the file you want to patch
-				case ".rom_code": // OMG
-					patchdest = Path.Combine(stf_rom, "rom_code.bin");
-					break;
-				case ".rom_code1": // STF, FV
-					patchdest = Path.Combine(stf_rom, "rom_code1.bin");
-					break;
-				case ".rom_code2": // FV
-					patchdest = Path.Combine(stf_rom, "rom_code2.bin");
-					break;
-				case ".rom_cop": // OMG
-					patchdest = Path.Combine(stf_rom, "rom_cop.bin");
-					break;
-				case ".rom_data":
-					patchdest = Path.Combine(stf_rom, "rom_data.bin");
-					break;
-				case ".rom_ep":
-					patchdest = Path.Combine(stf_rom, "rom_ep.bin");
-					break;
-				case ".rom_ep1": // FV
-					patchdest = Path.Combine(stf_rom, "rom_ep1.bin");
-					break;
-				case ".rom_ep2": // FV
-					patchdest = Path.Combine(stf_rom, "rom_ep1.bin");
-					break;
-				case ".rom_pol":
-					patchdest = Path.Combine(stf_rom, "rom_pol.bin");
-					break;
-				case ".rom_tex":
-					patchdest = Path.Combine(stf_rom, "rom_tex.bin");
-					break;
-				case ".ic12_13": // VF2
-					patchdest = Path.Combine(stf_rom, "ic12_13.bin");
-					break;
-				case ".ic12_15": // VF2
-					patchdest = Path.Combine(stf_rom, "ic12_15.bin");
-					break;
+				case ".rom_code": patchdest = Path.Combine(stf_rom, "rom_code.bin"); break;
+				case ".rom_code1": patchdest = Path.Combine(stf_rom, "rom_code1.bin"); break;
+				case ".rom_code2": patchdest = Path.Combine(stf_rom, "rom_code2.bin"); break;
+				case ".rom_cop": patchdest = Path.Combine(stf_rom, "rom_cop.bin"); break;
+				case ".rom_data": patchdest = Path.Combine(stf_rom, "rom_data.bin"); break;
+				case ".rom_ep": patchdest = Path.Combine(stf_rom, "rom_ep.bin"); break;
+				case ".rom_ep1": patchdest = Path.Combine(stf_rom, "rom_ep1.bin"); break;
+				case ".rom_ep2": patchdest = Path.Combine(stf_rom, "rom_ep1.bin"); break;
+				case ".rom_pol": patchdest = Path.Combine(stf_rom, "rom_pol.bin"); break;
+				case ".rom_tex": patchdest = Path.Combine(stf_rom, "rom_tex.bin"); break;
+				case ".ic12_13": patchdest = Path.Combine(stf_rom, "ic12_13.bin"); break;
+				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				
-				// At some point we'll handle these with actual XML extraction/injection!
-				// For now, this will do.
-				case ".string_array_en":
-					patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin");
-					break;
-				case ".string_array2_en":
-					patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin");
-					break;
-				case ".string_array_jp":
-					patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin");
-					break;
-				case ".string_array2_jp":
-					patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin");
-					break;
-				default:
-					patchdest = null;
-					break;
+				// At some point we'll handle these with actual XML extraction/injection! For now, this will do.
+				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
+				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
+				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
+				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
+				default: patchdest = null; break;
 			}
+			
+			// For some reason doing `if (patchdest == null) return;` causes none of the other patches to get processed
 			if (patchdest != null){
 				// modpath = patch
 				// patchdest = file to be patched
@@ -722,7 +577,6 @@ public partial class HoneyPatcher : Node2D
 						foreach (string i in locations){
 							long loc = Int64.Parse(i);
 							fs.Seek(loc, SeekOrigin.Begin);
-							// GD.Print(loc.ToString());
 							fs.WriteByte(changes[inc]);
 							inc++;
 						}
@@ -750,14 +604,12 @@ public partial class HoneyPatcher : Node2D
 				}
 				GD.Print(Path.GetFileName(dds));
 				if (Path.GetFileName(dds).Contains("d5comp")){
-					GD.Print($"d5comp {dds}");
 					fs.Seek(8, SeekOrigin.Begin);
 					fs.Write(ddscomp);
 					fs.Seek(20, SeekOrigin.Begin);
 					fs.Write(d5comp);
 				}
 				else if (Path.GetFileName(dds).Contains("nocomp")){
-					GD.Print($"nocomp {dds}");
 					fs.Seek(8, SeekOrigin.Begin);
 					fs.Write(ddscomp);
 					fs.Seek(20, SeekOrigin.Begin);
@@ -772,66 +624,10 @@ public partial class HoneyPatcher : Node2D
 	
 	private void GameSound(){
 		switch (game){
-			case "stf":
-				_stfa.Play();
-				break;
-			case "fv":
-				_fva.Play();
-				break;
-			case "vf2":
-				_vf2a.Play();
-				break;
-			case "omg":
-				_omga.Play();
-				break;
-		}
-	}
-	
-	/* Original Code by Bekzii, ported with permission */
-	
-	private void InjectModels(){
-		_progress.Text += $"[W] InjectModels(): TODO.\n";
-		// Get list of files in rom folder
-		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
-		// Apply in alphabetical order
-		Array.Sort(files);
-		foreach (string mod in files)
-		{
-			string modpath = mod; // patch
-			string romdir = Path.Combine(usrdir, "rom");
-			string stf_rom = Path.Combine(romdir, $"{game}_rom");
-			
-			if (Path.GetExtension(modpath) != ".stfmdl")
-			  return;
-		}
-	}
-	
-	const string EXT_MODEL = ".stfmdl";
-	const string EXT_TH = ".stfmat";
-	const string EXT_TP = ".stfuvs";
-	
-	const uint MODEL_TABLE_ADDR = 0xE0004;
-	const uint POL_BASE_ADDR = 0xEC25E0;
-	const uint TEX_BASE_ADDR = 0x790000;
-	
-	private static uint Swap32(uint x) {
-		return ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
-	}
-	
-	private static uint GetModelTableAddr(uint i){
-		return MODEL_TABLE_ADDR + (i*0x10);
-	}
-	
-	private uint GetTexAddr(uint addr){
-		addr /= 2;
-		addr = Swap32(addr);
-		return addr;
-	}
-	
-	private void InjectData(string file, uint addr, byte[] data){
-		using (FileStream fs = File.Open(file, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
-			fs.Seek(addr, SeekOrigin.Begin);
-			fs.Write(data);
+			case "stf": _stfa.Play(); break;
+			case "fv": _fva.Play(); break;
+			case "vf2": _vf2a.Play(); break;
+			case "omg": _omga.Play(); break;
 		}
 	}
 }
