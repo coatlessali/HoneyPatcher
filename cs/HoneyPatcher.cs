@@ -197,7 +197,6 @@ public partial class HoneyPatcher : Node2D
 		// Migrate config from V5 to V6
 		try{
 			/* TO BE DELETED BY VERSION 8 */
-			// usrdir = data["main"]["usrdir"];
 			if (data["main"]["usrdir"] != "migrated"){
 				data["main"]["stfusrdir"] = data["main"]["usrdir"];
 				data["main"]["vf2usrdir"] = ".";
@@ -213,13 +212,13 @@ public partial class HoneyPatcher : Node2D
 			// _progress.Text += "[D] Skipping migration.\n";
 		}
 		// try to set userdir
-		try {
+		try{
 			game = data["main"]["game"];
 			_progress.Text += "[I] set game.\n";
 			usrdir = data["main"][$"{game}usrdir"];
 			// _progress.Text += "[D] set usrdir for current game.\n";
 		}
-		catch (Exception e){
+		catch{
 			_progress.Text += $"[W] {game}usrdir not found in INI.\n";
 			usrdir = ".";
 		}
@@ -248,8 +247,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void GameSelector(long id){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
-		switch (id)
-		{
+		switch (id){
 			case 0: game = "stf"; break;
 			case 1: game = "vf2"; break;
 			case 2: game = "fv"; break;
@@ -289,11 +287,11 @@ public partial class HoneyPatcher : Node2D
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
 		// and turned it into a DLL. It's honestly still really bloated and could do with
 		// a bit more cleanup.
-		
 		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 		
 		// This gets AcbEditor working.
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		
 		_progress.Text += "[I] Extracted rom.psarc.\n";
 		File.Delete(psarc_path);
 		_progress.Text += "[I] Extracted and removed rom.psarc.\n";
@@ -377,8 +375,6 @@ public partial class HoneyPatcher : Node2D
 		if (_patchname.Text != "")
 		  patchname = _patchname.Text;
 		List<string> files = new List<string>();
-		GD.Print("creating patches");
-		// string[] roms;
 		List<string> roms = new List<string>();
 		switch (game){
 			case "stf": roms = stf_roms.ToList(); break;
@@ -406,8 +402,7 @@ public partial class HoneyPatcher : Node2D
 			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine(workbenchDir, "original", game, filename));
 			byte[] original = File.ReadAllBytes(Path.Combine(workbenchDir, "original", game, filename));
 			byte[] modified = File.ReadAllBytes(Path.Combine(workbenchDir, "modified", game, filename));
-			foreach (byte b in original)
-			{
+			foreach (byte b in original){
 				if (b != modified[count]){
 					locations.Add(count.ToString());
 					changes.Add(modified[count]);
@@ -422,8 +417,6 @@ public partial class HoneyPatcher : Node2D
 			_progress.Text += $"[I] Created {patchloc}.\n";
 		}
 	}
-	
-	public override void _Process(double delta){}
 
 	public void ShowError(string title, string text){
 		_acceptdialog.Title = title;
@@ -457,31 +450,27 @@ public partial class HoneyPatcher : Node2D
 							"sprite/n_adv/texture.farc", "sprite/n_omg/texture.farc", "sprite/n_cmn/texture.farc", 
 							"sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc",};
 	
-		foreach (string farc in farcs )
-		{
+		foreach (string farc in farcs ){
 			string sourceFileName = Path.Combine(usrdir, "rom", farc);
 			try{
 				// Set source and destination filename
 				string destinationFileName = Path.ChangeExtension(sourceFileName, null);
 				
-				using (var stream = File.OpenRead(sourceFileName))
-				{
+				using (var stream = File.OpenRead(sourceFileName)){
 					var farcArchive = BinaryFile.Load<FarcArchive>(stream);
 					
 					Directory.CreateDirectory(destinationFileName);
 					
-					foreach (string fileName in farcArchive)
-					{
+					foreach (string fileName in farcArchive){
 						using (var destination = File.Create(Path.Combine(destinationFileName, fileName)))
 						using (var source = farcArchive.Open(fileName, EntryStreamMode.OriginalStream))
 						source.CopyTo(destination);
 					}
 				}
 			}
-			catch (Exception e){
-				if (File.Exists(sourceFileName)){
+			catch{
+				if (File.Exists(sourceFileName))
 					_progress.Text += $"[E] {sourceFileName} could not be unpacked.\n";
-				}
 			}
 		}
 	}
@@ -504,15 +493,12 @@ public partial class HoneyPatcher : Node2D
 				// Modified by me, otherwise it throws access errors if you don't use "using"
 				using (var farcArchive = new FarcArchive { IsCompressed = false, Alignment = 16 }){
 				
-					if (File.GetAttributes(sourceFileName).HasFlag(FileAttributes.Directory))
-					{
+					if (File.GetAttributes(sourceFileName).HasFlag(FileAttributes.Directory)){
 						foreach (string filePath in Directory.EnumerateFiles(sourceFileName))
 						farcArchive.Add(Path.GetFileName(filePath), filePath);
 					}
 					else
-					{
 						farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
-					}
 					farcArchive.Save(destinationFileName);
 				}
 			}
@@ -533,8 +519,7 @@ public partial class HoneyPatcher : Node2D
 			default: nomods = false; break;
 		}
 		
-		foreach (string mod in files)
-		{
+		foreach (string mod in files){
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
@@ -548,15 +533,13 @@ public partial class HoneyPatcher : Node2D
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
 		// Apply in alphabetical order
 		Array.Sort(files);
-		foreach (string mod in files)
-		{
+		foreach (string mod in files){
 			GD.Print("mod = " + mod);
 			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			string patchdest; // file to be patched
-			switch(Path.GetExtension(modpath))
-			{
+			switch(Path.GetExtension(modpath)){
 				// Check the file extension, which should be the name of the file you want to patch
 				case ".rom_code": patchdest = Path.Combine(stf_rom, "rom_code.bin"); break;
 				case ".rom_code1": patchdest = Path.Combine(stf_rom, "rom_code1.bin"); break;
@@ -579,26 +562,24 @@ public partial class HoneyPatcher : Node2D
 				default: patchdest = null; break;
 			}
 			
-			// For some reason doing `if (patchdest == null) return;` causes none of the other patches to get processed
-			if (patchdest != null){
-				// modpath = patch
-				// patchdest = file to be patched
-				try{
-					byte[] changes = File.ReadAllBytes(modpath);
-					string[] locations = File.ReadAllLines(modpath+".loc");
-					uint inc = 0;
-					using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
-						foreach (string i in locations){
-							long loc = Int64.Parse(i);
-							fs.Seek(loc, SeekOrigin.Begin);
-							fs.WriteByte(changes[inc]);
-							inc++;
-						}
-					}
-				}
-				catch(Exception e){
-					// Need to write error handling here later, this will do for now
-					GD.Print(e.ToString());
+			if (patchdest == null)
+				continue;
+			// modpath = patch
+			// patchdest = file to be patched
+			byte[] original = File.ReadAllBytes(patchdest);
+			byte[] changes = File.ReadAllBytes(modpath);
+			string[] locations = File.ReadAllLines(modpath+".loc");
+			if (changes.Length != original.Length){
+				_progress.Text += $"[E] {patchdest} and {modpath} are not the same length.\n";
+				return;
+			}
+			uint inc = 0;
+			using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+				foreach (string i in locations){
+					long loc = Int64.Parse(i);
+					fs.Seek(loc, SeekOrigin.Begin);
+					fs.WriteByte(changes[inc]);
+					inc++;
 				}
 			}
 		}
@@ -614,24 +595,20 @@ public partial class HoneyPatcher : Node2D
 				const string valid = "DDS";
 				if (header != valid){
 					_progress.Text += $"[W] DDS file {dds} has invalid header magic. Skipping.\n";
-					return;
+					continue;
 				}
-				GD.Print(Path.GetFileName(dds));
+				fs.Seek(8, SeekOrigin.Begin);
+				fs.Write(ddscomp);
 				if (Path.GetFileName(dds).Contains("d5comp")){
-					fs.Seek(8, SeekOrigin.Begin);
-					fs.Write(ddscomp);
 					fs.Seek(20, SeekOrigin.Begin);
 					fs.Write(d5comp);
 				}
 				else if (Path.GetFileName(dds).Contains("nocomp")){
-					fs.Seek(8, SeekOrigin.Begin);
-					fs.Write(ddscomp);
 					fs.Seek(20, SeekOrigin.Begin);
 					fs.Write(nocomp);
 				}
-				else{
+				else
 					_progress.Text += $"[W] Could not determine compression type of file {dds}. Skipping.\n";
-				}
 			}
 		}
 	}
