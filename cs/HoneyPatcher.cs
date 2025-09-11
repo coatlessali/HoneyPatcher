@@ -5,7 +5,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Linq;
+using SonicAudioLib;
+using SonicAudioLib.CriMw;
+using SonicAudioLib.IO;
+using SonicAudioLib.Archives;
+using AcbEditor;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
 using IniParser;
@@ -14,8 +20,7 @@ using UnPSARC;
 
 public partial class HoneyPatcher : Node2D
 {	
-	[Export]
-	public AcceptDialog _acceptdialog; // Errors and whatnot
+	[Export] public AcceptDialog _acceptdialog; // Errors and whatnot
 	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
 	[Export] public Button _install; // Restore USRDIR button
 	[Export] public Button _restoreusrdir; // Restore USRDIR button
@@ -287,11 +292,17 @@ public partial class HoneyPatcher : Node2D
 		
 		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 		
+		// This gets AcbEditor working.
+		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		_progress.Text += "[I] Extracted rom.psarc.\n";
 		File.Delete(psarc_path);
 		_progress.Text += "[I] Extracted and removed rom.psarc.\n";
 		FarcUnpack();
 		_progress.Text += "[I] Unpacked farc files.\n";
+		// AcbEditor by Skyth
+		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
+		AcbEditorThing.AcbEdit(AcbFile);
+		_progress.Text += "[I] Unpacked ACB file.\n";
 		ExtractMods();
 		_progress.Text += "[I] Extracted mods.\n";
 		ApplyPatches();
@@ -300,9 +311,12 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text += "[I] Sanitized DDS headers.\n";
 		FarcPack();
 		_progress.Text += "[I] Repacked farc files.\n";
+		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
+		AcbEditorThing.AcbEdit(AcbFolder);
+		_progress.Text += "[I] Packed ACB file.\n";
 		if (nomods){
 			GameSound();
-			ShowError("Success?", "No mods were found, but I extracted rom.psarc for you anyways.");
+			ShowError("Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways.");
 		}
 		else{
 			GameSound();

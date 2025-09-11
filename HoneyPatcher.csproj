@@ -10,9 +10,6 @@
     <Reference Include="IniParser">
       <HintPath>INIFileParser.dll</HintPath>
     </Reference>
-    <Reference Include="PsarcSharp">
-      <HintPath>PsarcSharp.dll</HintPath>
-    </Reference>
     <Reference Include="UnPSARC">
       <HintPath>UnPSARC.dll</HintPath>
     </Reference>
@@ -22,5 +19,14 @@
     <Reference Include="ICSharpCode.SharpZipLib">
       <HintPath>ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
+    <Reference Include="SonicAudioLib">
+      <HintPath>SonicAudioLib.dll</HintPath>
+    </Reference>
+    <Reference Include="AcbEditor">
+      <HintPath>AcbEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.9" />
   </ItemGroup>
 </Project>

@@ -188,3 +188,8 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+vf2/
+fv/
+stf/
+omg/
