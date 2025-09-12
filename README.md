@@ -15,7 +15,7 @@ See ***THE ALMIGHTY GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/Ho
 ### Credits
 
 HoneyPatcher uses borrowed code and libraries from the following places:
-- [LibSTF](https://github.com/zeesworth/LibSTF) by [bekzii](https://github.com/zeesworth). Licensed under the [GNU Lesser General Public License V3](https://github.com/zeesworth/LibSTF?tab=LGPL-2.1-1-ov-file#readme).
+- [LibSTF](https://github.com/zeesworth/LibSTF) by [bekzii](https://github.com/zeesworth). Licensed under the [GNU Lesser General Public License 2.1](https://github.com/zeesworth/LibSTF?tab=LGPL-2.1-1-ov-file#readme).
 - [ini-parser](https://github.com/rickyah/ini-parser) by [rickyah](https://github.com/rickyah). Licensed under the [MIT License](https://github.com/rickyah/ini-parser/blob/development/LICENSE).
 - [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
 - [SonicAudioTools](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/SonicAudioTools?tab=MIT-1-ov-file#readme).
