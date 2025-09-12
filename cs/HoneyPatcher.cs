@@ -1,8 +1,6 @@
 using Godot;
-using Gibbed.IO;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -11,10 +9,10 @@ using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
 using SonicAudioLib.Archives;
-using LibSTF;
-using AcbEditor;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
+using AcbEditor;
+using LibSTF;
 using IniParser;
 using IniParser.Model;
 using UnPSARC;
@@ -104,20 +102,15 @@ public partial class HoneyPatcher : Node2D
 		}
 		foreach (string h in gamesList){
 			if (!Directory.Exists(Path.Combine(modsDir, h))){
-				Directory.CreateDirectory(h);
+				Directory.CreateDirectory(Path.Combine(modsDir, h));
 				_progress.Text += $"[I] Created directory {h}.\n";
 			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "original", h))){
-				Directory.CreateDirectory(h);
-				_progress.Text += $"[I] Created directory {h}.\n";
-			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "modified", h))){
-				Directory.CreateDirectory(h);
-				_progress.Text += $"[I] Created directory {h}.\n";
-			}
-			if (!Directory.Exists(Path.Combine(workbenchDir, "patches", h))){
-				Directory.CreateDirectory(h);
-				_progress.Text += $"[I] Created directory {h}.\n";
+			string[] thing = {"original", "modified", "patches"};
+			foreach (string thingy in thing){
+				if (!Directory.Exists(Path.Combine(workbenchDir, thingy, h))){
+					Directory.CreateDirectory(Path.Combine(workbenchDir, thingy, h));
+					_progress.Text += $"[I] Created directory {h}.\n";
+				}
 			}
 		}
 		
@@ -130,43 +123,19 @@ public partial class HoneyPatcher : Node2D
 				File.Delete(file);
 			}
 			try{Directory.Delete(Path.Combine(modsDir, "stf", "stf"), true);}
-			catch{GD.Print("error deleting stf/stf");}
+			catch{}
 		}
 		// Migrate workbench
-		if (Directory.GetFiles(Path.Combine(workbenchDir, "original")).Length != 0){
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "original", "stf"));
-			CopyFilesRecursively(Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "original", "stf"));
-			Directory.Delete(Path.Combine(workbenchDir, "original", "stf", "stf"), true);
-			foreach (string file in Directory.GetFiles(Path.Combine(workbenchDir, "original"))){
-				File.Delete(file);
+		string[] migration = {"original", "modified", "patches"};
+		foreach (string migrate in migration){
+			if (Directory.GetFiles(Path.Combine(workbenchDir, migrate)).Length != 0){
+				Directory.CreateDirectory(Path.Combine(workbenchDir, migrate, "stf"));
+				CopyFilesRecursively(Path.Combine(workbenchDir, migrate), Path.Combine(workbenchDir, migrate, "stf"));
+				Directory.Delete(Path.Combine(workbenchDir, migrate, "stf", "stf"), true);
+				foreach (string file in Directory.GetFiles(Path.Combine(workbenchDir, migrate))){
+					File.Delete(file);
+				}
 			}
-		}
-		if (Directory.GetFiles(Path.Combine(workbenchDir, "modified")).Length != 0){
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "modified", "stf"));
-			CopyFilesRecursively(Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "modified", "stf"));
-			Directory.Delete(Path.Combine(workbenchDir, "modified", "stf", "stf"), true);
-			foreach (string file in Directory.GetFiles(Path.Combine(workbenchDir, "modified"))){
-				File.Delete(file);
-			}
-		}
-		if (Directory.GetFiles(Path.Combine(workbenchDir, "patches")).Length != 0){
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "patches", "stf"));
-			CopyFilesRecursively(Path.Combine(workbenchDir, "patches"), Path.Combine(workbenchDir, "patches", "stf"));
-			Directory.Delete(Path.Combine(workbenchDir, "patches", "stf", "stf"), true);
-			foreach (string file in Directory.GetFiles(Path.Combine(workbenchDir, "patches"))){
-				File.Delete(file);
-			}
-		}
-		
-		foreach (string gayme in gamesList){
-			Directory.CreateDirectory(Path.Combine(modsDir, gayme));
-			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(modsDir, gayme)}.\n";
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "original", gayme));
-			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(workbenchDir, "original", gayme)}.\n";
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "modified", gayme));
-			// _progress.Text += $"[D] Created/Validated directory {Path.Combine(workbenchDir, "modified", gayme)}.\n";
-			Directory.CreateDirectory(Path.Combine(workbenchDir, "patches", gayme));
-			// _progress.Text += $"[D] Created directory {Path.Combine(workbenchDir, "patches", gayme)}.\n";
 		}
 		
 		// Migrate backup folder.
@@ -320,11 +289,10 @@ public partial class HoneyPatcher : Node2D
 		if (nomods){
 			GameSound();
 			ShowError("Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways.");
+			return;
 		}
-		else{
-			GameSound();
-			ShowError("Success!", "Mods have been installed!");
-		}
+		GameSound();
+		ShowError("Success!", "Mods have been installed!");
 	}
 	
 	// Uninstall Mods
@@ -594,7 +562,7 @@ public partial class HoneyPatcher : Node2D
 			string fileName = Path.GetFileName(model);
 			// get the first 4 digits of the filename to be the id
 			fileName = fileName.Substring(0, 4);
-			GD.Print(fileName);
+			// GD.Print(fileName);
 			int modelId;
 			// attempt parsing
 			if (!Int32.TryParse(fileName, out modelId)){
