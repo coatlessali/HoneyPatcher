@@ -25,6 +25,9 @@
     <Reference Include="AcbEditor">
       <HintPath>AcbEditor.dll</HintPath>
     </Reference>
+    <Reference Include="LibSTF">
+      <HintPath>LibSTF.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.9" />

@@ -11,6 +11,7 @@ using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
 using SonicAudioLib.Archives;
+using LibSTF;
 using AcbEditor;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
@@ -305,6 +306,10 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text += "[I] Extracted mods.\n";
 		ApplyPatches();
 		_progress.Text += "[I] Applied patches.\n";
+		// LibSTF by Bekzii
+		InjectModels();
+		if (game == "stf")
+			_progress.Text += "[I] Injected models.\n";
 		DDSFixHeader();
 		_progress.Text += "[I] Sanitized DDS headers.\n";
 		FarcPack();
@@ -534,7 +539,7 @@ public partial class HoneyPatcher : Node2D
 		// Apply in alphabetical order
 		Array.Sort(files);
 		foreach (string mod in files){
-			GD.Print("mod = " + mod);
+			// GD.Print("mod = " + mod);
 			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
@@ -559,20 +564,12 @@ public partial class HoneyPatcher : Node2D
 				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
 				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
 				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
-				default: patchdest = null; break;
+				default: continue;
 			}
-			
-			if (patchdest == null)
-				continue;
-			// modpath = patch
-			// patchdest = file to be patched
+			// GD.Print("correct");
 			byte[] original = File.ReadAllBytes(patchdest);
 			byte[] changes = File.ReadAllBytes(modpath);
 			string[] locations = File.ReadAllLines(modpath+".loc");
-			if (changes.Length != original.Length){
-				_progress.Text += $"[E] {patchdest} and {modpath} are not the same length.\n";
-				return;
-			}
 			uint inc = 0;
 			using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
 				foreach (string i in locations){
@@ -582,6 +579,39 @@ public partial class HoneyPatcher : Node2D
 					inc++;
 				}
 			}
+		}
+	}
+	
+	private void InjectModels(){
+		if (game != "stf")
+			return;
+		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
+		Array.Sort(files);
+		foreach (string model in files){
+			// GD.Print(model);
+			if (Path.GetExtension(model) != ".stfmdl")
+				continue;
+			string fileName = Path.GetFileName(model);
+			// get the first 4 digits of the filename to be the id
+			fileName = fileName.Substring(0, 4);
+			GD.Print(fileName);
+			int modelId;
+			// attempt parsing
+			if (!Int32.TryParse(fileName, out modelId)){
+				GD.Print("invalid filename");
+			}
+			// remove extension
+			string modelName = Path.GetFileNameWithoutExtension(model);
+			// read filepath
+			modelName = Path.Combine(usrdir, "rom", modelName);
+			ModelInject.AddModel(modelId, modelName);
+		}
+		try{
+			ModelInject.Verbose = true;
+			ModelInject.InjectModels(Path.Combine(usrdir, "rom", "stf_rom"));
+		}
+		catch (Exception e){
+			GD.Print(e.ToString());
 		}
 	}
 	
