@@ -103,7 +103,7 @@ public partial class HoneyPatcher : Node2D
 		foreach (string h in gamesList){
 			if (!Directory.Exists(Path.Combine(modsDir, h))){
 				Directory.CreateDirectory(Path.Combine(modsDir, h));
-				_progress.Text += $"[I] Created directory {h}.\n";
+				_progress.Text += $"[I] Created directory {Path.Combine(modsDir, h)}.\n";
 			}
 			string[] thing = {"original", "modified", "patches"};
 			foreach (string thingy in thing){
