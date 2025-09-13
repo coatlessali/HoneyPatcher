@@ -59,6 +59,7 @@ public partial class HoneyPatcher : Node2D
 	string workbenchDir = ProjectSettings.GlobalizePath("user://workbench");
 	string backupDir = ProjectSettings.GlobalizePath("user://BACKUP");
 	string honeyConfig = ProjectSettings.GlobalizePath("user://HoneyConfig.ini");
+	string honeyLog = ProjectSettings.GlobalizePath("user://HoneyLog.txt");
 	
 	// model 2 game file lists for patch creation
 	string[] stf_roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
@@ -111,7 +112,7 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		/* TO BE DELETED BY V8 */
-		/*
+		
 		// Migrate mods folder
 		if (Directory.GetFiles(modsDir).Length != 0){
 			Directory.CreateDirectory(Path.Combine(modsDir, "stf"));
@@ -155,29 +156,12 @@ public partial class HoneyPatcher : Node2D
 			try{Directory.Delete(Path.Combine(backupDir, "stf", "stf"), true);}
 			catch(Exception e){GD.Print(e.ToString());}
 		}
-		*/
 		
 		// https://github.com/rickyah/ini-parser
 		// MIT License
 		// Read INI file
 		// Migrate config from V5 to V6
-		/* 
-		try{
-			if (data["main"]["usrdir"] != "migrated"){
-				data["main"]["stfusrdir"] = data["main"]["usrdir"];
-				data["main"]["vf2usrdir"] = ".";
-				data["main"]["fvusrdir"] = ".";
-				data["main"]["omgusrdir"] = ".";
-				data["main"]["usrdir"] = "migrated";
-				data["main"]["game"] = "stf";
-				_progress.Text += "[I] Migrated old config.\n";
-				new FileIniDataParser().WriteFile(honeyConfig, data);
-			}
-		}
-		catch{
-			// _progress.Text += "[D] Skipping migration.\n";
-		}
-		*/
+		
 		
 		
 	}
@@ -252,7 +236,7 @@ public partial class HoneyPatcher : Node2D
 		_progress.Text += "[I] Extracted and removed rom.psarc.\n";
 		FarcUnpack();
 		_progress.Text += "[I] Unpacked farc files.\n";
-		// AcbEditor by Skyth
+		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
 		AcbEditorThing.AcbEdit(AcbFile);
 		_progress.Text += "[I] Unpacked ACB file.\n";
@@ -620,6 +604,23 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
+		
+		try{
+			if (data["main"]["usrdir"] != "migrated"){
+				data["main"]["stfusrdir"] = data["main"]["usrdir"];
+				data["main"]["vf2usrdir"] = ".";
+				data["main"]["fvusrdir"] = ".";
+				data["main"]["omgusrdir"] = ".";
+				data["main"]["usrdir"] = "migrated";
+				data["main"]["game"] = "stf";
+				data["main"]["loglevel"] = "0";
+				_progress.Text += "[I] Migrated old config.\n";
+				new FileIniDataParser().WriteFile(honeyConfig, data);
+			}
+		}
+		catch{
+			// _progress.Text += "[D] Skipping migration.\n";
+		}
 		
 		// try to set userdir
 		try{
