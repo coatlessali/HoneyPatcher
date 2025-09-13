@@ -71,6 +71,7 @@ public partial class HoneyPatcher : Node2D
 	bool nomods = false;
 	string game = "stf";
 	string pretty_game = "Sonic the Fighters";
+	byte loglevel = 0;
 	
 	public override void _Ready(){	
 		
@@ -84,37 +85,33 @@ public partial class HoneyPatcher : Node2D
 		_gameselector.IdPressed += GameSelector;
 		
 		// Generate default config
-		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf";
-			File.WriteAllText(honeyConfig, defaultConfig);
-			_progress.Text += "[I] Created default configuration file.\n";
-		}
+		LoadConfig();
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
 		string[] gamesList = {"stf", "vf2", "fv", "omg"};
 		
-		// This is so fucking dumb can someone please tell me a better way to do this
+		// Okay it's a little better now
 		foreach (string h in essentialDirs){
-			if (!Directory.Exists(h)){
+			try{
 				Directory.CreateDirectory(h);
-				_progress.Text += $"[I] Created directory {h}.\n";
+				// _progress.Text += $"[D] Created directory {h}.\n";
+			}
+			catch{
+				_progress.Text += $"[E] Failed to create directory {h}";
 			}
 		}
 		foreach (string h in gamesList){
-			if (!Directory.Exists(Path.Combine(modsDir, h))){
-				Directory.CreateDirectory(Path.Combine(modsDir, h));
-				_progress.Text += $"[I] Created directory {Path.Combine(modsDir, h)}.\n";
-			}
+			Directory.CreateDirectory(Path.Combine(modsDir, h));
+			_progress.Text += $"[I] Created directory {Path.Combine(modsDir, h)}.\n";
 			string[] thing = {"original", "modified", "patches"};
 			foreach (string thingy in thing){
-				if (!Directory.Exists(Path.Combine(workbenchDir, thingy, h))){
-					Directory.CreateDirectory(Path.Combine(workbenchDir, thingy, h));
-					_progress.Text += $"[I] Created directory {h}.\n";
-				}
+				Directory.CreateDirectory(Path.Combine(workbenchDir, thingy, h));
+				_progress.Text += $"[I] Created directory {Path.Combine(workbenchDir, thingy, h)}.\n";
 			}
 		}
 		
 		/* TO BE DELETED BY V8 */
+		/*
 		// Migrate mods folder
 		if (Directory.GetFiles(modsDir).Length != 0){
 			Directory.CreateDirectory(Path.Combine(modsDir, "stf"));
@@ -158,15 +155,14 @@ public partial class HoneyPatcher : Node2D
 			try{Directory.Delete(Path.Combine(backupDir, "stf", "stf"), true);}
 			catch(Exception e){GD.Print(e.ToString());}
 		}
-		
+		*/
 		
 		// https://github.com/rickyah/ini-parser
 		// MIT License
 		// Read INI file
-		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
 		// Migrate config from V5 to V6
+		/* 
 		try{
-			/* TO BE DELETED BY VERSION 8 */
 			if (data["main"]["usrdir"] != "migrated"){
 				data["main"]["stfusrdir"] = data["main"]["usrdir"];
 				data["main"]["vf2usrdir"] = ".";
@@ -181,19 +177,8 @@ public partial class HoneyPatcher : Node2D
 		catch{
 			// _progress.Text += "[D] Skipping migration.\n";
 		}
-		// try to set userdir
-		try{
-			game = data["main"]["game"];
-			_progress.Text += "[I] set game.\n";
-			usrdir = data["main"][$"{game}usrdir"];
-			// _progress.Text += "[D] set usrdir for current game.\n";
-		}
-		catch{
-			_progress.Text += $"[W] {game}usrdir not found in INI.\n";
-			usrdir = ".";
-		}
-		UpdateGame();
-		_progress.Text += "[I] loaded HoneyConfig.ini.\n";
+		*/
+		
 		
 	}
 
@@ -566,7 +551,8 @@ public partial class HoneyPatcher : Node2D
 			int modelId;
 			// attempt parsing
 			if (!Int32.TryParse(fileName, out modelId)){
-				GD.Print("invalid filename");
+				_progress.Text += $"[W] Filename of {model} is invalid - skipping.";
+				continue;
 			}
 			// remove extension
 			string modelName = Path.GetFileNameWithoutExtension(model);
@@ -587,8 +573,9 @@ public partial class HoneyPatcher : Node2D
 		string[] ddsList = Directory.EnumerateFiles(usrdir, "*.dds", SearchOption.AllDirectories).ToArray();
 		foreach (string dds in ddsList){
 			using (FileStream fs = File.Open(dds, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
-				byte[] file = File.ReadAllBytes(dds);
-				byte[] headerbytes = {file[0], file[1], file[2]};
+				// byte[] file = File.ReadAllBytes(dds);
+				byte[] headerbytes = new byte[3];
+				fs.Read(headerbytes, 0, 3);
 				string header = System.Text.Encoding.UTF8.GetString(headerbytes, 0, 3);
 				const string valid = "DDS";
 				if (header != valid){
@@ -618,5 +605,46 @@ public partial class HoneyPatcher : Node2D
 			case "vf2": _vf2a.Play(); break;
 			case "omg": _omga.Play(); break;
 		}
+	}
+	
+	private void LoadConfig(){
+		if(!File.Exists(honeyConfig)){
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 0";
+			try{
+				File.WriteAllText(honeyConfig, defaultConfig);
+				_progress.Text += "[I] Created default configuration file.\n";
+			}
+			catch (Exception e){
+				GD.Print(e.ToString());
+				_progress.Text += "[I] There was an issue creating the configuration.";
+			}
+		}
+		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
+		
+		// try to set userdir
+		try{
+			game = data["main"]["game"];
+		}
+		catch{
+			_progress.Text += $"[W] game not found in INI. Setting to default.\n";
+			data["main"]["game"] = game;
+		}
+		try{
+			usrdir = data["main"][$"{game}usrdir"];
+		}
+		catch{
+			_progress.Text += $"[W] {game}usrdir not found in INI. Setting to default.\n";
+			data["main"][$"{game}usrdir"] =  ".";
+		}
+		try{
+			loglevel = Byte.Parse(data["main"]["loglevel"]);
+		}
+		catch{
+			_progress.Text += $"[W] loglevel not found in INI. Setting to default.\n";
+			data["main"]["loglevel"] = loglevel.ToString();
+		}
+		new FileIniDataParser().WriteFile(honeyConfig, data);
+		UpdateGame();
+		_progress.Text += "[I] loaded HoneyConfig.ini.\n";
 	}
 }
