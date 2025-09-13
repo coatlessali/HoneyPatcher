@@ -72,7 +72,8 @@ public partial class HoneyPatcher : Node2D
 	bool nomods = false;
 	string game = "stf";
 	string pretty_game = "Sonic the Fighters";
-	byte loglevel = 0;
+	string log;
+	byte loglevel = 3;
 	
 	public override void _Ready(){	
 		
@@ -87,6 +88,9 @@ public partial class HoneyPatcher : Node2D
 		
 		// Generate default config
 		LoadConfig();
+		// Empty log
+		File.Create(honeyLog).Close();
+
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
 		string[] gamesList = {"stf", "vf2", "fv", "omg"};
@@ -95,19 +99,20 @@ public partial class HoneyPatcher : Node2D
 		foreach (string h in essentialDirs){
 			try{
 				Directory.CreateDirectory(h);
-				// _progress.Text += $"[D] Created directory {h}.\n";
+				HoneyLog(4, $"Created directory {h}.");
 			}
-			catch{
-				_progress.Text += $"[E] Failed to create directory {h}";
+			catch (Exception e){
+				HoneyLog(1, $"Failed to create directory {h}");
+				HoneyLog(1, e.ToString(), true);
 			}
 		}
 		foreach (string h in gamesList){
 			Directory.CreateDirectory(Path.Combine(modsDir, h));
-			_progress.Text += $"[I] Created directory {Path.Combine(modsDir, h)}.\n";
+			HoneyLog(4, $"Created directory {Path.Combine(modsDir, h)}.");
 			string[] thing = {"original", "modified", "patches"};
 			foreach (string thingy in thing){
 				Directory.CreateDirectory(Path.Combine(workbenchDir, thingy, h));
-				_progress.Text += $"[I] Created directory {Path.Combine(workbenchDir, thingy, h)}.\n";
+				HoneyLog(4, $"Created directory {Path.Combine(workbenchDir, thingy, h)}.");
 			}
 		}
 		
@@ -138,7 +143,7 @@ public partial class HoneyPatcher : Node2D
 		
 		// Migrate backup folder.
 		if (File.Exists(Path.Combine(backupDir, "EBOOT.BIN"))){
-			_progress.Text += "[I] Migrating STF backup directory.\n";
+			HoneyLog(3, "Migrating STF backup directory.");
 			Directory.CreateDirectory(Path.Combine(backupDir, "stf"));
 			// _progress.Text += "[D] Created stf backup dir.\n";
 			CopyFilesRecursively(backupDir, Path.Combine(backupDir, "stf"));
@@ -147,14 +152,20 @@ public partial class HoneyPatcher : Node2D
 			string[] ddelete = {Path.Combine(backupDir, "ps3"), Path.Combine(backupDir, "rom")};
 			foreach (string file in fdelete){
 				try{File.Delete(file);}
-				catch{_progress.Text += $"[E] Failed to delete {file}.\n";}
+				catch (Exception e){
+					HoneyLog(1, $"Failed to delete {file}.");
+					HoneyLog(1, e.ToString(), true);
+				}
 			}
 			foreach (string dir in ddelete){
 				try{Directory.Delete(dir, true);}
-				catch{_progress.Text += $"[E] Failed to delete {dir}.\n";}
+				catch (Exception e){
+					HoneyLog(1, $"Failed to delete {dir}.");
+					HoneyLog(1, e.ToString(), true);
+				}
 			}
 			try{Directory.Delete(Path.Combine(backupDir, "stf", "stf"), true);}
-			catch(Exception e){GD.Print(e.ToString());}
+			catch{}
 		}
 		
 		// https://github.com/rickyah/ini-parser
@@ -172,7 +183,7 @@ public partial class HoneyPatcher : Node2D
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
 		data["main"][$"{game}usrdir"] = dir; // Set usrdir
 		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
-		_progress.Text += "[I] Saved changes.\n";
+		HoneyLog(3, "Saved changes.");
 	}
 	
 	private void UpdateGame(){
@@ -196,7 +207,7 @@ public partial class HoneyPatcher : Node2D
 		data["main"]["game"] = game;
 		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
 		usrdir = data["main"][$"{game}usrdir"];
-		_progress.Text += $"[I] Changed Game: {pretty_game}.\n";
+		HoneyLog(3, $"Changed game: {pretty_game}.");
 	}
 	
 	// Install mods
@@ -205,7 +216,7 @@ public partial class HoneyPatcher : Node2D
 		if (usrdir == "."){
 			_back.Play();
 			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
-			_progress.Text += "[E] usrdir unset.\n";
+			HoneyLog(1, "usrdir is unset.");
 			return;
 		}
 		// Check for clean copy of game w/ rom.psarc still intact
@@ -213,7 +224,7 @@ public partial class HoneyPatcher : Node2D
 		if (!File.Exists(psarc_path)){
 			_back.Play();
 			ShowError("Error", $"rom.psarc could not be found. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
-			_progress.Text += "[E] rom.psarc not found.\n";
+			HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
 			return;
 		}
 		
@@ -221,7 +232,7 @@ public partial class HoneyPatcher : Node2D
 		string gameBackupDir = Path.Combine(backupDir, game);
 		Directory.CreateDirectory(gameBackupDir);
 		CopyFilesRecursively(usrdir, gameBackupDir);
-		_progress.Text += "[I] Created backup.\n";
+		HoneyLog(3, "Created backup.");
 		
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
 		// and turned it into a DLL. It's honestly still really bloated and could do with
@@ -231,30 +242,30 @@ public partial class HoneyPatcher : Node2D
 		// This gets AcbEditor working.
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		
-		_progress.Text += "[I] Extracted rom.psarc.\n";
+		HoneyLog(3, "Extracted rom.psarc");
 		File.Delete(psarc_path);
-		_progress.Text += "[I] Extracted and removed rom.psarc.\n";
+		HoneyLog(3, "Removed rom.psarc");
 		FarcUnpack();
-		_progress.Text += "[I] Unpacked farc files.\n";
+		HoneyLog(3, "Unpacked farc files.");
 		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
 		AcbEditorThing.AcbEdit(AcbFile);
-		_progress.Text += "[I] Unpacked ACB file.\n";
+		HoneyLog(3, "Unpacked ACB file.");
 		ExtractMods();
-		_progress.Text += "[I] Extracted mods.\n";
+		HoneyLog(3, "Extracted mods.");
 		ApplyPatches();
-		_progress.Text += "[I] Applied patches.\n";
+		HoneyLog(3, "Applied patches.");
 		// LibSTF by Bekzii
 		InjectModels();
 		if (game == "stf")
-			_progress.Text += "[I] Injected models.\n";
+			HoneyLog(3, "Injected models.");
 		DDSFixHeader();
-		_progress.Text += "[I] Sanitized DDS headers.\n";
+		HoneyLog(3, "Sanitized DDS headers.");
 		FarcPack();
-		_progress.Text += "[I] Repacked farc files.\n";
+		HoneyLog(3, "Repacked farc files.");
 		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
 		AcbEditorThing.AcbEdit(AcbFolder);
-		_progress.Text += "[I] Packed ACB file.\n";
+		HoneyLog(3, "Packed ACB file.");
 		if (nomods){
 			GameSound();
 			ShowError("Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways.");
@@ -270,7 +281,7 @@ public partial class HoneyPatcher : Node2D
 		if (!Directory.Exists(Path.Combine(backupDir, game))){
 			_back.Play();
 			ShowError("Error", "No backup found.");
-			_progress.Text += "[E] No backup found.\n";
+			HoneyLog(1, "No backup found.");
 			return;
 		}
 		
@@ -282,27 +293,29 @@ public partial class HoneyPatcher : Node2D
 				file.Delete(); 
 			foreach (DirectoryInfo dir in di.GetDirectories())
 				dir.Delete(true); 
+			HoneyLog(3, "Wiped game files.");
 		}
 		catch (Exception e){
 			_back.Play();
-			ShowError("Exception", e.ToString());
-			_progress.Text += "[E] Error restoring files. (Couldn't wipe game files.)\n";
+			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);;
 			return;
 		}
 		
 		// Restore backup
 		try{
 			CopyFilesRecursively(Path.Combine(backupDir, game), usrdir);
+			HoneyLog(3, "Restored game files.");
 		}
 		catch (Exception e){
 			_back.Play();
-			ShowError("Exception", e.ToString());
-			_progress.Text += "[E] Error restoring files. (Couldn't copy backup.)\n";
+			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
 			return;
 		}
 		GameSound();
 		ShowError("Success", "Files restored.");
-		_progress.Text += "[I] Restored game files.\n";
+		HoneyLog(3, "Restored game files.");
 	}
 
 	private void OpenModsFolder(){
@@ -327,7 +340,7 @@ public partial class HoneyPatcher : Node2D
 		
 		foreach (string rawhm in roms){
 			if (!File.Exists(Path.Combine(workbenchDir, "original", game, rawhm))){
-				_progress.Text += $"[E] Couldn't find {rawhm}.";
+				HoneyLog(1, $"Couldn't find {rawhm}.");
 				_back.Play();
 				ShowError("Error", "Original " + rawhm + "not found.");
 				return;
@@ -338,7 +351,6 @@ public partial class HoneyPatcher : Node2D
 		}
 		foreach (string filename in files){
 			uint count = 0;
-			//uint changecount = 0;
 			List<string> locations = new List<string>();
 			List<byte> changes = new List<byte>();
 			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine(workbenchDir, "original", game, filename));
@@ -354,9 +366,9 @@ public partial class HoneyPatcher : Node2D
 			string patch = Path.Combine(workbenchDir, "patches", game, patchname + "." + patchextension);
 			string patchloc = patch + ".loc";
 			File.WriteAllBytes(patch, changes.ToArray());
-			_progress.Text += $"[I] Created {patch}.\n";
+			HoneyLog(3, $"Created {patch}");
 			File.WriteAllLines(patchloc, locations.ToArray());
-			_progress.Text += $"[I] Created {patchloc}.\n";
+			HoneyLog(3, $"Created {patchloc}");
 		}
 	}
 
@@ -410,9 +422,13 @@ public partial class HoneyPatcher : Node2D
 					}
 				}
 			}
-			catch{
-				if (File.Exists(sourceFileName))
-					_progress.Text += $"[E] {sourceFileName} could not be unpacked.\n";
+			catch (Exception e){
+				if (File.Exists(sourceFileName)){
+					HoneyLog(1, $"{sourceFileName} could not be unpacked.");
+					HoneyLog(1, e.ToString(), true);
+				}
+				else
+					HoneyLog(3, "${sourceFileName} not found. Skipping.");
 			}
 		}
 	}
@@ -446,9 +462,11 @@ public partial class HoneyPatcher : Node2D
 			}
 			catch (Exception e){
 				if (!Directory.Exists(sourceFileName))
-					_progress.Text += $"[I] {sourceFileName} does not exist. Skipping.\n";
-				else
-					_progress.Text += $"[E] {sourceFileName} could not be repacked.\n";
+					HoneyLog(4, $"{sourceFileName} does not exist. Skipping.");
+				else{
+					HoneyLog(1, $"{sourceFileName} could not be repacked. See HoneyLog.txt for more details.");
+					HoneyLog(1, e.ToString(), true);
+				}
 			}
 		}
 	}
@@ -476,7 +494,6 @@ public partial class HoneyPatcher : Node2D
 		// Apply in alphabetical order
 		Array.Sort(files);
 		foreach (string mod in files){
-			// GD.Print("mod = " + mod);
 			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
@@ -503,7 +520,6 @@ public partial class HoneyPatcher : Node2D
 				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
 				default: continue;
 			}
-			// GD.Print("correct");
 			byte[] original = File.ReadAllBytes(patchdest);
 			byte[] changes = File.ReadAllBytes(modpath);
 			string[] locations = File.ReadAllLines(modpath+".loc");
@@ -521,21 +537,20 @@ public partial class HoneyPatcher : Node2D
 	
 	private void InjectModels(){
 		if (game != "stf")
+			HoneyLog(3, "Game is not Sonic the Fighters. Skipping model injection.");
 			return;
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
 		Array.Sort(files);
 		foreach (string model in files){
-			// GD.Print(model);
 			if (Path.GetExtension(model) != ".stfmdl")
 				continue;
 			string fileName = Path.GetFileName(model);
 			// get the first 4 digits of the filename to be the id
 			fileName = fileName.Substring(0, 4);
-			// GD.Print(fileName);
 			int modelId;
 			// attempt parsing
 			if (!Int32.TryParse(fileName, out modelId)){
-				_progress.Text += $"[W] Filename of {model} is invalid - skipping.";
+				HoneyLog(2, $"Filename of {model} is invalid - skipping.");
 				continue;
 			}
 			// remove extension
@@ -549,7 +564,8 @@ public partial class HoneyPatcher : Node2D
 			ModelInject.InjectModels(Path.Combine(usrdir, "rom", "stf_rom"));
 		}
 		catch (Exception e){
-			GD.Print(e.ToString());
+			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
 		}
 	}
 	
@@ -563,7 +579,7 @@ public partial class HoneyPatcher : Node2D
 				string header = System.Text.Encoding.UTF8.GetString(headerbytes, 0, 3);
 				const string valid = "DDS";
 				if (header != valid){
-					_progress.Text += $"[W] DDS file {dds} has invalid header magic. Skipping.\n";
+					HoneyLog(2, $"DDS file {dds} has invalid header magic. Skipping.");
 					continue;
 				}
 				fs.Seek(8, SeekOrigin.Begin);
@@ -577,7 +593,7 @@ public partial class HoneyPatcher : Node2D
 					fs.Write(nocomp);
 				}
 				else
-					_progress.Text += $"[W] Could not determine compression type of file {dds}. Skipping.\n";
+					HoneyLog(2, $"Could not determine compression type of file {dds}. Skipping.");
 			}
 		}
 	}
@@ -593,18 +609,18 @@ public partial class HoneyPatcher : Node2D
 	
 	private void LoadConfig(){
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 0";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2";
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
-				_progress.Text += "[I] Created default configuration file.\n";
+				HoneyLog(3, "Created default configuration file.");
 			}
 			catch (Exception e){
 				GD.Print(e.ToString());
-				_progress.Text += "[I] There was an issue creating the configuration.";
+				HoneyLog(1, "There was an issue creating the configuration. See HoneyLog.txt for more details.");
+				HoneyLog(1, e.ToString(), true);
 			}
 		}
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
-		
 		try{
 			if (data["main"]["usrdir"] != "migrated"){
 				data["main"]["stfusrdir"] = data["main"]["usrdir"];
@@ -613,13 +629,13 @@ public partial class HoneyPatcher : Node2D
 				data["main"]["omgusrdir"] = ".";
 				data["main"]["usrdir"] = "migrated";
 				data["main"]["game"] = "stf";
-				data["main"]["loglevel"] = "0";
-				_progress.Text += "[I] Migrated old config.\n";
+				data["main"]["loglevel"] = "2";
+				HoneyLog(3, "Migrated old config.");
 				new FileIniDataParser().WriteFile(honeyConfig, data);
 			}
 		}
 		catch{
-			// _progress.Text += "[D] Skipping migration.\n";
+			HoneyLog(4, "Skipping migration.", false);
 		}
 		
 		// try to set userdir
@@ -627,25 +643,53 @@ public partial class HoneyPatcher : Node2D
 			game = data["main"]["game"];
 		}
 		catch{
-			_progress.Text += $"[W] game not found in INI. Setting to default.\n";
+			HoneyLog(2, "game not found in INI. Setting to default.");
 			data["main"]["game"] = game;
 		}
 		try{
 			usrdir = data["main"][$"{game}usrdir"];
 		}
 		catch{
-			_progress.Text += $"[W] {game}usrdir not found in INI. Setting to default.\n";
+			HoneyLog(2, $"{game}usrdir not found in INI. Setting to default.");
 			data["main"][$"{game}usrdir"] =  ".";
 		}
 		try{
 			loglevel = Byte.Parse(data["main"]["loglevel"]);
 		}
 		catch{
-			_progress.Text += $"[W] loglevel not found in INI. Setting to default.\n";
+			HoneyLog(2, "loglevel not found in INI. Setting to default.");
 			data["main"]["loglevel"] = loglevel.ToString();
 		}
 		new FileIniDataParser().WriteFile(honeyConfig, data);
 		UpdateGame();
-		_progress.Text += "[I] loaded HoneyConfig.ini.\n";
+		HoneyLog(3, "loaded HoneyConfig.ini");
 	}
-}
+	
+	void HoneyLog(byte severity, string message, bool exception = false){
+		if (severity > loglevel){
+			return;
+		}
+		string d;
+		switch (severity){
+			case 1: d = "E"; break; // Error
+			case 2: d = "W"; break; // Warning
+			case 3: d = "I"; break; // Information
+			case 4: d = "D"; break; // Debug
+			default: return;
+		}
+		if (exception){	
+			GD.Print($"[{d}] {message}");
+			using (StreamWriter sw = File.AppendText(honeyLog))
+			{
+				sw.WriteLine($"[{d}] {message}");
+			}	
+		}
+		else{
+			_progress.Text += $"[{d}] {message}\n";}
+			GD.Print($"[{d}] {message}");
+			using (StreamWriter sw = File.AppendText(honeyLog))
+			{
+				sw.WriteLine($"[{d}] {message}");
+			}	
+		}
+	}
