@@ -501,10 +501,11 @@ public partial class HoneyPatcher : Node2D
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
-			if (Path.GetExtension(modpath) == ".zip")
+			if (Path.GetExtension(modpath) == ".zip"){
 				// modsList.Add(modpath);
 				modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
 				ZipFile.ExtractToDirectory(modpath, romdir, true);
+			}
 		}
 		//foreach (string mod in modsList){
 		//	modsStr += $"{modsList}"
