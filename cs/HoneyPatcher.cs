@@ -793,9 +793,8 @@ public partial class HoneyPatcher : Node2D
 			}	
 		}
 		else{
-			// _progress.Text += $"[{d}] {message}\n";
 			// This fixes multithreading.
-			_progress.CallDeferred("append_text", $"[{d}, {message}\n]");
+			_progress.CallDeferred("append_text", $"[{d}] {message}\n");
 		}
 		GD.Print($"[{d}] {message}");
 		using (StreamWriter sw = File.AppendText(honeyLog))
