@@ -9,8 +9,10 @@ using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
 using SonicAudioLib.Archives;
+using MikuMikuLibrary.Databases;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
+using DatabaseConverter;
 using AcbEditor;
 using LibSTF;
 using IniParser;
@@ -75,6 +77,7 @@ public partial class HoneyPatcher : Node2D
 	string pretty_game = "Sonic the Fighters";
 	string log;
 	byte loglevel = 3;
+	string modsStr;
 	
 	public override void _Ready(){	
 		
@@ -228,24 +231,22 @@ public partial class HoneyPatcher : Node2D
 		CopyFilesRecursively(usrdir, gameBackupDir);
 		HoneyLog(3, "Created backup.");
 		
+		// This gets AcbEditor working.
+		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
 		// and turned it into a DLL. It's honestly still really bloated and could do with
 		// a bit more cleanup.
 		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
-		
-		// This gets AcbEditor working.
-		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-		
 		HoneyLog(3, "Extracted rom.psarc");
 		File.Delete(psarc_path);
 		HoneyLog(3, "Removed rom.psarc");
 		FarcUnpack();
-		// FarcUnpack();
 		HoneyLog(3, "Unpacked farc files.");
-		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
-		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
-		AcbEditorThing.AcbEdit(AcbFile);
+		UnpackAcb();
 		HoneyLog(3, "Unpacked ACB file.");
+		DbToXml();
+		HoneyLog(3, "Converted string DBs to XML.");
 		ExtractMods();
 		HoneyLog(3, "Extracted mods.");
 		ApplyPatches();
@@ -256,10 +257,13 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Injected models.");
 		DDSFixHeader();
 		HoneyLog(3, "Sanitized DDS headers.");
+		InjectModsStr();
+		HoneyLog(3, "Injected mod list into string_array_en.xml.");
+		XmlToDb();
+		HoneyLog(3, "Converted string XMLs to DBs.");
 		FarcPack();
 		HoneyLog(3, "Repacked farc files.");
-		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
-		AcbEditorThing.AcbEdit(AcbFolder);
+		PackAcb();
 		HoneyLog(3, "Packed ACB file.");
 		if (nomods){
 			GameSound();
@@ -282,12 +286,10 @@ public partial class HoneyPatcher : Node2D
 		
 		// Clear contents of USRDIR
 		try{
-			// https://stackoverflow.com/questions/1288718/how-to-delete-all-files-and-folders-in-a-directory
-			System.IO.DirectoryInfo di = new DirectoryInfo(usrdir);
-			foreach (FileInfo file in di.GetFiles())
-				file.Delete(); 
-			foreach (DirectoryInfo dir in di.GetDirectories())
-				dir.Delete(true); 
+			Directory.Delete(usrdir, true);
+			HoneyLog(4, $"Deleted {usrdir}.");
+			Directory.CreateDirectory(usrdir);
+			HoneyLog(4, $"Created {usrdir}.");
 			HoneyLog(3, "Wiped game files.");
 		}
 		catch (Exception e){
@@ -486,6 +488,8 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ExtractMods(){
+		modsStr = "Mods installed:\n";
+		// List<string> modsList = new List<string>();
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		Array.Sort(files);
 		switch (files.Length){
@@ -498,8 +502,13 @@ public partial class HoneyPatcher : Node2D
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			if (Path.GetExtension(modpath) == ".zip")
+				// modsList.Add(modpath);
+				modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
 				ZipFile.ExtractToDirectory(modpath, romdir, true);
 		}
+		//foreach (string mod in modsList){
+		//	modsStr += $"{modsList}"
+		//}
 	}
 	
 	private void ApplyPatches(){
@@ -582,6 +591,58 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
+	}
+	
+	private void UnpackAcb(){
+		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
+		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
+		AcbEditorThing.AcbEdit(AcbFile);
+	}
+
+	private void PackAcb(){
+		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
+		AcbEditorThing.AcbEdit(AcbFolder);
+	}
+	
+	private void DbToXml(){
+		// DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters?
+		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
+		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.bin"), Path.Combine(stringArrayDir, "string_array2_en.bin"), Path.Combine(stringArrayDir, "string_array_jp.bin"), Path.Combine(stringArrayDir, "string_array2_jp.bin")};
+		string[] dbFile = new string[1];
+		foreach (string stringArray in stringArrays){
+			if (!File.Exists(stringArray)){
+				HoneyLog(3, $"{stringArray} not found. Skipping.");
+				continue;
+			}
+			dbFile[0] = stringArray;
+			DBConverter.Convert(dbFile);
+			HoneyLog(3, $"Converted {stringArray} to XML.");
+		}
+	}
+	
+	private void XmlToDb(){
+		// DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters?
+		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
+		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.xml"), Path.Combine(stringArrayDir, "string_array2_en.xml"), Path.Combine(stringArrayDir, "string_array_jp.xml"), Path.Combine(stringArrayDir, "string_array2_jp.xml")};
+		string[] dbFile = new string[1];
+		foreach (string stringArray in stringArrays){
+			if (!File.Exists(stringArray)){
+				HoneyLog(3, $"{stringArray} not found. Skipping.");
+				continue;
+			}
+			dbFile[0] = stringArray;
+			DBConverter.Convert(dbFile);
+			HoneyLog(3, $"Converted {stringArray} to DB.");
+		}
+	}
+	
+	private void InjectModsStr(){
+		string stringArrayEnPath = Path.Combine(usrdir, "rom", "string_array", "string_array_en.xml");
+		string stringArrayEn = File.ReadAllText(stringArrayEnPath);
+		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
+		stringArrayEn = stringArrayEn.Replace("The typefaces included herein are solely developed\nby DynaComware.\n", String.Empty);
+		stringArrayEn = stringArrayEn.Replace("”PlayStation” is a registered trademark\nof Sony Computer Entertainment Inc.\n", modsStr);
+		File.WriteAllText(stringArrayEnPath, stringArrayEn);
 	}
 	
 	private void DDSFixHeader(){
@@ -684,7 +745,7 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, "loaded HoneyConfig.ini");
 	}
 	
-	void HoneyLog(byte severity, string message, bool exception = false){
+	private void HoneyLog(byte severity, string message, bool exception = false){
 		if (severity > loglevel){
 			return;
 		}
