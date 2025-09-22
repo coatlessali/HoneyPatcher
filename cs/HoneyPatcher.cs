@@ -143,7 +143,8 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		// Migrate backup folder.
-		if (File.Exists(Path.Combine(backupDir, "EBOOT.BIN"))){
+		string eboot = Path.Combine(backupDir, "EBOOT.BIN");
+		if (File.Exists(eboot)){
 			HoneyLog(3, "Migrating STF backup directory.");
 			Directory.CreateDirectory(Path.Combine(backupDir, "stf"));
 			// _progress.Text += "[D] Created stf backup dir.\n";
@@ -549,9 +550,10 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void InjectModels(){
-		if (game != "stf")
+		if (game != "stf"){
 			HoneyLog(3, "Game is not Sonic the Fighters. Skipping model injection.");
 			return;
+		}
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
 		Array.Sort(files);
 		foreach (string model in files){
