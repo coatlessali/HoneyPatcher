@@ -489,7 +489,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void ExtractMods(){
 		modsStr = "Mods installed:\n";
-		// List<string> modsList = new List<string>();
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		Array.Sort(files);
 		switch (files.Length){
@@ -502,14 +501,21 @@ public partial class HoneyPatcher : Node2D
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			if (Path.GetExtension(modpath) == ".zip"){
-				// modsList.Add(modpath);
-				modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
+				using (ZipArchive archive = ZipFile.Open(modpath, ZipArchiveMode.Update)){
+					try{
+						ZipArchiveEntry entry = archive.GetEntry("name.txt");
+						using (var reader = new StreamReader(entry.Open())){
+							string contents = reader.ReadToEnd();
+							modsStr += contents;
+						}
+					}
+					catch{
+						modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
+					}
+				}
 				ZipFile.ExtractToDirectory(modpath, romdir, true);
 			}
 		}
-		//foreach (string mod in modsList){
-		//	modsStr += $"{modsList}"
-		//}
 	}
 	
 	private void ApplyPatches(){
