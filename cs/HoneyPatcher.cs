@@ -544,10 +544,10 @@ public partial class HoneyPatcher : Node2D
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				
 				// At some point we'll handle these with actual XML extraction/injection! For now, this will do.
-				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
-				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
-				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
-				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
+				// case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
+				// case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
+				// case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
+				// case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
 				default: continue;
 			}
 			byte[] original = File.ReadAllBytes(patchdest);
