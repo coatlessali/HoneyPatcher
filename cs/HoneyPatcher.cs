@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
@@ -239,12 +241,20 @@ public partial class HoneyPatcher : Node2D
 		// a bit more cleanup.
 		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 		HoneyLog(3, "Extracted rom.psarc");
-		File.Delete(psarc_path);
-		HoneyLog(3, "Removed rom.psarc");
-		FarcUnpack();
-		HoneyLog(3, "Unpacked farc files.");
-		UnpackAcb();
-		HoneyLog(3, "Unpacked ACB file.");
+		// Run psarc deletion, farc unpacking, and acb unpacking on separate threads
+		Task t1 = Task.Run(() => {
+			File.Delete(psarc_path);
+			HoneyLog(3, "Removed rom.psarc");
+		});
+		Task t2 = Task.Run(() => {
+			FarcUnpack();
+			HoneyLog(3, "Unpacked farc files.");
+		});
+		Task t3 = Task.Run(() => {
+			UnpackAcb();
+			HoneyLog(3, "Unpacked ACB file.");
+		});
+		Task.WaitAll(t1, t2, t3);
 		DbToXml();
 		HoneyLog(3, "Converted string DBs to XML.");
 		ExtractMods();
@@ -255,16 +265,27 @@ public partial class HoneyPatcher : Node2D
 		InjectModels();
 		if (game == "stf")
 			HoneyLog(3, "Injected models.");
-		DDSFixHeader();
-		HoneyLog(3, "Sanitized DDS headers.");
-		InjectModsStr();
-		HoneyLog(3, "Injected mod list into string_array_en.xml.");
+		Task t4 = Task.Run(() => {
+			DDSFixHeader();
+			HoneyLog(3, "Sanitized DDS headers.");
+		});
+		Task t5 = Task.Run(() => {
+			InjectModsStr();
+			HoneyLog(3, "Injected mod list into string_array_en.xml.");
+		});
+		Task.WaitAll(t4, t5);
 		XmlToDb();
 		HoneyLog(3, "Converted string XMLs to DBs.");
-		FarcPack();
-		HoneyLog(3, "Repacked farc files.");
-		PackAcb();
-		HoneyLog(3, "Packed ACB file.");
+		Task t6 = Task.Run(() => {
+			FarcPack();
+			HoneyLog(3, "Repacked farc files.");
+		});
+		Task t7 = Task.Run(() => {
+			PackAcb();
+			HoneyLog(3, "Packed ACB file.");
+		});
+		Task.WaitAll(t6, t7);
+		
 		if (nomods){
 			GameSound();
 			ShowError("Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways.");
@@ -772,11 +793,14 @@ public partial class HoneyPatcher : Node2D
 			}	
 		}
 		else{
-			_progress.Text += $"[{d}] {message}\n";}
-			GD.Print($"[{d}] {message}");
-			using (StreamWriter sw = File.AppendText(honeyLog))
-			{
-				sw.WriteLine($"[{d}] {message}");
-			}	
+			// _progress.Text += $"[{d}] {message}\n";
+			// This fixes multithreading.
+			_progress.CallDeferred("append_text", $"[{d}, {message}\n]");
 		}
+		GD.Print($"[{d}] {message}");
+		using (StreamWriter sw = File.AppendText(honeyLog))
+		{
+			sw.WriteLine($"[{d}] {message}");
+		}	
 	}
+}
