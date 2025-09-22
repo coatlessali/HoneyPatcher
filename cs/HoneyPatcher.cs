@@ -38,6 +38,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
 	
+	// This is an absolute war crime and I'm open to suggestions for fixing this garbage
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
 	byte[] d5comp = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 							0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -167,14 +168,6 @@ public partial class HoneyPatcher : Node2D
 			try{Directory.Delete(Path.Combine(backupDir, "stf", "stf"), true);}
 			catch{}
 		}
-		
-		// https://github.com/rickyah/ini-parser
-		// MIT License
-		// Read INI file
-		// Migrate config from V5 to V6
-		
-		
-		
 	}
 
 	// Signals
@@ -246,6 +239,7 @@ public partial class HoneyPatcher : Node2D
 		File.Delete(psarc_path);
 		HoneyLog(3, "Removed rom.psarc");
 		FarcUnpack();
+		// FarcUnpack();
 		HoneyLog(3, "Unpacked farc files.");
 		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
@@ -396,54 +390,73 @@ public partial class HoneyPatcher : Node2D
 	https://github.com/blueskythlikesclouds/MikuMikuLibrary */
 	
 	private void FarcUnpack(){
-		string[] farcs =   {"sprite/n_advstf.farc", "sprite/n_advfv.farc", "sprite/n_advvf2.farc",
+		// Experimental - use Directory.GetFiles(), which requires two passes
+		/*string[] farcs =   {"sprite/n_advstf.farc", "sprite/n_advfv.farc", "sprite/n_advvf2.farc",
 							"sprite/n_adv.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", 
 							"sprite/n_info.farc", "sprite/n_stf.farc", "sprite/n_fv.farc",
 							"sprite/n_advfv2.farc", "sprite/n_omg.farc", "string_array.farc", 
 							"sprite/n_advstf/texture.farc", "sprite/n_advfv/texture.farc", "sprite/n_advvf2/texture.farc",
 							"sprite/n_adv/texture.farc", "sprite/n_omg/texture.farc", "sprite/n_cmn/texture.farc", 
 							"sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc",};
-	
-		foreach (string farc in farcs ){
-			string sourceFileName = Path.Combine(usrdir, "rom", farc);
-			try{
-				// Set source and destination filename
-				string destinationFileName = Path.ChangeExtension(sourceFileName, null);
+		*/
+		
+		string romdir = Path.Combine(usrdir, "rom");
+		List<string> unpacked = new List<string>();
+		
+		for (int i = 0; i < 2; i++){
+			// get all farc files, we need to do this twice hence the for loop
+			string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
+			HoneyLog(4, farcs.Length.ToString());
+			foreach (string farc in farcs ){
+				if (unpacked.Contains(farc)){
+					HoneyLog(4, $"{farc} already unpacked.");
+					continue;
+				}
+				unpacked.Add(farc);
+				// string sourceFileName = Path.Combine(usrdir, "rom", farc);
+				string sourceFileName = farc;
+				try{
+					// Set source and destination filename
+					string destinationFileName = Path.ChangeExtension(sourceFileName, null);
 				
-				using (var stream = File.OpenRead(sourceFileName)){
-					var farcArchive = BinaryFile.Load<FarcArchive>(stream);
+					using (var stream = File.OpenRead(sourceFileName)){
+						var farcArchive = BinaryFile.Load<FarcArchive>(stream);
 					
-					Directory.CreateDirectory(destinationFileName);
+						Directory.CreateDirectory(destinationFileName);
 					
-					foreach (string fileName in farcArchive){
-						using (var destination = File.Create(Path.Combine(destinationFileName, fileName)))
-						using (var source = farcArchive.Open(fileName, EntryStreamMode.OriginalStream))
-						source.CopyTo(destination);
+						foreach (string fileName in farcArchive){
+							using (var destination = File.Create(Path.Combine(destinationFileName, fileName)))
+							using (var source = farcArchive.Open(fileName, EntryStreamMode.OriginalStream))
+							source.CopyTo(destination);
+						}
 					}
 				}
-			}
-			catch (Exception e){
-				if (File.Exists(sourceFileName)){
+				catch (Exception e){
 					HoneyLog(1, $"{sourceFileName} could not be unpacked.");
 					HoneyLog(1, e.ToString(), true);
 				}
-				else
-					HoneyLog(3, "${sourceFileName} not found. Skipping.");
 			}
 		}
 	}
 	
 	private void FarcPack(){
-		string[] dirlist = {"sprite/n_advstf/texture", "sprite/n_advfv/texture", "sprite/n_advvf2/texture",
+		// Experimental - use Directory.GetFiles()
+		/*string[] dirlist = {"sprite/n_advstf/texture", "sprite/n_advfv/texture", "sprite/n_advvf2/texture",
 							"sprite/n_adv/texture", "sprite/n_omg/texture", "sprite/n_cmn/texture", 
 							"sprite/n_fnt/texture", "sprite/n_info/texture", "sprite/n_stf/texture", 
 							"string_array", "sprite/n_advstf", "sprite/n_advfv",
 							"sprite/n_advvf2", "sprite/n_adv", "sprite/n_omg", 
 							"sprite/n_cmn", "sprite/n_fnt", "sprite/n_info", "sprite/n_stf"};
+		*/
+		string romdir = Path.Combine(usrdir, "rom");
+		string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
+		Array.Reverse(farcs);
+		// HoneyLog(4, String.Join("\n", farcs));
 	
-		foreach (string dir in dirlist)
+		foreach (string farc in farcs)
 		{
-			string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
+			// string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
+			string sourceFileName = farc.Replace(".farc", String.Empty);
 			try{
 				// Set source and destination file name
 				string destinationFileName = Path.ChangeExtension(sourceFileName, "farc");;
@@ -608,6 +621,10 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void LoadConfig(){
+		// https://github.com/rickyah/ini-parser
+		// MIT License
+		// Read INI file
+		// Migrate config from V5 to V6
 		if(!File.Exists(honeyConfig)){
 			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2";
 			try{
@@ -674,7 +691,7 @@ public partial class HoneyPatcher : Node2D
 			case 1: d = "E"; break; // Error
 			case 2: d = "W"; break; // Warning
 			case 3: d = "I"; break; // Information
-			case 4: d = "D"; break; // Debug
+			case >= 4: d = "D"; break; // Debug
 			default: return;
 		}
 		if (exception){	

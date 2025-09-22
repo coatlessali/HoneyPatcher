@@ -2,7 +2,7 @@ extends Label
 
 func _ready() -> void:
 	pass
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	pass
 func _on_select_usrdir_mouse_entered() -> void:
 	text = "Set the path of your USRDIR for the PS3 version of Sonic the Fighters. (Do this before installing mods.)"
