@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using SonicAudioLib.Archives;
 using MikuMikuLibrary.Databases;
 using MikuMikuLibrary.Archives;
 using MikuMikuLibrary.IO;
+using Newtonsoft.Json;
 using DatabaseConverter;
 using AcbEditor;
 using LibSTF;
@@ -122,61 +124,9 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		
-		/* TO BE DELETED BY V8 */
-		
-		// Migrate mods folder
-		if (Directory.GetFiles(modsDir).Length != 0){
-			Directory.CreateDirectory(Path.Combine(modsDir, "stf"));
-			CopyFilesRecursively(modsDir, Path.Combine(modsDir, "stf"));
-			foreach (string file in Directory.GetFiles(modsDir)){
-				File.Delete(file);
-			}
-			try{Directory.Delete(Path.Combine(modsDir, "stf", "stf"), true);}
-			catch{}
-		}
-		// Migrate workbench
-		string[] migration = {"original", "modified", "patches"};
-		foreach (string migrate in migration){
-			if (Directory.GetFiles(Path.Combine(workbenchDir, migrate)).Length != 0){
-				Directory.CreateDirectory(Path.Combine(workbenchDir, migrate, "stf"));
-				CopyFilesRecursively(Path.Combine(workbenchDir, migrate), Path.Combine(workbenchDir, migrate, "stf"));
-				Directory.Delete(Path.Combine(workbenchDir, migrate, "stf", "stf"), true);
-				foreach (string file in Directory.GetFiles(Path.Combine(workbenchDir, migrate))){
-					File.Delete(file);
-				}
-			}
-		}
-		
-		// Migrate backup folder.
-		string eboot = Path.Combine(backupDir, "EBOOT.BIN");
-		if (File.Exists(eboot)){
-			HoneyLog(3, "Migrating STF backup directory.");
-			Directory.CreateDirectory(Path.Combine(backupDir, "stf"));
-			// _progress.Text += "[D] Created stf backup dir.\n";
-			CopyFilesRecursively(backupDir, Path.Combine(backupDir, "stf"));
-			// _progress.Text += "[D] Copied files.\n";
-			string[] fdelete = {Path.Combine(backupDir, "EBOOT.BIN"), Path.Combine(backupDir, "chkboot.edat"), Path.Combine(backupDir, "rom.psarc")};
-			string[] ddelete = {Path.Combine(backupDir, "ps3"), Path.Combine(backupDir, "rom")};
-			foreach (string file in fdelete){
-				try{File.Delete(file);}
-				catch (Exception e){
-					HoneyLog(1, $"Failed to delete {file}.");
-					HoneyLog(1, e.ToString(), true);
-				}
-			}
-			foreach (string dir in ddelete){
-				try{Directory.Delete(dir, true);}
-				catch (Exception e){
-					HoneyLog(1, $"Failed to delete {dir}.");
-					HoneyLog(1, e.ToString(), true);
-				}
-			}
-			try{Directory.Delete(Path.Combine(backupDir, "stf", "stf"), true);}
-			catch{}
-		}
+		/* Migration code has been removed from this spot. Please just use V7 if you need this. */
 	}
 
-	// Signals
 	private void OnUsrdirDialog(string dir){
 		usrdir = Path.GetFullPath(dir); // Set usrdir for current session
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
@@ -239,52 +189,33 @@ public partial class HoneyPatcher : Node2D
 		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
 		// and turned it into a DLL. It's honestly still really bloated and could do with
 		// a bit more cleanup.
-		PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
-		HoneyLog(3, "Extracted rom.psarc");
-		// Run psarc deletion, farc unpacking, and acb unpacking on separate threads
-		Task t1 = Task.Run(() => {
+		try{
+			PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
+			HoneyLog(3, "Extracted rom.psarc");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		try{
 			File.Delete(psarc_path);
-			HoneyLog(3, "Removed rom.psarc");
-		});
-		Task t2 = Task.Run(() => {
-			FarcUnpack();
-			HoneyLog(3, "Unpacked farc files.");
-		});
-		Task t3 = Task.Run(() => {
-			UnpackAcb();
-			HoneyLog(3, "Unpacked ACB file.");
-		});
-		Task.WaitAll(t1, t2, t3);
+			HoneyLog(4, "Removed rom.psarc.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		FarcUnpack();
+		UnpackAcb();
 		DbToXml();
-		HoneyLog(3, "Converted string DBs to XML.");
 		ExtractMods();
-		HoneyLog(3, "Extracted mods.");
 		ApplyPatches();
-		HoneyLog(3, "Applied patches.");
-		// LibSTF by Bekzii
-		InjectModels();
-		if (game == "stf")
-			HoneyLog(3, "Injected models.");
-		Task t4 = Task.Run(() => {
-			DDSFixHeader();
-			HoneyLog(3, "Sanitized DDS headers.");
-		});
-		Task t5 = Task.Run(() => {
-			InjectModsStr();
-			HoneyLog(3, "Injected mod list into string_array_en.xml.");
-		});
-		Task.WaitAll(t4, t5);
+		InjectModels(); // LibSTF by Bekzii
+		DDSFixHeader();
+		InjectModsStr();
 		XmlToDb();
-		HoneyLog(3, "Converted string XMLs to DBs.");
-		Task t6 = Task.Run(() => {
-			FarcPack();
-			HoneyLog(3, "Repacked farc files.");
-		});
-		Task t7 = Task.Run(() => {
-			PackAcb();
-			HoneyLog(3, "Packed ACB file.");
-		});
-		Task.WaitAll(t6, t7);
+		FarcPack();
+		PackAcb();
 		
 		if (nomods){
 			GameSound();
@@ -454,6 +385,7 @@ public partial class HoneyPatcher : Node2D
 							source.CopyTo(destination);
 						}
 					}
+					HoneyLog(3, "Unpacked farc files.");
 				}
 				catch (Exception e){
 					HoneyLog(1, $"{sourceFileName} could not be unpacked.");
@@ -506,6 +438,7 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 		}
+		HoneyLog(3, "Repacked farc files.");
 	}
 	
 	private void ExtractMods(){
@@ -521,20 +454,28 @@ public partial class HoneyPatcher : Node2D
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
-			if (Path.GetExtension(modpath) == ".zip"){
-				using (ZipArchive archive = ZipFile.Open(modpath, ZipArchiveMode.Update)){
-					try{
-						ZipArchiveEntry entry = archive.GetEntry("name.txt");
-						using (var reader = new StreamReader(entry.Open())){
-							string contents = reader.ReadToEnd();
-							modsStr += contents;
+			try{
+				if (Path.GetExtension(modpath) == ".zip"){
+					using (ZipArchive archive = ZipFile.Open(modpath, ZipArchiveMode.Update)){
+						try{
+							ZipArchiveEntry entry = archive.GetEntry("name.txt");
+							using (var reader = new StreamReader(entry.Open())){
+								string contents = reader.ReadToEnd();
+								modsStr += contents;
+							}
+						}
+						catch{
+							modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
 						}
 					}
-					catch{
-						modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
-					}
+					ZipFile.ExtractToDirectory(modpath, romdir, true);
+					HoneyLog(4, $"Extracted {modpath}.");
 				}
-				ZipFile.ExtractToDirectory(modpath, romdir, true);
+				HoneyLog(3, "Extracted mods.");
+			}
+			catch (Exception e){
+				HoneyLog(1, "There was an issue extracting your mods. Check HoneyLog.txt for more information.");
+				HoneyLog(1, e.ToString(), true);
 			}
 		}
 	}
@@ -564,7 +505,7 @@ public partial class HoneyPatcher : Node2D
 				case ".ic12_13": patchdest = Path.Combine(stf_rom, "ic12_13.bin"); break;
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				
-				// At some point we'll handle these with actual XML extraction/injection! For now, this will do.
+				// BREAKING: no longer byte patching this bc it makes no sense
 				// case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
 				// case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
 				// case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
@@ -575,15 +516,24 @@ public partial class HoneyPatcher : Node2D
 			byte[] changes = File.ReadAllBytes(modpath);
 			string[] locations = File.ReadAllLines(modpath+".loc");
 			uint inc = 0;
-			using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
-				foreach (string i in locations){
-					long loc = Int64.Parse(i);
-					fs.Seek(loc, SeekOrigin.Begin);
-					fs.WriteByte(changes[inc]);
-					inc++;
+			try
+			{
+				using (FileStream fs = File.Open(patchdest, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
+					foreach (string i in locations){
+						long loc = Int64.Parse(i);
+						fs.Seek(loc, SeekOrigin.Begin);
+						fs.WriteByte(changes[inc]);
+						inc++;
+					}
 				}
 			}
+			catch (Exception e)
+			{
+				HoneyLog(1, "Failed to apply patches to one or more files. Check HoneyLog.txt for more information.");
+				HoneyLog(1, e.ToString(), true);
+			}
 		}
+		HoneyLog(3, "Applied patches.");
 	}
 	
 	private void InjectModels(){
@@ -614,6 +564,7 @@ public partial class HoneyPatcher : Node2D
 		try{
 			ModelInject.Verbose = true;
 			ModelInject.InjectModels(Path.Combine(usrdir, "rom", "stf_rom"));
+			HoneyLog(3, "Injected models for Sonic the Fighters.");
 		}
 		catch (Exception e){
 			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.");
@@ -624,12 +575,26 @@ public partial class HoneyPatcher : Node2D
 	private void UnpackAcb(){
 		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
-		AcbEditorThing.AcbEdit(AcbFile);
+		try{
+			AcbEditorThing.AcbEdit(AcbFile);
+			HoneyLog(3, "Unpacked ACB file.");
+		}
+		catch (Exception e){
+			HoneyLog(1, $"There was an issue extracting {game}_all.acb. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
 	}
 
 	private void PackAcb(){
 		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
-		AcbEditorThing.AcbEdit(AcbFolder);
+		try{
+			AcbEditorThing.AcbEdit(AcbFolder);
+			HoneyLog(3, "Repacked ACB file.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue repacking {game_all}.acb. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
 	}
 	
 	private void DbToXml(){
@@ -637,14 +602,21 @@ public partial class HoneyPatcher : Node2D
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.bin"), Path.Combine(stringArrayDir, "string_array2_en.bin"), Path.Combine(stringArrayDir, "string_array_jp.bin"), Path.Combine(stringArrayDir, "string_array2_jp.bin")};
 		string[] dbFile = new string[1];
-		foreach (string stringArray in stringArrays){
-			if (!File.Exists(stringArray)){
-				HoneyLog(3, $"{stringArray} not found. Skipping.");
-				continue;
+		try{
+			foreach (string stringArray in stringArrays){
+				if (!File.Exists(stringArray)){
+					HoneyLog(4, $"{stringArray} not found. Skipping.");
+					continue;
+				}
+				dbFile[0] = stringArray;
+				DBConverter.Convert(dbFile);
+				HoneyLog(4, $"Converted {stringArray} to XML.");
 			}
-			dbFile[0] = stringArray;
-			DBConverter.Convert(dbFile);
-			HoneyLog(3, $"Converted {stringArray} to XML.");
+			HoneyLog(3, "Converted string DBs to XML.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was a problem converting one of your string arrays to XML. Check HoneyLog.txt for more information.");
+			HoneyLog(1, e.ToString(), true);
 		}
 	}
 	
@@ -653,14 +625,21 @@ public partial class HoneyPatcher : Node2D
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.xml"), Path.Combine(stringArrayDir, "string_array2_en.xml"), Path.Combine(stringArrayDir, "string_array_jp.xml"), Path.Combine(stringArrayDir, "string_array2_jp.xml")};
 		string[] dbFile = new string[1];
-		foreach (string stringArray in stringArrays){
-			if (!File.Exists(stringArray)){
-				HoneyLog(3, $"{stringArray} not found. Skipping.");
-				continue;
+		try{
+			foreach (string stringArray in stringArrays){
+				if (!File.Exists(stringArray)){
+					HoneyLog(4, $"{stringArray} not found. Skipping.");
+					continue;
+				}
+				dbFile[0] = stringArray;
+				DBConverter.Convert(dbFile);
+				HoneyLog(4, $"Converted {stringArray} to DB.");
 			}
-			dbFile[0] = stringArray;
-			DBConverter.Convert(dbFile);
-			HoneyLog(3, $"Converted {stringArray} to DB.");
+			HoneyLog(3, "Converted string XMLs to DBs.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue converting your string XMLs to DB format. Check HoneyLog.txt for more information.");
+			HoneyLog(1, e.ToString(), true);
 		}
 	}
 	
@@ -670,7 +649,14 @@ public partial class HoneyPatcher : Node2D
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("The typefaces included herein are solely developed\nby DynaComware.\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("”PlayStation” is a registered trademark\nof Sony Computer Entertainment Inc.\n", modsStr);
-		File.WriteAllText(stringArrayEnPath, stringArrayEn);
+		try{
+			File.WriteAllText(stringArrayEnPath, stringArrayEn);
+			HoneyLog(3, "Injected mod list into string_array_en.xml.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue saving string_array_en.xml. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
 	}
 	
 	private void DDSFixHeader(){
@@ -700,6 +686,7 @@ public partial class HoneyPatcher : Node2D
 					HoneyLog(2, $"Could not determine compression type of file {dds}. Skipping.");
 			}
 		}
+		HoneyLog(3, "Sanitized DDS headers.");
 	}
 	
 	private void GameSound(){
@@ -746,7 +733,6 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(4, "Skipping migration.", false);
 		}
 		
-		// try to set userdir
 		try{
 			game = data["main"]["game"];
 		}
@@ -777,7 +763,7 @@ public partial class HoneyPatcher : Node2D
 		if (severity > loglevel){
 			return;
 		}
-		string d;
+		string d = "?";
 		switch (severity){
 			case 1: d = "E"; break; // Error
 			case 2: d = "W"; break; // Warning
