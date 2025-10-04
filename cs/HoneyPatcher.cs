@@ -216,6 +216,8 @@ public partial class HoneyPatcher : Node2D
 		XmlToDb();
 		FarcPack();
 		PackAcb();
+		CleanUp();
+		LogoSkip();
 		
 		if (nomods){
 			GameSound();
@@ -407,7 +409,7 @@ public partial class HoneyPatcher : Node2D
 		string romdir = Path.Combine(usrdir, "rom");
 		string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
 		Array.Reverse(farcs);
-		// HoneyLog(4, String.Join("\n", farcs));
+		// HoneyLog(4, String.Join("\n", farcs)); // was I drunk when I wrote this?
 	
 		foreach (string farc in farcs)
 		{
@@ -427,6 +429,16 @@ public partial class HoneyPatcher : Node2D
 					else
 						farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
 					farcArchive.Save(destinationFileName);
+				}
+				// Cleanup
+				try{
+					Directory.Delete(sourceFileName, true);
+					HoneyLog(4, $"{sourceFileName} deleted.");
+				}
+				catch (Exception e)
+				{
+					HoneyLog(1, $"Failed to delete {sourceFileName}. Check HoneyLog.txt for more details.");
+					HoneyLog(1, e.ToString(), true);
 				}
 			}
 			catch (Exception e){
@@ -592,7 +604,16 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Repacked ACB file.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue repacking {game_all}.acb. Check HoneyLog.txt for more details.");
+			HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		// Cleanup
+		try{
+			Directory.Delete(AcbFolder[0], true);
+			HoneyLog(4, "Cleaned up ACB Folder");
+		}
+		catch (Exception e){
+			HoneyLog(1, $"There was an issue deleting {game}_all.acb. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
 	}
@@ -787,5 +808,29 @@ public partial class HoneyPatcher : Node2D
 		{
 			sw.WriteLine($"[{d}] {message}");
 		}	
+	}
+	
+	private void CleanUp(){
+		string[] cleanupExts = { "*.txt", "*.rom_code", "*.rom_code1", "*.rom_code2", "*.rom_tex", "*.rom_ep", "*.rom_ep1", "*.rom_ep2", "*.rom_cop", "*.rom_pol", "*.rom_data", "*.ic12_13", "*.ic12_15", "*.string_array_en", "*.string_array2_en", "*.string_array_jp", "*.string_array2_jp", "*.loc" };
+		foreach (string ext in cleanupExts){
+			string[] files = Directory.EnumerateFiles(usrdir, ext, SearchOption.AllDirectories).ToArray();
+			foreach (string file in files){
+				try{
+					File.Delete(file);
+					HoneyLog(4, $"Deleted {file}.");
+				}
+				catch (Exception e){
+					HoneyLog(1, $"There was an issue cleaning up {file}. Check HoneyLog.txt for more details.");
+					HoneyLog(1, e.ToString(), true);
+				}
+			}
+		}
+		HoneyLog(3, "Finished cleaning up.");
+	}
+	
+	private void LogoSkip(){
+		HoneyLog(2, "LogoSkip() isn't finished yet.");
+		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
+		string elf = Path.Combine(usrdir, "EBOOT.elf"); // decrypted elf
 	}
 }
