@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3 uid="uid://bsjcg2emguurk"]
+[gd_scene load_steps=54 format=3 uid="uid://bsjcg2emguurk"]
 
 [ext_resource type="Script" uid="uid://dwnoc572rbxo0" path="res://cs/HoneyPatcher.cs" id="1_72wd4"]
 [ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/background.png" id="2_clxbb"]
@@ -27,6 +27,7 @@
 [ext_resource type="Script" uid="uid://ru6t8wmkm4sm" path="res://gd/gen_patches.gd" id="25_7sdjr"]
 [ext_resource type="Script" uid="uid://b1gngepcl1vf2" path="res://gd/usrdir_dialog.gd" id="25_61viv"]
 [ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/sprites/icons/stf-big.png" id="26_8beqc"]
+[ext_resource type="Script" uid="uid://c1iy6n6x414gl" path="res://logoskip.gd" id="26_hph0u"]
 [ext_resource type="Script" uid="uid://7sj8o8ydv082" path="res://gd/game.gd" id="26_x8lee"]
 [ext_resource type="Script" uid="uid://dmt3ma53sykab" path="res://gd/lightning.gd" id="27_0b2i5"]
 [ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/sprites/honeybadger/HONEYNOW.png" id="27_iaya5"]
@@ -211,10 +212,10 @@ offset_bottom = 402.0
 text = "Uninstall all mods..."
 
 [node name="GenPatches" type="Button" parent="." node_paths=PackedStringArray("lightning", "honeynow", "honeynowbig", "lightningsound", "explotano")]
-offset_left = 693.0
-offset_top = 252.0
-offset_right = 862.0
-offset_bottom = 291.0
+offset_left = 692.0
+offset_top = 206.0
+offset_right = 861.0
+offset_bottom = 245.0
 text = "Create patches...."
 autowrap_mode = 2
 script = ExtResource("25_7sdjr")
@@ -225,17 +226,26 @@ lightningsound = NodePath("../HoneyNOW/HoneyNOWBig/LightningSound")
 explotano = NodePath("../Explode")
 
 [node name="PatchesFolder" type="Button" parent="."]
-offset_left = 693.0
-offset_top = 291.0
-offset_right = 862.0
-offset_bottom = 330.0
+offset_left = 692.0
+offset_top = 245.0
+offset_right = 861.0
+offset_bottom = 284.0
 text = "Open workbench..."
 
-[node name="PatchName" type="LineEdit" parent="."]
+[node name="Logoskip" type="CheckButton" parent="."]
+z_index = 6
 offset_left = 693.0
-offset_top = 212.0
-offset_right = 862.0
-offset_bottom = 252.0
+offset_top = 284.0
+offset_right = 866.0
+offset_bottom = 315.0
+text = "Enable Logoskip"
+script = ExtResource("26_hph0u")
+
+[node name="PatchName" type="LineEdit" parent="."]
+offset_left = 692.0
+offset_top = 166.0
+offset_right = 861.0
+offset_bottom = 206.0
 placeholder_text = "Patch name..."
 
 [node name="game" type="Label" parent="." node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "hp", "stfa", "vf2a", "fva", "omga")]
@@ -406,6 +416,8 @@ volume_db = -16.817
 [connection signal="mouse_entered" from="PatchesFolder" to="AudioPlayers/Select" method="_on_patches_folder_mouse_entered"]
 [connection signal="pressed" from="PatchesFolder" to="." method="_on_button_pressed"]
 [connection signal="pressed" from="PatchesFolder" to="AudioPlayers/Confirm" method="_on_patches_folder_pressed"]
+[connection signal="mouse_entered" from="Logoskip" to="Description" method="_on_logoskip_mouse_entered"]
+[connection signal="mouse_entered" from="Logoskip" to="AudioPlayers/Select" method="_on_logoskip_mouse_entered"]
 [connection signal="mouse_entered" from="MenuBar" to="Description" method="_on_menu_bar_mouse_entered"]
 [connection signal="mouse_entered" from="MenuBar" to="AudioPlayers/Select" method="_on_menu_bar_mouse_entered"]
 [connection signal="id_pressed" from="MenuBar/PopupMenu" to="." method="_on_popup_menu_id_pressed"]

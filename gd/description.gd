@@ -18,3 +18,5 @@ func _on_gen_patches_mouse_entered() -> void:
 	text = "Generate patches for rom_*.bin. See GitHub wiki for more details."
 func _on_menu_bar_mouse_entered() -> void:
 	text = "Select the game you would like to install mods to."
+func _on_logoskip_mouse_entered() -> void:
+	text = "Enable skipping logos at the beginning of the game. (Requires decrypted EBOOT.elf). (NOT FINISHED YET)"

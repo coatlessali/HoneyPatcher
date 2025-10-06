@@ -76,12 +76,14 @@ public partial class HoneyPatcher : Node2D
 	
 	string usrdir = ".";
 	string patchname = "Default";
-	bool nomods = false;
 	string game = "stf";
 	string pretty_game = "Sonic the Fighters";
 	string log;
-	byte loglevel = 3;
 	string modsStr;
+	byte loglevel = 3;
+	bool nomods = false;
+	bool logoskip = false;
+	bool gemsSfx = false;
 	
 	public override void _Ready(){	
 		
@@ -122,6 +124,13 @@ public partial class HoneyPatcher : Node2D
 				Directory.CreateDirectory(Path.Combine(workbenchDir, thingy, h));
 				HoneyLog(4, $"Created directory {Path.Combine(workbenchDir, thingy, h)}.");
 			}
+		}
+		
+		/* Easter egg. */
+		if (gemsSfx){
+			_confirm.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_confirm.ogg"));
+			_back.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_back.ogg"));
+			_select.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_select.ogg"));
 		}
 		
 		/* Migration code has been removed from this spot. Please just use V7 if you need this. */
@@ -179,9 +188,26 @@ public partial class HoneyPatcher : Node2D
 		
 		// Make backup if valid stf found and no backup exists
 		string gameBackupDir = Path.Combine(backupDir, game);
-		Directory.CreateDirectory(gameBackupDir);
-		CopyFilesRecursively(usrdir, gameBackupDir);
-		HoneyLog(3, "Created backup.");
+		try{
+			Directory.CreateDirectory(gameBackupDir);
+			CopyFilesRecursively(usrdir, gameBackupDir);
+			HoneyLog(3, "Created backup.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		
+		// Version 8 - check for EBOOT.elf and move it to existing backup folder if it doesn't exist.
+		if (!File.Exists(Path.Combine(gameBackupDir, "EBOOT.elf"))){
+			try{
+				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
+				HoneyLog(3, "Caught missing EBOOT.elf, copied to backup folder.");
+			}
+			catch{
+				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work!");
+			}
+		}
 		
 		// This gets AcbEditor working.
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -370,7 +396,6 @@ public partial class HoneyPatcher : Node2D
 					continue;
 				}
 				unpacked.Add(farc);
-				// string sourceFileName = Path.Combine(usrdir, "rom", farc);
 				string sourceFileName = farc;
 				try{
 					// Set source and destination filename
@@ -387,7 +412,7 @@ public partial class HoneyPatcher : Node2D
 							source.CopyTo(destination);
 						}
 					}
-					HoneyLog(3, "Unpacked farc files.");
+					HoneyLog(4, $"Unpacked {sourceFileName}.");
 				}
 				catch (Exception e){
 					HoneyLog(1, $"{sourceFileName} could not be unpacked.");
@@ -395,6 +420,7 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 		}
+		HoneyLog(3, "Unpacked farc files.");
 	}
 	
 	private void FarcPack(){
@@ -483,13 +509,13 @@ public partial class HoneyPatcher : Node2D
 					ZipFile.ExtractToDirectory(modpath, romdir, true);
 					HoneyLog(4, $"Extracted {modpath}.");
 				}
-				HoneyLog(3, "Extracted mods.");
 			}
 			catch (Exception e){
 				HoneyLog(1, "There was an issue extracting your mods. Check HoneyLog.txt for more information.");
 				HoneyLog(1, e.ToString(), true);
 			}
 		}
+		HoneyLog(3, "Extracted mods.");
 	}
 	
 	private void ApplyPatches(){
@@ -725,7 +751,7 @@ public partial class HoneyPatcher : Node2D
 		// Read INI file
 		// Migrate config from V5 to V6
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false";
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
 				HoneyLog(3, "Created default configuration file.");
@@ -774,6 +800,20 @@ public partial class HoneyPatcher : Node2D
 		catch{
 			HoneyLog(2, "loglevel not found in INI. Setting to default.");
 			data["main"]["loglevel"] = loglevel.ToString();
+		}
+		try{
+			logoskip = Boolean.Parse(data["main"]["logoskip"]);
+		}
+		catch{
+			HoneyLog(2, "logoskip not found in INI. Setting to default.");
+			data["main"]["logoskip"] =  "false";
+		}
+		try{
+			gemsSfx = Boolean.Parse(data["main"]["gemsSfx"]);
+		}
+		catch{
+			HoneyLog(2, "gemsSfx not found in INI. Setting to default.");
+			data["main"]["gemsSfx"] = "false";
 		}
 		new FileIniDataParser().WriteFile(honeyConfig, data);
 		UpdateGame();
@@ -832,5 +872,8 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(2, "LogoSkip() isn't finished yet.");
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
 		string elf = Path.Combine(usrdir, "EBOOT.elf"); // decrypted elf
+		/* Work with EBOOT.elf goes here */
+		File.Copy(elf, bin, true);
+		HoneyLog(4, $"Copied {elf} to {bin}.");
 	}
 }
