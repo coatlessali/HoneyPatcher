@@ -112,7 +112,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -132,6 +132,7 @@ _stfa = NodePath("AudioPlayers/STF")
 _fva = NodePath("AudioPlayers/FV")
 _vf2a = NodePath("AudioPlayers/VF2")
 _omga = NodePath("AudioPlayers/OMG")
+_logoskip = NodePath("Logoskip")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -2
@@ -418,6 +419,7 @@ volume_db = -16.817
 [connection signal="pressed" from="PatchesFolder" to="AudioPlayers/Confirm" method="_on_patches_folder_pressed"]
 [connection signal="mouse_entered" from="Logoskip" to="Description" method="_on_logoskip_mouse_entered"]
 [connection signal="mouse_entered" from="Logoskip" to="AudioPlayers/Select" method="_on_logoskip_mouse_entered"]
+[connection signal="toggled" from="Logoskip" to="." method="_on_logoskip_toggled"]
 [connection signal="mouse_entered" from="MenuBar" to="Description" method="_on_menu_bar_mouse_entered"]
 [connection signal="mouse_entered" from="MenuBar" to="AudioPlayers/Select" method="_on_menu_bar_mouse_entered"]
 [connection signal="id_pressed" from="MenuBar/PopupMenu" to="." method="_on_popup_menu_id_pressed"]

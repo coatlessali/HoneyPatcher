@@ -43,6 +43,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _fva;
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
+	[Export] public CheckButton _logoskip;
 	
 	// This is an absolute war crime and I'm open to suggestions for fixing this garbage
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
@@ -73,6 +74,7 @@ public partial class HoneyPatcher : Node2D
 	string[] fv_roms = {"rom_code1.bin", "rom_code2.bin", "rom_data.bin", "rom_ep1.bin", "rom_ep2.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] vf2_roms = {"ic12_13.bin", "ic12_15.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] omg_roms = {"farc_tex.bin", "rom_code.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin", "string_array2_en.bin", "string_array2_jp.bin"};
+	string[] gamesList = {"stf", "vf2", "fv", "omg"};
 	
 	string usrdir = ".";
 	string patchname = "Default";
@@ -80,7 +82,9 @@ public partial class HoneyPatcher : Node2D
 	string pretty_game = "Sonic the Fighters";
 	string log;
 	string modsStr;
+	
 	byte loglevel = 3;
+	
 	bool nomods = false;
 	bool logoskip = false;
 	bool gemsSfx = false;
@@ -95,17 +99,12 @@ public partial class HoneyPatcher : Node2D
 		_genpatches.Pressed += CreatePatches;
 		_patchesfolder.Pressed += OpenPatchesFolder;
 		_gameselector.IdPressed += GameSelector;
+		_logoskip.Toggled += ToggleLogoskip;
 		
-		// Generate default config
 		LoadConfig();
-		// Empty log
 		File.Create(honeyLog).Close();
-
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
-		string[] gamesList = {"stf", "vf2", "fv", "omg"};
-		
-		// Okay it's a little better now
 		foreach (string h in essentialDirs){
 			try{
 				Directory.CreateDirectory(h);
@@ -168,16 +167,16 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, $"Changed game: {pretty_game}.");
 	}
 	
-	// Install mods
+	/* Install mods */
 	private void OnInstallPressed(){
-		// Check if usrdir is set.
+		/* Check if usrdir is set. */
 		if (usrdir == "."){
 			_back.Play();
 			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
 			HoneyLog(1, "usrdir is unset.");
 			return;
 		}
-		// Check for clean copy of game w/ rom.psarc still intact
+		/* Check for clean copy of game w/ rom.psarc still intact */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			_back.Play();
@@ -186,7 +185,7 @@ public partial class HoneyPatcher : Node2D
 			return;
 		}
 		
-		// Make backup if valid stf found and no backup exists
+		/* Make backup if valid stf found and no backup exists */
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
 			Directory.CreateDirectory(gameBackupDir);
@@ -198,7 +197,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, e.ToString(), true);
 		}
 		
-		// Version 8 - check for EBOOT.elf and move it to existing backup folder if it doesn't exist.
+		/* Version 8 - check for EBOOT.elf and move it to existing backup folder if it doesn't exist. */
 		if (!File.Exists(Path.Combine(gameBackupDir, "EBOOT.elf"))){
 			try{
 				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
@@ -209,12 +208,12 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		
-		// This gets AcbEditor working.
+		/* This gets AcbEditor working. */
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		
-		// Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
-		// and turned it into a DLL. It's honestly still really bloated and could do with
-		// a bit more cleanup.
+		/* Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
+		   and turned it into a DLL. It's honestly still really bloated and could do with
+		   a bit more cleanup. */
 		try{
 			PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 			HoneyLog(3, "Extracted rom.psarc");
@@ -254,9 +253,9 @@ public partial class HoneyPatcher : Node2D
 		ShowError("Success!", "Mods have been installed!");
 	}
 	
-	// Uninstall Mods
+	/* Uninstall Mods */
 	private void OnRestoreUsrdirPressed(){
-		// Check if backup exists
+		/* Check if backup exists */
 		if (!Directory.Exists(Path.Combine(backupDir, game))){
 			_back.Play();
 			ShowError("Error", "No backup found.");
@@ -264,7 +263,7 @@ public partial class HoneyPatcher : Node2D
 			return;
 		}
 		
-		// Clear contents of USRDIR
+		/* Clear contents of USRDIR */
 		try{
 			Directory.Delete(usrdir, true);
 			HoneyLog(4, $"Deleted {usrdir}.");
@@ -279,7 +278,7 @@ public partial class HoneyPatcher : Node2D
 			return;
 		}
 		
-		// Restore backup
+		/* Restore backup */
 		try{
 			CopyFilesRecursively(Path.Combine(backupDir, game), usrdir);
 			HoneyLog(3, "Restored game files.");
@@ -373,21 +372,11 @@ public partial class HoneyPatcher : Node2D
 	https://github.com/blueskythlikesclouds/MikuMikuLibrary */
 	
 	private void FarcUnpack(){
-		// Experimental - use Directory.GetFiles(), which requires two passes
-		/*string[] farcs =   {"sprite/n_advstf.farc", "sprite/n_advfv.farc", "sprite/n_advvf2.farc",
-							"sprite/n_adv.farc", "sprite/n_cmn.farc", "sprite/n_fnt.farc", 
-							"sprite/n_info.farc", "sprite/n_stf.farc", "sprite/n_fv.farc",
-							"sprite/n_advfv2.farc", "sprite/n_omg.farc", "string_array.farc", 
-							"sprite/n_advstf/texture.farc", "sprite/n_advfv/texture.farc", "sprite/n_advvf2/texture.farc",
-							"sprite/n_adv/texture.farc", "sprite/n_omg/texture.farc", "sprite/n_cmn/texture.farc", 
-							"sprite/n_fnt/texture.farc", "sprite/n_info/texture.farc", "sprite/n_stf/texture.farc",};
-		*/
-		
 		string romdir = Path.Combine(usrdir, "rom");
 		List<string> unpacked = new List<string>();
 		
 		for (int i = 0; i < 2; i++){
-			// get all farc files, we need to do this twice hence the for loop
+			/* get all farc files, we need to do this twice hence the for loop */
 			string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
 			HoneyLog(4, farcs.Length.ToString());
 			foreach (string farc in farcs ){
@@ -398,7 +387,7 @@ public partial class HoneyPatcher : Node2D
 				unpacked.Add(farc);
 				string sourceFileName = farc;
 				try{
-					// Set source and destination filename
+					/* Set source and destination filename */
 					string destinationFileName = Path.ChangeExtension(sourceFileName, null);
 				
 					using (var stream = File.OpenRead(sourceFileName)){
@@ -424,28 +413,18 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void FarcPack(){
-		// Experimental - use Directory.GetFiles()
-		/*string[] dirlist = {"sprite/n_advstf/texture", "sprite/n_advfv/texture", "sprite/n_advvf2/texture",
-							"sprite/n_adv/texture", "sprite/n_omg/texture", "sprite/n_cmn/texture", 
-							"sprite/n_fnt/texture", "sprite/n_info/texture", "sprite/n_stf/texture", 
-							"string_array", "sprite/n_advstf", "sprite/n_advfv",
-							"sprite/n_advvf2", "sprite/n_adv", "sprite/n_omg", 
-							"sprite/n_cmn", "sprite/n_fnt", "sprite/n_info", "sprite/n_stf"};
-		*/
 		string romdir = Path.Combine(usrdir, "rom");
 		string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
 		Array.Reverse(farcs);
-		// HoneyLog(4, String.Join("\n", farcs)); // was I drunk when I wrote this?
 	
 		foreach (string farc in farcs)
 		{
-			// string sourceFileName = Path.GetFullPath(Path.Combine(usrdir, "rom", dir));
 			string sourceFileName = farc.Replace(".farc", String.Empty);
 			try{
-				// Set source and destination file name
+				/* Set source and destination file name */
 				string destinationFileName = Path.ChangeExtension(sourceFileName, "farc");;
 				
-				// Modified by me, otherwise it throws access errors if you don't use "using"
+				/* Modified by me, otherwise it throws access errors if you don't use "using" */
 				using (var farcArchive = new FarcArchive { IsCompressed = false, Alignment = 16 }){
 				
 					if (File.GetAttributes(sourceFileName).HasFlag(FileAttributes.Directory)){
@@ -456,7 +435,7 @@ public partial class HoneyPatcher : Node2D
 						farcArchive.Add(Path.GetFileName(sourceFileName), sourceFileName);
 					farcArchive.Save(destinationFileName);
 				}
-				// Cleanup
+				/* Cleanup */
 				try{
 					Directory.Delete(sourceFileName, true);
 					HoneyLog(4, $"{sourceFileName} deleted.");
@@ -519,9 +498,9 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ApplyPatches(){
-		// Get list of files in rom folder
+		/* Get list of files in rom folder */
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
-		// Apply in alphabetical order
+		/* Apply in alphabetical order */
 		Array.Sort(files);
 		foreach (string mod in files){
 			string modpath = mod; // patch
@@ -529,7 +508,7 @@ public partial class HoneyPatcher : Node2D
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			string patchdest; // file to be patched
 			switch(Path.GetExtension(modpath)){
-				// Check the file extension, which should be the name of the file you want to patch
+				/* Check the file extension, which should be the name of the file you want to patch */
 				case ".rom_code": patchdest = Path.Combine(stf_rom, "rom_code.bin"); break;
 				case ".rom_code1": patchdest = Path.Combine(stf_rom, "rom_code1.bin"); break;
 				case ".rom_code2": patchdest = Path.Combine(stf_rom, "rom_code2.bin"); break;
@@ -544,10 +523,10 @@ public partial class HoneyPatcher : Node2D
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				
 				// BREAKING: no longer byte patching this bc it makes no sense
-				// case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
-				// case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
-				// case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
-				// case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
+				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
+				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
+				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
+				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
 				default: continue;
 			}
 			byte[] original = File.ReadAllBytes(patchdest);
@@ -585,17 +564,17 @@ public partial class HoneyPatcher : Node2D
 			if (Path.GetExtension(model) != ".stfmdl")
 				continue;
 			string fileName = Path.GetFileName(model);
-			// get the first 4 digits of the filename to be the id
+			/* get the first 4 digits of the filename to be the id */
 			fileName = fileName.Substring(0, 4);
 			int modelId;
-			// attempt parsing
+			/* attempt parsing */
 			if (!Int32.TryParse(fileName, out modelId)){
 				HoneyLog(2, $"Filename of {model} is invalid - skipping.");
 				continue;
 			}
-			// remove extension
+			/* remove extension */
 			string modelName = Path.GetFileNameWithoutExtension(model);
-			// read filepath
+			/* read filepath */
 			modelName = Path.Combine(usrdir, "rom", modelName);
 			ModelInject.AddModel(modelId, modelName);
 		}
@@ -611,7 +590,7 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void UnpackAcb(){
-		// AcbEditor by Skyth - did you know the upstream build literally can't run without a console?
+		/* AcbEditor by Skyth - did you know the upstream build literally can't run without a console? */
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
 		try{
 			AcbEditorThing.AcbEdit(AcbFile);
@@ -633,7 +612,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
-		// Cleanup
+		/* Cleanup */
 		try{
 			Directory.Delete(AcbFolder[0], true);
 			HoneyLog(4, "Cleaned up ACB Folder");
@@ -645,7 +624,7 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void DbToXml(){
-		// DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters?
+		/* DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters? */
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.bin"), Path.Combine(stringArrayDir, "string_array2_en.bin"), Path.Combine(stringArrayDir, "string_array_jp.bin"), Path.Combine(stringArrayDir, "string_array2_jp.bin")};
 		string[] dbFile = new string[1];
@@ -668,7 +647,6 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void XmlToDb(){
-		// DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters?
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.xml"), Path.Combine(stringArrayDir, "string_array2_en.xml"), Path.Combine(stringArrayDir, "string_array_jp.xml"), Path.Combine(stringArrayDir, "string_array2_jp.xml")};
 		string[] dbFile = new string[1];
@@ -710,7 +688,6 @@ public partial class HoneyPatcher : Node2D
 		string[] ddsList = Directory.EnumerateFiles(usrdir, "*.dds", SearchOption.AllDirectories).ToArray();
 		foreach (string dds in ddsList){
 			using (FileStream fs = File.Open(dds, FileMode.Open, System.IO.FileAccess.ReadWrite, FileShare.ReadWrite)){
-				// byte[] file = File.ReadAllBytes(dds);
 				byte[] headerbytes = new byte[3];
 				fs.Read(headerbytes, 0, 3);
 				string header = System.Text.Encoding.UTF8.GetString(headerbytes, 0, 3);
@@ -746,10 +723,8 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void LoadConfig(){
-		// https://github.com/rickyah/ini-parser
-		// MIT License
-		// Read INI file
-		// Migrate config from V5 to V6
+		/* https://github.com/rickyah/ini-parser */
+		/* Migrates config from V5 to V6 */
 		if(!File.Exists(honeyConfig)){
 			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false";
 			try{
@@ -808,6 +783,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(2, "logoskip not found in INI. Setting to default.");
 			data["main"]["logoskip"] =  "false";
 		}
+		_logoskip.ButtonPressed = logoskip;
 		try{
 			gemsSfx = Boolean.Parse(data["main"]["gemsSfx"]);
 		}
@@ -840,7 +816,7 @@ public partial class HoneyPatcher : Node2D
 			}	
 		}
 		else{
-			// This fixes multithreading.
+			/* This fixes multithreading. */
 			_progress.CallDeferred("append_text", $"[{d}] {message}\n");
 		}
 		GD.Print($"[{d}] {message}");
@@ -868,10 +844,29 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, "Finished cleaning up.");
 	}
 	
+	private void ToggleLogoskip(bool toggle){
+		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
+		data["main"]["logoskip"] = "false";
+		if (toggle){
+			data["main"]["logoskip"] =  "true";
+			logoskip = true;
+		}
+		new FileIniDataParser().WriteFile(honeyConfig, data);
+		HoneyLog(3, "Toggled logoskip.");
+	}
+	
 	private void LogoSkip(){
 		HoneyLog(2, "LogoSkip() isn't finished yet.");
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
 		string elf = Path.Combine(usrdir, "EBOOT.elf"); // decrypted elf
+		if (!logoskip){
+			HoneyLog(4, "LogoSkip disabled. Skipping.");
+			return;
+		}
+		if (!File.Exists(elf)){
+			HoneyLog(2, $"{elf} could not be found. Not applying LogoSkip.");
+			return;
+		}
 		/* Work with EBOOT.elf goes here */
 		File.Copy(elf, bin, true);
 		HoneyLog(4, $"Copied {elf} to {bin}.");
