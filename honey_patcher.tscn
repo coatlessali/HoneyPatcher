@@ -112,10 +112,11 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_gamebutton")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
+_selectusrdir = NodePath("SelectUSRDIR")
 _install = NodePath("Install")
 _restoreusrdir = NodePath("RestoreUSRDIR")
 _modsfolder = NodePath("Mods")
@@ -133,6 +134,7 @@ _fva = NodePath("AudioPlayers/FV")
 _vf2a = NodePath("AudioPlayers/VF2")
 _omga = NodePath("AudioPlayers/OMG")
 _logoskip = NodePath("Logoskip")
+_gamebutton = NodePath("MenuBar")
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -2

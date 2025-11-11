@@ -27,6 +27,7 @@ public partial class HoneyPatcher : Node2D
 {	
 	[Export] public AcceptDialog _acceptdialog; // Errors and whatnot
 	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
+	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
 	[Export] public Button _restoreusrdir; // Restore USRDIR button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
@@ -44,6 +45,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
 	[Export] public CheckButton _logoskip;
+	[Export] public MenuBar _gamebutton;
 	
 	// This is an absolute war crime and I'm open to suggestions for fixing this garbage
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
@@ -167,8 +169,52 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, $"Changed game: {pretty_game}.");
 	}
 	
+	private void EnableButtons(){
+		_install.Disabled = false;
+		_restoreusrdir.Disabled = false;
+		_genpatches.Disabled = false;
+		_gamebutton.Visible = true;
+		_logoskip.Disabled = false;
+		_selectusrdir.Disabled = false;
+	}
+	
+	private void DisableButtons(){
+		_install.Disabled = true;
+		_restoreusrdir.Disabled = true;
+		_genpatches.Disabled = true;
+		_gamebutton.Visible = false;
+		_logoskip.Disabled = true;
+		_selectusrdir.Disabled = true;
+	}
+	
+	private async void OnInstallPressed(){
+		// disable buttons
+		DisableButtons();
+		HoneyLog(4, "Disabled Menu Buttons.");
+		try{
+			// Runs the below function
+			await Task.Run(() => { InstallAsync(); });
+			string[] success = { "Success!", "Mods have been installed!" };
+			string[] success2 = { "Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways." };
+			if (nomods){
+				success = success2;
+			}
+			GameSound();
+			ShowError(success[0], success[1]);
+		}
+		catch (Exception e){
+			HoneyLog(1, $"Failed to install mods. See HoneyLog.txt for more information.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		finally
+		{
+			EnableButtons();
+			HoneyLog(4, $"Enabled Menu Buttons.");
+		}
+	}
+	
 	/* Install mods */
-	private void OnInstallPressed(){
+	private void InstallAsync(){
 		/* Check if usrdir is set. */
 		if (usrdir == "."){
 			_back.Play();
@@ -244,17 +290,33 @@ public partial class HoneyPatcher : Node2D
 		CleanUp();
 		LogoSkip();
 		
-		if (nomods){
+		
+	}
+	
+	private async void OnRestoreUsrdirPressed(){
+		// disable buttons
+		DisableButtons();
+		HoneyLog(4, "Disabled Menu Buttons.");
+		try{
+			// Runs the below function
+			await Task.Run(() => { RestoreAsync(); });
 			GameSound();
-			ShowError("Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways.");
-			return;
+			ShowError("Success", "Files restored.");
+			HoneyLog(3, "Restored game files.");
 		}
-		GameSound();
-		ShowError("Success!", "Mods have been installed!");
+		catch (Exception e){
+			HoneyLog(1, $"Failed to restore game files. See HoneyLog.txt for more information.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		finally
+		{
+			EnableButtons();
+			HoneyLog(4, $"Enabled Menu Buttons.");
+		}
 	}
 	
 	/* Uninstall Mods */
-	private void OnRestoreUsrdirPressed(){
+	private void RestoreAsync(){
 		/* Check if backup exists */
 		if (!Directory.Exists(Path.Combine(backupDir, game))){
 			_back.Play();
@@ -289,9 +351,6 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, e.ToString(), true);
 			return;
 		}
-		GameSound();
-		ShowError("Success", "Files restored.");
-		HoneyLog(3, "Restored game files.");
 	}
 
 	private void OpenModsFolder(){
