@@ -190,7 +190,27 @@ public partial class HoneyPatcher : Node2D
 	private async void OnInstallPressed(){
 		// disable buttons
 		DisableButtons();
-		HoneyLog(4, "Disabled Menu Buttons.");
+		HoneyLog(4, "Disabled Menu buttons.");
+		/* Check if usrdir is set. */
+		if (usrdir == "."){
+			_back.Play();
+			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
+			HoneyLog(1, "usrdir is unset.");
+			EnableButtons();
+			HoneyLog(4, "Enabled Menu buttons.");
+			return;
+		}
+		/* Check for clean copy of game w/ rom.psarc still intact */
+		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		if (!File.Exists(psarc_path)){
+			_back.Play();
+			ShowError("Error", $"rom.psarc could not be found. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
+			HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
+			EnableButtons();
+			HoneyLog(4, "Enabled Menu buttons.");
+			return;
+		}
+		
 		try{
 			// Runs the below function
 			await Task.Run(() => { InstallAsync(); });
@@ -215,23 +235,8 @@ public partial class HoneyPatcher : Node2D
 	
 	/* Install mods */
 	private void InstallAsync(){
-		/* Check if usrdir is set. */
-		if (usrdir == "."){
-			_back.Play();
-			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
-			HoneyLog(1, "usrdir is unset.");
-			return;
-		}
-		/* Check for clean copy of game w/ rom.psarc still intact */
-		string psarc_path = Path.Combine(usrdir, "rom.psarc");
-		if (!File.Exists(psarc_path)){
-			_back.Play();
-			ShowError("Error", $"rom.psarc could not be found. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
-			HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
-			return;
-		}
-		
 		/* Make backup if valid stf found and no backup exists */
+		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
 			Directory.CreateDirectory(gameBackupDir);
@@ -249,9 +254,8 @@ public partial class HoneyPatcher : Node2D
 				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
 				HoneyLog(3, "Caught missing EBOOT.elf, copied to backup folder.");
 			}
-			catch (Exception e){
-				GD.PrintErr(e);
-				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work! (Did you try decrypting it after clicking uninstall?)");
+			catch{
+				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work!");
 			}
 		}
 		
@@ -295,9 +299,18 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private async void OnRestoreUsrdirPressed(){
-		// disable buttons
+		/* Disable buttons */
 		DisableButtons();
 		HoneyLog(4, "Disabled Menu Buttons.");
+		/* Check if backup exists */
+		if (!Directory.Exists(Path.Combine(backupDir, game))){
+			_back.Play();
+			ShowError("Error", "No backup found.");
+			HoneyLog(1, "No backup found.");
+			EnableButtons();
+			HoneyLog(4, "Enabled Menu buttons.");
+			return;
+		}
 		try{
 			// Runs the below function
 			await Task.Run(() => { RestoreAsync(); });
@@ -318,14 +331,6 @@ public partial class HoneyPatcher : Node2D
 	
 	/* Uninstall Mods */
 	private void RestoreAsync(){
-		/* Check if backup exists */
-		if (!Directory.Exists(Path.Combine(backupDir, game))){
-			_back.Play();
-			ShowError("Error", "No backup found.");
-			HoneyLog(1, "No backup found.");
-			return;
-		}
-		
 		/* Clear contents of USRDIR */
 		try{
 			Directory.Delete(usrdir, true);
