@@ -249,8 +249,9 @@ public partial class HoneyPatcher : Node2D
 				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
 				HoneyLog(3, "Caught missing EBOOT.elf, copied to backup folder.");
 			}
-			catch{
-				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work!");
+			catch (Exception e){
+				GD.PrintErr(e);
+				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work! (Did you try decrypting it after clicking uninstall?)");
 			}
 		}
 		
