@@ -86,7 +86,7 @@ public partial class HoneyPatcher : Node2D
 	string log;
 	string modsStr;
 	
-	byte loglevel = 3;
+	byte loglevel = 2;
 	
 	bool nomods = false;
 	bool logoskip = false;
@@ -105,6 +105,16 @@ public partial class HoneyPatcher : Node2D
 		_gameselector.IdPressed += GameSelector;
 		_logoskip.Toggled += ToggleLogoskip;
 		_cleanup.Toggled += ToggleCleanup;
+		
+		/* Enable portable mode because people kept asking for it. */
+		if (File.Exists("portable.txt")){
+			HoneyLog(3, "Found portable.txt. Enabling portable mode.");
+			modsDir = "mods";
+			workbenchDir = "workbench";
+			backupDir = "BACKUP";
+			honeyConfig = "HoneyConfig.ini";
+			honeyLog = "HoneyLog.txt";
+		}
 		
 		LoadConfig();
 		File.Create(honeyLog).Close();
@@ -250,17 +260,6 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
-		
-		/* Version 8 - check for EBOOT.elf and move it to existing backup folder if it doesn't exist. */
-		/*if (!File.Exists(Path.Combine(gameBackupDir, "EBOOT.elf"))){
-			try{
-				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
-				HoneyLog(3, "Caught missing EBOOT.elf, copied to backup folder.");
-			}
-			catch{
-				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work!");
-			}
-		}*/
 		
 		/* This gets AcbEditor working. */
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -806,7 +805,7 @@ public partial class HoneyPatcher : Node2D
 		/* https://github.com/rickyah/ini-parser */
 		/* Migrates config from V5 to V6 */
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true";
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
 				HoneyLog(3, "Created default configuration file.");
@@ -963,6 +962,10 @@ public partial class HoneyPatcher : Node2D
 	private void LogoSkip(){
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
 		string elf = ProjectSettings.GlobalizePath("res://EBOOT.bin"); // modified bin
+		if (game != "stf"){
+			HoneyLog(4, "Game is not Sonic the Fighters. Skipping.");
+			return;
+		}
 		if (!logoskip){
 			HoneyLog(4, "LogoSkip disabled. Skipping.");
 			return;

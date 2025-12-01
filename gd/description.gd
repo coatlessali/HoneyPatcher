@@ -21,4 +21,4 @@ func _on_menu_bar_mouse_entered() -> void:
 func _on_logoskip_mouse_entered() -> void:
 	text = "Enable skipping logos at the beginning of the game. (Requires decrypted EBOOT.elf). (NOT FINISHED YET)"
 func _on_cleanup_mouse_entered() -> void:
-	text = "Disable cleanup for debug and modding." 
+	text = "Leaves unpacked files for debugging and ease of modding purposes." 
