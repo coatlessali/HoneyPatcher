@@ -808,7 +808,7 @@ public partial class HoneyPatcher : Node2D
 		/* https://github.com/rickyah/ini-parser */
 		/* Migrates config from V5 to V6 */
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
 				HoneyLog(3, "Created default configuration file.");
