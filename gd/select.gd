@@ -17,3 +17,5 @@ func _on_patches_folder_mouse_entered() -> void:
 	play()
 func _on_logoskip_mouse_entered() -> void:
 	play()
+func _on_cleanup_mouse_entered() -> void:
+	play()

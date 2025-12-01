@@ -45,6 +45,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
 	[Export] public CheckButton _logoskip;
+	[Export] public CheckButton _cleanup;
 	[Export] public MenuBar _gamebutton;
 	
 	// This is an absolute war crime and I'm open to suggestions for fixing this garbage
@@ -89,6 +90,7 @@ public partial class HoneyPatcher : Node2D
 	
 	bool nomods = false;
 	bool logoskip = false;
+	bool cleanup = true;
 	bool gemsSfx = false;
 	
 	public override void _Ready(){	
@@ -102,6 +104,7 @@ public partial class HoneyPatcher : Node2D
 		_patchesfolder.Pressed += OpenPatchesFolder;
 		_gameselector.IdPressed += GameSelector;
 		_logoskip.Toggled += ToggleLogoskip;
+		_cleanup.Toggled += ToggleCleanup;
 		
 		LoadConfig();
 		File.Create(honeyLog).Close();
@@ -249,7 +252,7 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		/* Version 8 - check for EBOOT.elf and move it to existing backup folder if it doesn't exist. */
-		if (!File.Exists(Path.Combine(gameBackupDir, "EBOOT.elf"))){
+		/*if (!File.Exists(Path.Combine(gameBackupDir, "EBOOT.elf"))){
 			try{
 				File.Copy(Path.Combine(usrdir, "EBOOT.elf"), Path.Combine(gameBackupDir, "EBOOT.elf"));
 				HoneyLog(3, "Caught missing EBOOT.elf, copied to backup folder.");
@@ -257,7 +260,7 @@ public partial class HoneyPatcher : Node2D
 			catch{
 				HoneyLog(2, "Could not copy EBOOT.elf to backup folder - it may be missing. Logoskip will not work!");
 			}
-		}
+		}*/
 		
 		/* This gets AcbEditor working. */
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -502,8 +505,10 @@ public partial class HoneyPatcher : Node2D
 				}
 				/* Cleanup */
 				try{
-					Directory.Delete(sourceFileName, true);
-					HoneyLog(4, $"{sourceFileName} deleted.");
+					if (cleanup){
+						Directory.Delete(sourceFileName, true);
+						HoneyLog(4, $"{sourceFileName} deleted.");
+					}
 				}
 				catch (Exception e)
 				{
@@ -679,8 +684,10 @@ public partial class HoneyPatcher : Node2D
 		}
 		/* Cleanup */
 		try{
-			Directory.Delete(AcbFolder[0], true);
-			HoneyLog(4, "Cleaned up ACB Folder");
+			if (cleanup){
+				Directory.Delete(AcbFolder[0], true);
+				HoneyLog(4, "Cleaned up ACB Folder");
+			}
 		}
 		catch (Exception e){
 			HoneyLog(1, $"There was an issue deleting {game}_all.acb. Check HoneyLog.txt for more details.");
@@ -739,6 +746,14 @@ public partial class HoneyPatcher : Node2D
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("The typefaces included herein are solely developed\nby DynaComware.\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("”PlayStation” is a registered trademark\nof Sony Computer Entertainment Inc.\n", modsStr);
+		if (logoskip){
+			stringArrayEn = stringArrayEn.Replace("A very small percentage of people may experience a seizure when exposed to certain visual images, including flashing lights or patterns that may appear in video games. If you or any of your relatives have a history of seizures or epilepsy, consult a doctor before playing.", String.Empty);
+			HoneyLog(4, "Emptied epilepsy warning.");
+		}
+		else{
+			stringArrayEn = stringArrayEn.Replace("A very small percentage of people may experience a seizure when exposed to certain visual images, including flashing lights or patterns that may appear in video games. If you or any of your relatives have a history of seizures or epilepsy, consult a doctor before playing.", "This game was patched with HoneyPatcher. HoneyPatcher is free software, with source code and help available at https://github.com/coatlessali/HoneyPatcher.");
+			HoneyLog(4, "Replaced epilepsy warning with HoneyPatcher notice.");
+		}
 		try{
 			File.WriteAllText(stringArrayEnPath, stringArrayEn);
 			HoneyLog(3, "Injected mod list into string_array_en.xml.");
@@ -856,6 +871,14 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(2, "gemsSfx not found in INI. Setting to default.");
 			data["main"]["gemsSfx"] = "false";
 		}
+		try{
+			cleanup = Boolean.Parse(data["main"]["cleanup"]);
+		}
+		catch{
+			HoneyLog(2, "cleanup not found in INI. Setting to default.");
+			data["main"]["cleanup"] = "true";
+		}
+		_cleanup.ButtonPressed = cleanup;
 		new FileIniDataParser().WriteFile(honeyConfig, data);
 		UpdateGame();
 		HoneyLog(3, "loaded HoneyConfig.ini");
@@ -892,6 +915,10 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void CleanUp(){
+		if (!cleanup){
+			HoneyLog(3, "Skipping cleanup.");
+			return;
+		}
 		string[] cleanupExts = { "*.txt", "*.rom_code", "*.rom_code1", "*.rom_code2", "*.rom_tex", "*.rom_ep", "*.rom_ep1", "*.rom_ep2", "*.rom_cop", "*.rom_pol", "*.rom_data", "*.ic12_13", "*.ic12_15", "*.string_array_en", "*.string_array2_en", "*.string_array_jp", "*.string_array2_jp", "*.loc" };
 		foreach (string ext in cleanupExts){
 			string[] files = Directory.EnumerateFiles(usrdir, ext, SearchOption.AllDirectories).ToArray();
@@ -912,6 +939,7 @@ public partial class HoneyPatcher : Node2D
 	private void ToggleLogoskip(bool toggle){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
 		data["main"]["logoskip"] = "false";
+		logoskip = false;
 		if (toggle){
 			data["main"]["logoskip"] =  "true";
 			logoskip = true;
@@ -920,19 +948,25 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, "Toggled logoskip.");
 	}
 	
+	private void ToggleCleanup(bool toggle){
+		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
+		data["main"]["cleanup"] = "false";
+		cleanup = false;
+		if (toggle){
+			data["main"]["cleanup"] =  "true";
+			cleanup = true;
+		}
+		new FileIniDataParser().WriteFile(honeyConfig, data);
+		HoneyLog(3, "Toggled cleanup.");
+	}
+	
 	private void LogoSkip(){
-		HoneyLog(2, "LogoSkip() isn't finished yet.");
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
-		string elf = Path.Combine(usrdir, "EBOOT.elf"); // decrypted elf
+		string elf = ProjectSettings.GlobalizePath("res://EBOOT.bin"); // modified bin
 		if (!logoskip){
 			HoneyLog(4, "LogoSkip disabled. Skipping.");
 			return;
 		}
-		if (!File.Exists(elf)){
-			HoneyLog(2, $"{elf} could not be found. Not applying LogoSkip.");
-			return;
-		}
-		/* Work with EBOOT.elf goes here */
 		File.Copy(elf, bin, true);
 		HoneyLog(4, $"Copied {elf} to {bin}.");
 	}

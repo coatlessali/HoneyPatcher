@@ -1,4 +1,4 @@
-[gd_scene load_steps=54 format=3 uid="uid://bsjcg2emguurk"]
+[gd_scene load_steps=55 format=3 uid="uid://bsjcg2emguurk"]
 
 [ext_resource type="Script" uid="uid://dwnoc572rbxo0" path="res://cs/HoneyPatcher.cs" id="1_72wd4"]
 [ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/background.png" id="2_clxbb"]
@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://bil4r8s58dipx" path="res://assets/sprites/explotano/explotano06.png" id="21_3ibrs"]
 [ext_resource type="Texture2D" uid="uid://bj5cwia2q07ly" path="res://assets/sprites/explotano/explotano07.png" id="22_215ki"]
 [ext_resource type="AudioStream" uid="uid://cfgjpqrcyrimq" path="res://assets/sounds/explotano.ogg" id="23_1qnki"]
+[ext_resource type="Script" uid="uid://0ghtl8n8wdp7" path="res://title.gd" id="24_iwxrx"]
 [ext_resource type="Script" uid="uid://ru6t8wmkm4sm" path="res://gd/gen_patches.gd" id="25_7sdjr"]
 [ext_resource type="Script" uid="uid://b1gngepcl1vf2" path="res://gd/usrdir_dialog.gd" id="25_61viv"]
 [ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/sprites/icons/stf-big.png" id="26_8beqc"]
@@ -112,7 +113,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_gamebutton")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -134,6 +135,7 @@ _fva = NodePath("AudioPlayers/FV")
 _vf2a = NodePath("AudioPlayers/VF2")
 _omga = NodePath("AudioPlayers/OMG")
 _logoskip = NodePath("Logoskip")
+_cleanup = NodePath("Cleanup")
 _gamebutton = NodePath("MenuBar")
 
 [node name="Background" type="Sprite2D" parent="."]
@@ -174,6 +176,7 @@ offset_top = 47.0
 offset_right = 619.0
 offset_bottom = 70.0
 text = "HoneyPatcher: Arcade Stage 8 Infinity"
+script = ExtResource("24_iwxrx")
 
 [node name="Description" type="Label" parent="."]
 offset_left = 251.0
@@ -241,7 +244,16 @@ offset_left = 693.0
 offset_top = 284.0
 offset_right = 866.0
 offset_bottom = 315.0
-text = "Enable Logoskip"
+text = "Logoskip"
+script = ExtResource("26_hph0u")
+
+[node name="Cleanup" type="CheckButton" parent="."]
+z_index = 6
+offset_left = 693.0
+offset_top = 317.0
+offset_right = 866.0
+offset_bottom = 348.0
+text = "Cleanup"
 script = ExtResource("26_hph0u")
 
 [node name="PatchName" type="LineEdit" parent="."]
@@ -422,6 +434,9 @@ volume_db = -16.817
 [connection signal="mouse_entered" from="Logoskip" to="Description" method="_on_logoskip_mouse_entered"]
 [connection signal="mouse_entered" from="Logoskip" to="AudioPlayers/Select" method="_on_logoskip_mouse_entered"]
 [connection signal="toggled" from="Logoskip" to="." method="_on_logoskip_toggled"]
+[connection signal="mouse_entered" from="Cleanup" to="Description" method="_on_cleanup_mouse_entered"]
+[connection signal="mouse_entered" from="Cleanup" to="AudioPlayers/Select" method="_on_cleanup_mouse_entered"]
+[connection signal="toggled" from="Cleanup" to="." method="_on_cleanup_toggled"]
 [connection signal="mouse_entered" from="MenuBar" to="Description" method="_on_menu_bar_mouse_entered"]
 [connection signal="mouse_entered" from="MenuBar" to="AudioPlayers/Select" method="_on_menu_bar_mouse_entered"]
 [connection signal="id_pressed" from="MenuBar/PopupMenu" to="." method="_on_popup_menu_id_pressed"]
