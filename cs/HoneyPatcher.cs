@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
 using SonicAudioLib;
 using SonicAudioLib.CriMw;
 using SonicAudioLib.IO;
@@ -71,6 +72,7 @@ public partial class HoneyPatcher : Node2D
 	string backupDir = ProjectSettings.GlobalizePath("user://BACKUP");
 	string honeyConfig = ProjectSettings.GlobalizePath("user://HoneyConfig.ini");
 	string honeyLog = ProjectSettings.GlobalizePath("user://HoneyLog.txt");
+	string elf = ProjectSettings.GlobalizePath("user://EBOOT.bin"); // modified bin
 	
 	// model 2 game file lists for patch creation
 	string[] stf_roms = {"rom_code1.bin", "rom_data.bin", "rom_ep.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
@@ -114,6 +116,7 @@ public partial class HoneyPatcher : Node2D
 			backupDir = "BACKUP";
 			honeyConfig = "HoneyConfig.ini";
 			honeyLog = "HoneyLog.txt";
+			elf = "EBOOT.bin";
 		}
 		
 		LoadConfig();
@@ -961,7 +964,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void LogoSkip(){
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
-		string elf = ProjectSettings.GlobalizePath("res://EBOOT.bin"); // modified bin
+		/* Sanity Checks. */
 		if (game != "stf"){
 			HoneyLog(4, "Game is not Sonic the Fighters. Skipping.");
 			return;
@@ -970,7 +973,29 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(4, "LogoSkip disabled. Skipping.");
 			return;
 		}
-		File.Copy(elf, bin, true);
-		HoneyLog(4, $"Copied {elf} to {bin}.");
+		/* Attempt a local copy first, as a manual override. */
+		try{
+			File.Copy(elf, bin, true);
+			HoneyLog(3, $"Copied {elf} to {bin}.");
+			return;
+		}
+		catch{
+			HoneyLog(2, $"Failed to copy {elf} to your usrdir. It may not exist. Attempting download from GitHub...");
+		}
+		/* Download the latest EBOOT from the GitHub. */
+		try{
+			using (var client = new System.Net.Http.HttpClient()){
+				using (var s = client.GetStreamAsync("https://github.com/coatlessali/HoneyPatcher/raw/refs/heads/main/EBOOT.bin")){
+					using (var fs = new FileStream(bin, FileMode.OpenOrCreate)){
+						s.Result.CopyTo(fs);
+						HoneyLog(3, $"Downloaded patched EBOOT to {bin}.");
+					}
+				}
+			}
+		}
+		catch (Exception e){
+			HoneyLog(1, "A problem occurred trying to download EBOOT.bin. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
 	}
 }
