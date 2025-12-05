@@ -751,6 +751,7 @@ public partial class HoneyPatcher : Node2D
 		string stringArrayEnPath = Path.Combine(usrdir, "rom", "string_array", "string_array_en.xml");
 		string stringArrayEn = File.ReadAllText(stringArrayEnPath);
 		/* This works perfectly on any standard operating system. */
+		stringArrayEn = stringArrayEn.Replace(":Information", ":Show Mods");
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
 		/* Microsoft, in their infinite wisdom, in the 1980s (probably), decided that their newline should be an entire two bytes larger than the newline on every other OS that was available at the time - or thereafter. */
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\r\n", String.Empty);
