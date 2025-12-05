@@ -396,6 +396,10 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		foreach (string filename in files){
+			if (!File.Exists(Path.Combine(workbenchDir, "modified", game, filename))){
+				HoneyLog(2, $"Did not find modified {filename}. If this is intentional/no changes were made, please ignore this message.");
+				continue;
+			}
 			uint count = 0;
 			List<string> locations = new List<string>();
 			List<byte> changes = new List<byte>();
@@ -412,10 +416,11 @@ public partial class HoneyPatcher : Node2D
 			string patch = Path.Combine(workbenchDir, "patches", game, patchname + "." + patchextension);
 			string patchloc = patch + ".loc";
 			File.WriteAllBytes(patch, changes.ToArray());
-			HoneyLog(3, $"Created {patch}");
+			HoneyLog(4, $"Created {patch}");
 			File.WriteAllLines(patchloc, locations.ToArray());
-			HoneyLog(3, $"Created {patchloc}");
+			HoneyLog(4, $"Created {patchloc}");
 		}
+		HoneyLog(3, $"Created patches.");
 	}
 
 	public void ShowError(string title, string text){
