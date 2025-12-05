@@ -288,9 +288,9 @@ public partial class HoneyPatcher : Node2D
 		}
 		FarcUnpack();
 		UnpackAcb();
-		DbToXml();
 		ExtractMods();
 		ApplyPatches();
+		DbToXml();
 		InjectModels(); // LibSTF by Bekzii
 		DDSFixHeader();
 		InjectModsStr();
@@ -750,9 +750,14 @@ public partial class HoneyPatcher : Node2D
 	private void InjectModsStr(){
 		string stringArrayEnPath = Path.Combine(usrdir, "rom", "string_array", "string_array_en.xml");
 		string stringArrayEn = File.ReadAllText(stringArrayEnPath);
+		/* This works perfectly on any standard operating system. */
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
+		/* Microsoft, in their infinite wisdom, in the 1980s (probably), decided that their newline should be an entire two bytes larger than the newline on every other OS that was available at the time - or thereafter. */
+		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\r\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("The typefaces included herein are solely developed\nby DynaComware.\n", String.Empty);
+		stringArrayEn = stringArrayEn.Replace("The typefaces included herein are solely developed\r\nby DynaComware.\r\n", String.Empty);
 		stringArrayEn = stringArrayEn.Replace("”PlayStation” is a registered trademark\nof Sony Computer Entertainment Inc.\n", modsStr);
+		stringArrayEn = stringArrayEn.Replace("”PlayStation” is a registered trademark\r\nof Sony Computer Entertainment Inc.\r\n", modsStr);
 		if (logoskip){
 			stringArrayEn = stringArrayEn.Replace("A very small percentage of people may experience a seizure when exposed to certain visual images, including flashing lights or patterns that may appear in video games. If you or any of your relatives have a history of seizures or epilepsy, consult a doctor before playing.", String.Empty);
 			HoneyLog(4, "Emptied epilepsy warning.");
