@@ -80,6 +80,8 @@ public partial class HoneyPatcher : Node2D
 	string[] vf2_roms = {"ic12_13.bin", "ic12_15.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] omg_roms = {"farc_tex.bin", "rom_code.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin", "string_array2_en.bin", "string_array2_jp.bin"};
 	string[] gamesList = {"stf", "vf2", "fv", "omg"};
+	List<string> old_strings = new List<string>();
+	List<string> new_strings = new List<string>();
 	
 	string usrdir = ".";
 	string patchname = "Default";
@@ -205,6 +207,8 @@ public partial class HoneyPatcher : Node2D
 	
 	private async void OnInstallPressed(){
 		// disable buttons
+		old_strings.Clear();
+		new_strings.Clear();
 		DisableButtons();
 		HoneyLog(4, "Disabled Menu buttons.");
 		/* Check if usrdir is set. */
@@ -561,6 +565,30 @@ public partial class HoneyPatcher : Node2D
 						catch{
 							modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
 						}
+						try{
+							ZipArchiveEntry entry = archive.GetEntry("old_strings.txt");
+							using (var reader = new StreamReader(entry.Open())){
+								string contents;
+								while ((contents = reader.ReadLine()) != null){
+									old_strings.Add(contents);
+								}
+							}
+						}
+						catch{
+							// modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
+						}
+						try{
+							ZipArchiveEntry entry = archive.GetEntry("new_strings.txt");
+							using (var reader = new StreamReader(entry.Open())){
+								string contents;
+								while ((contents = reader.ReadLine()) != null){
+									new_strings.Add(contents);
+								}
+							}
+						}
+						catch{
+							// modsStr += $"{Path.GetFileNameWithoutExtension(modpath)}\n";
+						}
 					}
 					ZipFile.ExtractToDirectory(modpath, romdir, true);
 					HoneyLog(4, $"Extracted {modpath}.");
@@ -750,8 +778,9 @@ public partial class HoneyPatcher : Node2D
 	private void InjectModsStr(){
 		string stringArrayEnPath = Path.Combine(usrdir, "rom", "string_array", "string_array_en.xml");
 		string stringArrayEn = File.ReadAllText(stringArrayEnPath);
-		/* This works perfectly on any standard operating system. */
+		/* These lines will always be replaced. */
 		stringArrayEn = stringArrayEn.Replace(":Information", ":Show Mods");
+		/* This works perfectly on any standard operating system. */
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\n", String.Empty);
 		/* Microsoft, in their infinite wisdom, in the 1980s (probably), decided that their newline should be an entire two bytes larger than the newline on every other OS that was available at the time - or thereafter. */
 		stringArrayEn = stringArrayEn.Replace("Font Design by FONTWORKS Inc.\r\n", String.Empty);
@@ -767,6 +796,22 @@ public partial class HoneyPatcher : Node2D
 			stringArrayEn = stringArrayEn.Replace("A very small percentage of people may experience a seizure when exposed to certain visual images, including flashing lights or patterns that may appear in video games. If you or any of your relatives have a history of seizures or epilepsy, consult a doctor before playing.", "This game was patched with HoneyPatcher. HoneyPatcher is free software, with source code and help available at https://github.com/coatlessali/HoneyPatcher.");
 			HoneyLog(4, "Replaced epilepsy warning with HoneyPatcher notice.");
 		}
+		
+		/* Custom strings. */
+		int strCount = 0;
+		foreach (string old_string in old_strings){
+			try{
+				stringArrayEn = stringArrayEn.Replace(old_string, new_strings[strCount]);
+				HoneyLog(4, $"Replaced {old_string} with {new_strings[strCount]}.");
+			}
+			catch (Exception e){
+				HoneyLog(1, $"Possible out of bounds error on custom string replacement. Attempting to ignore.");
+				HoneyLog(1, e.ToString(), true);
+			}
+			strCount++;
+		}
+		
+		/* Write the file. */
 		try{
 			File.WriteAllText(stringArrayEnPath, stringArrayEn);
 			HoneyLog(3, "Injected mod list into string_array_en.xml.");
