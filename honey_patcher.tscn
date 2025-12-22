@@ -113,7 +113,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton", "_enabledmods", "_disabledmods")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton", "_enabledmods", "_disabledmods")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -124,6 +124,8 @@ _modsfolder = NodePath("Mods")
 _genpatches = NodePath("GenPatches")
 _modslist = NodePath("ModsList")
 _closemodslist = NodePath("CloseModsList")
+_enableall = NodePath("EnableAll")
+_disableall = NodePath("DisableAll")
 _progress = NodePath("Progress")
 _game = NodePath("game")
 _patchname = NodePath("PatchName")
@@ -159,7 +161,7 @@ explodesound = NodePath("../ExplodeSound")
 
 [node name="Explode" type="Sprite2D" parent="."]
 visible = false
-position = Vector2(471, 163)
+position = Vector2(480, 160.00002)
 scale = Vector2(0.517134, 0.552542)
 texture = ExtResource("5_idu76")
 
@@ -212,9 +214,10 @@ offset_left = 397.0
 offset_top = 320.0
 offset_right = 563.0
 offset_bottom = 359.0
-text = "Install all mods..."
+text = "Apply Changes"
 
 [node name="RestoreUSRDIR" type="Button" parent="."]
+visible = false
 offset_left = 397.0
 offset_top = 359.0
 offset_right = 563.0
@@ -268,9 +271,10 @@ offset_bottom = 206.0
 placeholder_text = "Patch name..."
 
 [node name="game" type="Label" parent="." node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "hp", "stfa", "vf2a", "fva", "omga")]
-offset_top = 517.0
+offset_left = 661.0
+offset_top = 516.0
 offset_right = 960.0
-offset_bottom = 540.0
+offset_bottom = 539.0
 horizontal_alignment = 2
 script = ExtResource("26_x8lee")
 stf = NodePath("STF")
@@ -284,30 +288,26 @@ fva = NodePath("../AudioPlayers/FV")
 omga = NodePath("../AudioPlayers/OMG")
 
 [node name="STF" type="Sprite2D" parent="game"]
-visible = false
 z_index = -1
-position = Vector2(816, -61)
+position = Vector2(147.5, -60.25)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("26_8beqc")
 
 [node name="FV" type="Sprite2D" parent="game"]
-visible = false
 z_index = -1
-position = Vector2(808, -61)
+position = Vector2(139.5, -60.25)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("27_x8lee")
 
 [node name="VF2" type="Sprite2D" parent="game"]
-visible = false
 z_index = -1
-position = Vector2(816, -53)
+position = Vector2(147.5, -52.25)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("28_pgyg1")
 
 [node name="OMG" type="Sprite2D" parent="game"]
-visible = false
 z_index = -1
-position = Vector2(817, -47)
+position = Vector2(148.5, -46.25)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("29_71v7s")
 
@@ -433,7 +433,7 @@ layout_mode = 0
 offset_top = 363.0
 offset_right = 320.0
 offset_bottom = 416.0
-text = "Disabled Mods
+text = "Enabled Mods
 (Select Mods to Disable)"
 horizontal_alignment = 1
 
@@ -455,24 +455,40 @@ layout_mode = 0
 offset_top = 362.0
 offset_right = 320.0
 offset_bottom = 415.0
-text = "Enabled Mods
+text = "Disabled Mods
 (Select Mods to Enable)"
 horizontal_alignment = 1
 
 [node name="ModsList" type="Button" parent="."]
-offset_left = 716.0
-offset_top = 347.0
-offset_right = 839.0
-offset_bottom = 378.0
+offset_left = 397.0
+offset_top = 359.0
+offset_right = 563.0
+offset_bottom = 398.0
 text = "View Mods List"
 
 [node name="CloseModsList" type="Button" parent="."]
 visible = false
-offset_left = 891.0
-offset_top = 19.0
-offset_right = 924.0
-offset_bottom = 50.0
-text = "X"
+offset_left = 397.0
+offset_top = 242.0
+offset_right = 563.0
+offset_bottom = 281.0
+text = "Close and Apply"
+
+[node name="EnableAll" type="Button" parent="."]
+visible = false
+offset_left = 397.0
+offset_top = 320.0
+offset_right = 563.0
+offset_bottom = 359.0
+text = "Enable All"
+
+[node name="DisableAll" type="Button" parent="."]
+visible = false
+offset_left = 397.0
+offset_top = 359.0
+offset_right = 563.0
+offset_bottom = 398.0
+text = "Disable All"
 
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
@@ -509,3 +525,5 @@ text = "X"
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
 [connection signal="canceled" from="AcceptDialog" to="AudioPlayers/Back" method="_on_accept_dialog_canceled"]
 [connection signal="confirmed" from="AcceptDialog" to="AudioPlayers/Confirm" method="_on_accept_dialog_confirmed"]
+[connection signal="mouse_entered" from="ModsList" to="Description" method="_on_mods_list_mouse_entered"]
+[connection signal="mouse_entered" from="ModsList" to="AudioPlayers/Select" method="_on_mods_list_mouse_entered"]

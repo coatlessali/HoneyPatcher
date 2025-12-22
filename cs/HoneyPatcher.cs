@@ -35,6 +35,8 @@ public partial class HoneyPatcher : Node2D
 	[Export] public Button _genpatches; // Generate Patches button
 	[Export] public Button _modslist;
 	[Export] public Button _closemodslist;
+	[Export] public Button _enableall;
+	[Export] public Button _disableall;
 	[Export] public RichTextLabel _progress; // Progress label
 	[Export] public Label _game; // game label
 	[Export] public LineEdit _patchname; // Name of patch
@@ -115,6 +117,8 @@ public partial class HoneyPatcher : Node2D
 		_cleanup.Toggled += ToggleCleanup;
 		_modslist.Pressed += ModsList;
 		_closemodslist.Pressed += CloseModsList;
+		_enableall.Pressed += EnableAll;
+		_disableall.Pressed += DisableAll;
 		
 		/* Enable portable mode because people kept asking for it. */
 		if (File.Exists("portable.txt")){
@@ -229,24 +233,43 @@ public partial class HoneyPatcher : Node2D
 		/* Check for clean copy of game w/ rom.psarc still intact */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
-			_back.Play();
-			ShowError("Error", $"rom.psarc could not be found. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
+			try{
+				await Task.Run(() => { RestoreAsync(); });
+			}
+			catch{
+				_back.Play();
+			ShowError("Error", $"rom.psarc could not be found, and a backup could not be restored. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
 			HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
 			EnableButtons();
 			HoneyLog(4, "Enabled Menu buttons.");
 			return;
+			}
 		}
 		
 		try{
 			// Runs the below function
-			await Task.Run(() => { InstallAsync(); });
-			string[] success = { "Success!", "Mods have been installed!" };
-			string[] success2 = { "Success?", "No mods were found, but I extracted rom.psarc and unpacked your game files for you anyways." };
-			if (nomods){
-				success = success2;
+			string[] files = Directory.GetFiles(Path.Combine(modsDir, game))
+				.Where(file => !Path.GetFileNameWithoutExtension(file).StartsWith("."))
+				.ToArray();
+			if (files.Length > 0){
+				await Task.Run(() => { InstallAsync(); });
+				GameSound();
+				ShowError("Success!", "Mods have been installed!");
 			}
-			GameSound();
-			ShowError(success[0], success[1]);
+			else{
+				if (!cleanup){
+					await Task.Run(() => { ExtractAsync(); });
+					GameSound();
+					HoneyLog(3, "Extracted files.");
+					ShowError("Success!", "Files have been extracted.");
+				}
+				else{
+					await Task.Run(() => { LogoSkipAsync(); });
+					GameSound();
+					HoneyLog(3, "Restored files.");
+					ShowError("Success!", "Files have been restored.");
+				}
+			}
 		}
 		catch (Exception e){
 			HoneyLog(1, $"Failed to install mods. See HoneyLog.txt for more information.");
@@ -311,6 +334,66 @@ public partial class HoneyPatcher : Node2D
 		LogoSkip();
 		
 		
+	}
+	
+	/* Just Extract Files */
+	private void ExtractAsync(){
+		/* Make backup if valid stf found and no backup exists */
+		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		string gameBackupDir = Path.Combine(backupDir, game);
+		try{
+			Directory.CreateDirectory(gameBackupDir);
+			CopyFilesRecursively(usrdir, gameBackupDir);
+			HoneyLog(3, "Created backup.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		
+		/* This gets AcbEditor working. */
+		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		
+		/* Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
+		   and turned it into a DLL. It's honestly still really bloated and could do with
+		   a bit more cleanup. */
+		try{
+			PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
+			HoneyLog(3, "Extracted rom.psarc");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		try{
+			File.Delete(psarc_path);
+			HoneyLog(4, "Removed rom.psarc.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		FarcUnpack();
+		UnpackAcb();
+		DbToXml();
+		LogoSkip();
+	}
+	
+	/* Just Apply Logoskip */
+	private void LogoSkipAsync(){
+		/* Make backup if valid stf found and no backup exists */
+		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		string gameBackupDir = Path.Combine(backupDir, game);
+		try{
+			Directory.CreateDirectory(gameBackupDir);
+			CopyFilesRecursively(usrdir, gameBackupDir);
+			HoneyLog(3, "Created backup.");
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
+			HoneyLog(1, e.ToString(), true);
+		}
+		LogoSkip();
 	}
 	
 	private async void OnRestoreUsrdirPressed(){
@@ -1059,6 +1142,8 @@ public partial class HoneyPatcher : Node2D
 					}
 				}
 			}
+			File.Copy(bin, elf);
+			HoneyLog(3, $"Copied EBOOT to local directory.");
 		}
 		catch (Exception e){
 			HoneyLog(1, "A problem occurred trying to download EBOOT.bin. Check HoneyLog.txt for more details.");
@@ -1072,8 +1157,32 @@ public partial class HoneyPatcher : Node2D
 		_enabledmods.Visible = true;
 		_disabledmods.Visible = true;
 		_closemodslist.Visible = true;
+		_enableall.Visible = true;
+		_disableall.Visible = true;
 		_modslist.Visible = false;
 		_confirm.Play();
+	}
+	
+	private void EnableAll(){
+		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
+		foreach (string file in files){
+			if (Path.GetFileNameWithoutExtension(file).StartsWith(@".") && Path.GetFileNameWithoutExtension(file) != @"." ){
+				GD.Print(file);
+				GD.Print(Path.Combine(modsDir, game, Path.GetFileName(file).Remove(0,1)));
+				File.Move(file, Path.Combine(modsDir, game, Path.GetFileName(file).Remove(0,1)));
+			}
+		}
+		CloseModsList();
+	}
+	
+	private void DisableAll(){
+		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
+		foreach (string file in files){
+			if (!Path.GetFileNameWithoutExtension(file).StartsWith(".")){
+				File.Move(file, Path.Combine(modsDir, game, @"." + Path.GetFileName(file)));
+			}
+		}
+		CloseModsList();
 	}
 	
 	private void CloseModsList(){
@@ -1090,6 +1199,8 @@ public partial class HoneyPatcher : Node2D
 		_enabledmods.Visible = false;
 		_disabledmods.Visible = false;
 		_closemodslist.Visible = false;
+		_enableall.Visible = false;
+		_disableall.Visible = false;
 		_modslist.Visible = true;
 		_confirm.Play();
 	}

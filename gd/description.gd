@@ -11,7 +11,7 @@ func _on_restore_usrdir_mouse_entered() -> void:
 func _on_psarc_mouse_entered() -> void:
 	text = "Opens your mods folder."
 func _on_install_mouse_entered() -> void:
-	text = "Install all mods present in the \"mods\" folder. (Priority is alphanumerical order.)"
+	text = "Apply all changes (mods, logoskip, extraction, etc) to your USRDIR."
 func _on_unpack_mouse_entered() -> void:
 	text = "Unpack all game files into a HoneyPatcher compatible package."
 func _on_gen_patches_mouse_entered() -> void:
@@ -19,8 +19,8 @@ func _on_gen_patches_mouse_entered() -> void:
 func _on_menu_bar_mouse_entered() -> void:
 	text = "Select the game you would like to install mods to."
 func _on_logoskip_mouse_entered() -> void:
-	text = "Enable skipping logos at the beginning of the game. (Requires decrypted EBOOT.elf). (NOT FINISHED YET)"
+	text = "Skip logos at the beginning of the game by mashing X. (Sonic the Fighters only.)"
 func _on_cleanup_mouse_entered() -> void:
-	text = "Leaves unpacked files for debugging and ease of modding purposes." 
+	text = "Clean up unpacked files when done." 
 func _on_mods_list_mouse_entered() -> void:
 	text = "Show the mods list, where you can enable/disable mods."

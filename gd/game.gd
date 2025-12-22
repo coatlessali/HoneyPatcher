@@ -10,6 +10,8 @@ extends Label
 @export var fva : AudioStreamPlayer
 @export var omga : AudioStreamPlayer
 
+var time = 0.0
+
 func _ready() -> void:
 	# dirty hack to prevent it loading the default of stf
 	await get_tree().create_timer(0.1).timeout
@@ -34,6 +36,16 @@ func _ready() -> void:
 			fv.hide()
 			vf2.hide()
 			omg.show()
+
+func _process(delta: float) -> void:
+	# rotation
+	time += delta
+	var rot = sin(time/2) * 0.25 # 0.25 is the scale of the object
+	
+	stf.scale.x = rot
+	fv.scale.x = rot
+	vf2.scale.x = rot
+	omg.scale.x = rot
 
 func _on_popup_menu_id_pressed(id: int) -> void:
 	match id:
