@@ -30,9 +30,10 @@ public partial class HoneyPatcher : Node2D
 	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
 	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
-	[Export] public Button _restoreusrdir; // Restore USRDIR button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
 	[Export] public Button _genpatches; // Generate Patches button
+	[Export] public Button _modslist;
+	[Export] public Button _closemodslist;
 	[Export] public RichTextLabel _progress; // Progress label
 	[Export] public Label _game; // game label
 	[Export] public LineEdit _patchname; // Name of patch
@@ -48,6 +49,8 @@ public partial class HoneyPatcher : Node2D
 	[Export] public CheckButton _logoskip;
 	[Export] public CheckButton _cleanup;
 	[Export] public MenuBar _gamebutton;
+	[Export] public ItemList _enabledmods;
+	[Export] public ItemList _disabledmods;
 	
 	// This is an absolute war crime and I'm open to suggestions for fixing this garbage
 	byte[] ddscomp = {0x07, 0x10, 0x00, 0x00};
@@ -102,13 +105,14 @@ public partial class HoneyPatcher : Node2D
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
-		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		_modsfolder.Pressed += OpenModsFolder;
 		_genpatches.Pressed += CreatePatches;
 		_patchesfolder.Pressed += OpenPatchesFolder;
 		_gameselector.IdPressed += GameSelector;
 		_logoskip.Toggled += ToggleLogoskip;
 		_cleanup.Toggled += ToggleCleanup;
+		_modslist.Pressed += ModsList;
+		_closemodslist.Pressed += CloseModsList;
 		
 		/* Enable portable mode because people kept asking for it. */
 		if (File.Exists("portable.txt")){
@@ -189,7 +193,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void EnableButtons(){
 		_install.Disabled = false;
-		_restoreusrdir.Disabled = false;
 		_genpatches.Disabled = false;
 		_gamebutton.Visible = true;
 		_logoskip.Disabled = false;
@@ -198,7 +201,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void DisableButtons(){
 		_install.Disabled = true;
-		_restoreusrdir.Disabled = true;
 		_genpatches.Disabled = true;
 		_gamebutton.Visible = false;
 		_logoskip.Disabled = true;
@@ -206,6 +208,19 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private async void OnInstallPressed(){
+		string[] files = Directory.GetFiles(Path.Combine(modsDir, game))
+			.Where(file => !Path.GetFileNameWithoutExtension(file).StartsWith("."))
+			.ToArray();
+		if (files.Length == 0){
+			Restore();
+		}
+		else{
+			Install();
+		}
+	}
+	
+	/* Formerly OnInstallPressed() */
+	private async void Install(){
 		// disable buttons
 		old_strings.Clear();
 		new_strings.Clear();
@@ -303,11 +318,9 @@ public partial class HoneyPatcher : Node2D
 		PackAcb();
 		CleanUp();
 		LogoSkip();
-		
-		
 	}
 	
-	private async void OnRestoreUsrdirPressed(){
+	private async void Restore(){
 		/* Disable buttons */
 		DisableButtons();
 		HoneyLog(4, "Disabled Menu Buttons.");
@@ -553,6 +566,10 @@ public partial class HoneyPatcher : Node2D
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			try{
+				if (Path.GetFileNameWithoutExtension(modpath)[0].ToString() == "."){
+					HoneyLog(4, $"{Path.GetFileNameWithoutExtension(modpath)} begins with a \".\" and is thus considered disabled. Ignoring.");
+					continue;
+				}
 				if (Path.GetExtension(modpath) == ".zip"){
 					using (ZipArchive archive = ZipFile.Open(modpath, ZipArchiveMode.Update)){
 						try{
@@ -1039,6 +1056,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(2, $"Failed to copy {elf} to your usrdir. It may not exist. Attempting download from GitHub...");
 		}
 		/* Download the latest EBOOT from the GitHub. */
+		/* TODO: make this download to the thing so it doesn't spam gh */
 		try{
 			using (var client = new System.Net.Http.HttpClient()){
 				using (var s = client.GetStreamAsync("https://github.com/coatlessali/HoneyPatcher/raw/refs/heads/main/EBOOT.bin")){
@@ -1053,5 +1071,50 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, "A problem occurred trying to download EBOOT.bin. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
+	}
+	
+	private void ModsList(){
+		DisableButtons();
+		RefreshMods();
+		_enabledmods.Visible = true;
+		_disabledmods.Visible = true;
+		_closemodslist.Visible = true;
+		_modslist.Visible = false;
+		_confirm.Play();
+	}
+	
+	private void CloseModsList(){
+		int[] enabledModsSelected = _enabledmods.GetSelectedItems();
+		foreach (int selectedId in enabledModsSelected){
+			File.Move(Path.Combine(modsDir, game, _enabledmods.GetItemText(selectedId)), Path.Combine(modsDir, game, @"." + _enabledmods.GetItemText(selectedId)));
+		}
+		int[] disabledModsSelected = _disabledmods.GetSelectedItems();
+		foreach (int selectedId in disabledModsSelected){
+			File.Move(Path.Combine(modsDir, game, @"." + _disabledmods.GetItemText(selectedId)), Path.Combine(modsDir, game, _disabledmods.GetItemText(selectedId)));
+		}
+		RefreshMods();
+		EnableButtons();
+		_enabledmods.Visible = false;
+		_disabledmods.Visible = false;
+		_closemodslist.Visible = false;
+		_modslist.Visible = true;
+		_confirm.Play();
+	}
+	
+	private void RefreshMods(){
+		_enabledmods.Clear();
+		_disabledmods.Clear();
+		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
+		Array.Sort(files);
+		foreach (string file in files){
+			string mod = Path.GetFileName(file);
+			if (mod[0].ToString() == "."){
+				_disabledmods.AddItem(mod.Remove(0,1));
+			}
+			else{
+				_enabledmods.AddItem(mod);
+			}
+		}
+		
 	}
 }
