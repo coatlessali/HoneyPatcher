@@ -113,12 +113,13 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton", "_enabledmods", "_disabledmods")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton", "_enabledmods", "_disabledmods")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
 _selectusrdir = NodePath("SelectUSRDIR")
 _install = NodePath("Install")
+_restoreusrdir = NodePath("RestoreUSRDIR")
 _modsfolder = NodePath("Mods")
 _genpatches = NodePath("GenPatches")
 _modslist = NodePath("ModsList")
@@ -196,14 +197,14 @@ offset_left = 397.0
 offset_top = 242.0
 offset_right = 563.0
 offset_bottom = 281.0
-text = "Select USRDIR"
+text = "Select USRDIR..."
 
 [node name="Mods" type="Button" parent="."]
 offset_left = 397.0
 offset_top = 281.0
 offset_right = 563.0
 offset_bottom = 320.0
-text = "Open Mods Folder
+text = "Open mods folder...
 "
 
 [node name="Install" type="Button" parent="."]
@@ -211,7 +212,14 @@ offset_left = 397.0
 offset_top = 320.0
 offset_right = 563.0
 offset_bottom = 359.0
-text = "Apply Mods"
+text = "Install all mods..."
+
+[node name="RestoreUSRDIR" type="Button" parent="."]
+offset_left = 397.0
+offset_top = 359.0
+offset_right = 563.0
+offset_bottom = 398.0
+text = "Uninstall all mods..."
 
 [node name="GenPatches" type="Button" parent="." node_paths=PackedStringArray("lightning", "honeynow", "honeynowbig", "lightningsound", "explotano")]
 offset_left = 692.0
@@ -422,10 +430,11 @@ item_1/text = "test"
 
 [node name="Label" type="Label" parent="EnabledMods"]
 layout_mode = 0
-offset_top = 393.0
+offset_top = 363.0
 offset_right = 320.0
 offset_bottom = 416.0
-text = "Enabled Mods"
+text = "Disabled Mods
+(Select Mods to Disable)"
 horizontal_alignment = 1
 
 [node name="DisabledMods" type="ItemList" parent="."]
@@ -443,17 +452,18 @@ item_1/text = "test"
 
 [node name="Label" type="Label" parent="DisabledMods"]
 layout_mode = 0
-offset_top = 393.0
+offset_top = 362.0
 offset_right = 320.0
-offset_bottom = 416.0
-text = "Disabled Mods"
+offset_bottom = 415.0
+text = "Enabled Mods
+(Select Mods to Enable)"
 horizontal_alignment = 1
 
 [node name="ModsList" type="Button" parent="."]
-offset_left = 397.0
-offset_top = 359.0
-offset_right = 563.0
-offset_bottom = 399.0
+offset_left = 716.0
+offset_top = 347.0
+offset_right = 839.0
+offset_bottom = 378.0
 text = "View Mods List"
 
 [node name="CloseModsList" type="Button" parent="."]
@@ -475,6 +485,9 @@ text = "X"
 [connection signal="mouse_entered" from="Install" to="AudioPlayers/Select" method="_on_install_mouse_entered"]
 [connection signal="pressed" from="Install" to="." method="_on_install_pressed"]
 [connection signal="pressed" from="Install" to="AudioPlayers/Confirm" method="_on_install_pressed"]
+[connection signal="mouse_entered" from="RestoreUSRDIR" to="Description" method="_on_restore_usrdir_mouse_entered"]
+[connection signal="mouse_entered" from="RestoreUSRDIR" to="AudioPlayers/Select" method="_on_restore_usrdir_mouse_entered"]
+[connection signal="pressed" from="RestoreUSRDIR" to="." method="_on_restore_usrdir_pressed"]
 [connection signal="mouse_entered" from="GenPatches" to="Description" method="_on_gen_patches_mouse_entered"]
 [connection signal="mouse_entered" from="GenPatches" to="AudioPlayers/Select" method="_on_gen_patches_mouse_entered"]
 [connection signal="pressed" from="GenPatches" to="." method="_on_gen_patches_pressed"]
@@ -496,5 +509,3 @@ text = "X"
 [connection signal="dir_selected" from="USRDIRDialog" to="." method="_on_usrdir_dialog_dir_selected"]
 [connection signal="canceled" from="AcceptDialog" to="AudioPlayers/Back" method="_on_accept_dialog_canceled"]
 [connection signal="confirmed" from="AcceptDialog" to="AudioPlayers/Confirm" method="_on_accept_dialog_confirmed"]
-[connection signal="mouse_entered" from="ModsList" to="Description" method="_on_mods_list_mouse_entered"]
-[connection signal="mouse_entered" from="ModsList" to="AudioPlayers/Select" method="_on_mods_list_mouse_entered"]
