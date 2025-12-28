@@ -429,6 +429,20 @@ public partial class HoneyPatcher : Node2D
 	
 	/* Uninstall Mods */
 	private void RestoreAsync(){
+		if (!Directory.Exists(Path.Combine(backupDir, game))){
+			try{
+				Directory.CreateDirectory(Path.Combine(backupDir, game));
+				HoneyLog(4, "Created backup directory.");
+				CopyFilesRecursively(usrdir, Path.Combine(backupDir, game));
+				HoneyLog(3, "Backed up files.");
+			}
+			catch (Exception e){
+				_back.Play();
+				HoneyLog(1, "Error creating a backup. See HoneyLog.txt for more details.");
+				HoneyLog(1, e.ToString(), true);
+				return;
+			}
+		}
 		/* Clear contents of USRDIR */
 		try{
 			Directory.Delete(usrdir, true);
@@ -440,7 +454,7 @@ public partial class HoneyPatcher : Node2D
 		catch (Exception e){
 			_back.Play();
 			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);;
+			HoneyLog(1, e.ToString(), true);
 			return;
 		}
 		
@@ -956,14 +970,93 @@ public partial class HoneyPatcher : Node2D
 	private void LoadConfig(){
 		/* https://github.com/rickyah/ini-parser */
 		/* Migrates config from V5 to V6 */
+		string gameDir = "whydoesthisfolderexist";
+		string[] stfdirs = new string[4];
+		string[] vf2dirs = new string[4];
+		string[] fvdirs = new string[4];
+		string omgdir;
 		if(!File.Exists(honeyConfig)){
 			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
+			/* Autodetect USRDIR on macOS/Linux */
+			switch (OS.GetName()){
+				case "macOS":
+					gameDir = $"/Users/{System.Environment.UserName}/Library/Application Support/rpcs3/dev_hdd0/game/";
+					stfdirs = new string[] { Path.Combine(gameDir, "NPUB30927"), Path.Combine(gameDir, "NPEB01162"), Path.Combine("NPJB00250"), Path.Combine("NPHB00515") };
+					foreach (string stfdir in stfdirs){
+						if (Directory.Exists(stfdir)){
+							defaultConfig = defaultConfig.Replace("stfusrdir = .", $"stfusrdir = {stfdir}/USRDIR");
+							HoneyLog(2, $"Autodetected usrdir at {stfdir}/USRDIR.");
+							break;
+						}
+					}
+					vf2dirs = new string[] { Path.Combine(gameDir, "NPUB30928"), Path.Combine(gameDir, "NPEB01163"), Path.Combine("NPJB00251"), Path.Combine("NPHB00517") };
+					foreach (string vf2dir in vf2dirs){
+						if (Directory.Exists(vf2dir)){
+							defaultConfig = defaultConfig.Replace("vf2usrdir = .", $"vf2usrdir = {vf2dir}/USRDIR");
+							HoneyLog(2, $"Autodetected usrdir at {vf2dir}/USRDIR.");
+							break;
+						}
+					}
+					fvdirs = new string[] { Path.Combine(gameDir, "NPUB30929"), Path.Combine(gameDir, "NPEB01164"), Path.Combine("NPJB00252"), Path.Combine("NPHB00516") };
+					foreach (string fvdir in fvdirs){
+						if (Directory.Exists(fvdir)){
+							defaultConfig = defaultConfig.Replace("fvusrdir = .", $"fvusrdir = {fvdir}/USRDIR");
+							HoneyLog(2, $"Autodetected usrdir at {fvdir}/USRDIR.");
+							break;
+						}
+					}
+					omgdir = Path.Combine(gameDir, "NPJB00321");
+					if (Directory.Exists(omgdir)){
+						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
+						HoneyLog(2, $"Autodetected usrdir at {omgdir}/USRDIR.");
+					}
+					break;
+				case "Linux":
+					// Checks for EmuDeck on SD Card, then EmuDeck on Internal Storage, then for AppImage, then for Flatpak
+					string[] gameDirs = { $"/run/media/mmcblk0p1/Emulation/Storage/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/Emulation/storage/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/.config/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/.var/app/net.rpcs3.RPCS3/config/rpcs3/dev_hdd0/game" };
+					foreach (string temp in gameDirs){
+						if (Directory.Exists(temp)){
+							gameDir = temp;
+							HoneyLog(2, $"Autodetected RPCS3 install at {temp}. Please verify that this is correct.");
+							break;
+						}
+					}
+					stfdirs = new string[] { Path.Combine(gameDir, "NPUB30927"), Path.Combine(gameDir, "NPEB01162"), Path.Combine("NPJB00250"), Path.Combine("NPHB00515") };
+					foreach (string stfdir in stfdirs){
+						if (Directory.Exists(stfdir)){
+							defaultConfig = defaultConfig.Replace("stfusrdir = .", $"stfusrdir = {stfdir}/USRDIR");
+							HoneyLog(2, $"Autodetected Sonic the Fighters at {stfdir}/USRDIR.");
+							break;
+						}
+					}
+					vf2dirs = new string[] { Path.Combine(gameDir, "NPUB30928"), Path.Combine(gameDir, "NPEB01163"), Path.Combine("NPJB00251"), Path.Combine("NPHB00517") };
+					foreach (string vf2dir in vf2dirs){
+						if (Directory.Exists(vf2dir)){
+							defaultConfig = defaultConfig.Replace("vf2usrdir = .", $"vf2usrdir = {vf2dir}/USRDIR");
+							HoneyLog(2, $"Autodetected Virtua Fighter 2 at {vf2dir}/USRDIR.");
+							break;
+						}
+					}
+					fvdirs = new string[] { Path.Combine(gameDir, "NPUB30929"), Path.Combine(gameDir, "NPEB01164"), Path.Combine("NPJB00252"), Path.Combine("NPHB00516") };
+					foreach (string fvdir in fvdirs){
+						if (Directory.Exists(fvdir)){
+							defaultConfig = defaultConfig.Replace("fvusrdir = .", $"fvusrdir = {fvdir}/USRDIR");
+							HoneyLog(2, $"Autodetected Fighting Vipers at {fvdir}/USRDIR.");
+							break;
+						}
+					}
+					omgdir = Path.Combine(gameDir, "NPJB00321");
+					if (Directory.Exists(omgdir)){
+						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
+						HoneyLog(2, $"Autodetected Cyber Troopers: Virtual-On at {omgdir}/USRDIR.");
+					}
+					break;
+			}
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
 				HoneyLog(3, "Created default configuration file.");
 			}
 			catch (Exception e){
-				GD.Print(e.ToString());
 				HoneyLog(1, "There was an issue creating the configuration. See HoneyLog.txt for more details.");
 				HoneyLog(1, e.ToString(), true);
 			}
@@ -1132,7 +1225,6 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(2, $"Failed to copy {elf} to your usrdir. It may not exist. Attempting download from GitHub...");
 		}
 		/* Download the latest EBOOT from the GitHub. */
-		/* TODO: make this download to the thing so it doesn't spam gh */
 		try{
 			using (var client = new System.Net.Http.HttpClient()){
 				using (var s = client.GetStreamAsync("https://github.com/coatlessali/HoneyPatcher/raw/refs/heads/main/EBOOT.bin")){
@@ -1167,8 +1259,6 @@ public partial class HoneyPatcher : Node2D
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		foreach (string file in files){
 			if (Path.GetFileNameWithoutExtension(file).StartsWith(@".") && Path.GetFileNameWithoutExtension(file) != @"." ){
-				GD.Print(file);
-				GD.Print(Path.Combine(modsDir, game, Path.GetFileName(file).Remove(0,1)));
 				File.Move(file, Path.Combine(modsDir, game, Path.GetFileName(file).Remove(0,1)));
 			}
 		}

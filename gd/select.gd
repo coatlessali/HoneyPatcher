@@ -21,3 +21,5 @@ func _on_cleanup_mouse_entered() -> void:
 	play()
 func _on_mods_list_mouse_entered() -> void:
 	play()
+func _on_help_mouse_entered() -> void:
+	play()

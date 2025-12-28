@@ -1,4 +1,4 @@
-[gd_scene load_steps=55 format=3 uid="uid://bsjcg2emguurk"]
+[gd_scene load_steps=56 format=3 uid="uid://bsjcg2emguurk"]
 
 [ext_resource type="Script" uid="uid://dwnoc572rbxo0" path="res://cs/HoneyPatcher.cs" id="1_72wd4"]
 [ext_resource type="Texture2D" uid="uid://b8c1paw2vgij7" path="res://assets/background.png" id="2_clxbb"]
@@ -24,11 +24,11 @@
 [ext_resource type="Texture2D" uid="uid://bil4r8s58dipx" path="res://assets/sprites/explotano/explotano06.png" id="21_3ibrs"]
 [ext_resource type="Texture2D" uid="uid://bj5cwia2q07ly" path="res://assets/sprites/explotano/explotano07.png" id="22_215ki"]
 [ext_resource type="AudioStream" uid="uid://cfgjpqrcyrimq" path="res://assets/sounds/explotano.ogg" id="23_1qnki"]
-[ext_resource type="Script" uid="uid://0ghtl8n8wdp7" path="res://title.gd" id="24_iwxrx"]
+[ext_resource type="Script" uid="uid://0ghtl8n8wdp7" path="res://gd/title.gd" id="24_iwxrx"]
 [ext_resource type="Script" uid="uid://ru6t8wmkm4sm" path="res://gd/gen_patches.gd" id="25_7sdjr"]
 [ext_resource type="Script" uid="uid://b1gngepcl1vf2" path="res://gd/usrdir_dialog.gd" id="25_61viv"]
 [ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/sprites/icons/stf-big.png" id="26_8beqc"]
-[ext_resource type="Script" uid="uid://c1iy6n6x414gl" path="res://logoskip.gd" id="26_hph0u"]
+[ext_resource type="Script" uid="uid://c1iy6n6x414gl" path="res://gd/logoskip.gd" id="26_hph0u"]
 [ext_resource type="Script" uid="uid://7sj8o8ydv082" path="res://gd/game.gd" id="26_x8lee"]
 [ext_resource type="Script" uid="uid://dmt3ma53sykab" path="res://gd/lightning.gd" id="27_0b2i5"]
 [ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/sprites/honeybadger/HONEYNOW.png" id="27_iaya5"]
@@ -53,6 +53,7 @@
 [ext_resource type="Script" uid="uid://b4tfoobiw1147" path="res://gd/select.gd" id="47_iwxrx"]
 [ext_resource type="AudioStream" uid="uid://ixlepfnpodue" path="res://assets/sounds/fv.ogg" id="47_stow7"]
 [ext_resource type="AudioStream" uid="uid://510y6d5vln7n" path="res://assets/sounds/omg.ogg" id="48_24roi"]
+[ext_resource type="Script" uid="uid://drsoj1b832a87" path="res://gd/help.gd" id="54_i4k5d"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_dcw1t"]
 animations = [{
@@ -490,6 +491,14 @@ offset_right = 563.0
 offset_bottom = 398.0
 text = "Disable All"
 
+[node name="Help" type="Button" parent="."]
+offset_left = 852.0
+offset_top = 14.0
+offset_right = 939.0
+offset_bottom = 45.0
+text = "Get Help"
+script = ExtResource("54_i4k5d")
+
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="AudioPlayers/Select" method="_on_select_usrdir_mouse_entered"]
@@ -527,3 +536,6 @@ text = "Disable All"
 [connection signal="confirmed" from="AcceptDialog" to="AudioPlayers/Confirm" method="_on_accept_dialog_confirmed"]
 [connection signal="mouse_entered" from="ModsList" to="Description" method="_on_mods_list_mouse_entered"]
 [connection signal="mouse_entered" from="ModsList" to="AudioPlayers/Select" method="_on_mods_list_mouse_entered"]
+[connection signal="mouse_entered" from="Help" to="Description" method="_on_help_mouse_entered"]
+[connection signal="mouse_entered" from="Help" to="AudioPlayers/Select" method="_on_help_mouse_entered"]
+[connection signal="pressed" from="Help" to="Help" method="_on_pressed"]

@@ -24,3 +24,5 @@ func _on_cleanup_mouse_entered() -> void:
 	text = "Clean up unpacked files when done." 
 func _on_mods_list_mouse_entered() -> void:
 	text = "Show the mods list, where you can enable/disable mods."
+func _on_help_mouse_entered() -> void:
+	text = "Open the GitHub wiki for HoneyPatcher."
