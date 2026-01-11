@@ -37,11 +37,12 @@ public partial class HoneyPatcher : Node2D
 	[Export] public Button _closemodslist;
 	[Export] public Button _enableall;
 	[Export] public Button _disableall;
+	[Export] public Button _patchesfolder; // Opens patches folder
+	[Export] public MenuBar _gamebutton;
+	[Export] public PopupMenu _gameselector; // Selects a game
 	[Export] public RichTextLabel _progress; // Progress label
 	[Export] public Label _game; // game label
 	[Export] public LineEdit _patchname; // Name of patch
-	[Export] public Button _patchesfolder; // Opens patches folder
-	[Export] public PopupMenu _gameselector; // Selects a game
 	[Export] public AudioStreamPlayer _confirm;
 	[Export] public AudioStreamPlayer _back;
 	[Export] public AudioStreamPlayer _select;
@@ -51,7 +52,6 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _omga;
 	[Export] public CheckButton _logoskip;
 	[Export] public CheckButton _cleanup;
-	[Export] public MenuBar _gamebutton;
 	[Export] public ItemList _enabledmods;
 	[Export] public ItemList _disabledmods;
 	
@@ -234,6 +234,7 @@ public partial class HoneyPatcher : Node2D
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			try{
+				// restore entire game if not there
 				await Task.Run(() => { RestoreAsync(); });
 			}
 			catch{
@@ -257,6 +258,7 @@ public partial class HoneyPatcher : Node2D
 				ShowError("Success!", "Mods have been installed!");
 			}
 			else{
+				// Restore eboot regardless to catch edge case
 				await Task.Run(() => { RestoreEbootAsync(); });
 				if (!cleanup){
 					await Task.Run(() => { ExtractAsync(); });
@@ -333,8 +335,6 @@ public partial class HoneyPatcher : Node2D
 		PackAcb();
 		CleanUp();
 		LogoSkip();
-		
-		
 	}
 	
 	/* Just Extract Files */
@@ -587,12 +587,9 @@ public partial class HoneyPatcher : Node2D
 				try{
 					/* Set source and destination filename */
 					string destinationFileName = Path.ChangeExtension(sourceFileName, null);
-				
 					using (var stream = File.OpenRead(sourceFileName)){
-						var farcArchive = BinaryFile.Load<FarcArchive>(stream);
-					
+						var farcArchive = BinaryFile.Load<FarcArchive>(stream);					
 						Directory.CreateDirectory(destinationFileName);
-					
 						foreach (string fileName in farcArchive){
 							using (var destination = File.Create(Path.Combine(destinationFileName, fileName)))
 							using (var source = farcArchive.Open(fileName, EntryStreamMode.OriginalStream))
