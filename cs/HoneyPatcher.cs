@@ -238,11 +238,11 @@ public partial class HoneyPatcher : Node2D
 			}
 			catch{
 				_back.Play();
-			ShowError("Error", $"rom.psarc could not be found, and a backup could not be restored. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
-			HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
-			EnableButtons();
-			HoneyLog(4, "Enabled Menu buttons.");
-			return;
+				ShowError("Error", $"rom.psarc could not be found, and a backup could not be restored. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
+				HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
+				EnableButtons();
+				HoneyLog(4, "Enabled Menu buttons.");
+				return;
 			}
 		}
 		
@@ -257,6 +257,7 @@ public partial class HoneyPatcher : Node2D
 				ShowError("Success!", "Mods have been installed!");
 			}
 			else{
+				await Task.Run(() => { RestoreEbootAsync(); });
 				if (!cleanup){
 					await Task.Run(() => { ExtractAsync(); });
 					GameSound();
@@ -468,6 +469,21 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 			return;
+		}
+	}
+
+	private void RestoreEbootAsync(){
+		if (File.Exists(Path.Combine(backupDir, game, "EBOOT.BIN"))){
+			try{
+				File.Copy(Path.Combine(backupDir, game, "EBOOT.BIN"), Path.Combine(usrdir, "EBOOT.BIN"), true);
+				HoneyLog(3, "Restored EBOOT.BIN.");
+			}
+			catch (Exception e){
+				_back.Play();
+				HoneyLog(1, "Failed to restore EBOOT.BIN. See HoneyLog.txt for more details.");
+				HoneyLog(1, e.ToString(), true);
+				return;
+			}
 		}
 	}
 
@@ -975,6 +991,7 @@ public partial class HoneyPatcher : Node2D
 		string[] vf2dirs = new string[4];
 		string[] fvdirs = new string[4];
 		string omgdir;
+		/* Generate default config file */
 		if(!File.Exists(honeyConfig)){
 			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
 			/* Autodetect USRDIR on macOS/Linux */
@@ -1012,7 +1029,7 @@ public partial class HoneyPatcher : Node2D
 					}
 					break;
 				case "Linux":
-					// Checks for EmuDeck on SD Card, then EmuDeck on Internal Storage, then for AppImage, then for Flatpak
+					/* Checks for EmuDeck on SD Card, then EmuDeck on Internal Storage, then for AppImage, then for Flatpak */
 					string[] gameDirs = { $"/run/media/mmcblk0p1/Emulation/Storage/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/Emulation/storage/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/.config/rpcs3/dev_hdd0/game", $"/home/{System.Environment.UserName}/.var/app/net.rpcs3.RPCS3/config/rpcs3/dev_hdd0/game" };
 					foreach (string temp in gameDirs){
 						if (Directory.Exists(temp)){
