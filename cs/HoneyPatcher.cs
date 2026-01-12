@@ -122,7 +122,7 @@ public partial class HoneyPatcher : Node2D
 		
 		/* Enable portable mode because people kept asking for it. */
 		if (File.Exists("portable.txt")){
-			HoneyLog(3, "Found portable.txt. Enabling portable mode.");
+			HoneyLog(2, "Found portable.txt. Enabling portable mode.");
 			modsDir = "mods";
 			workbenchDir = "workbench";
 			backupDir = "BACKUP";
@@ -668,6 +668,9 @@ public partial class HoneyPatcher : Node2D
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
+			if (Path.GetFileName(mod) == ".DS_Store"){
+				continue;
+			}
 			try{
 				if (Path.GetFileNameWithoutExtension(modpath)[0].ToString() == "."){
 					HoneyLog(4, $"{Path.GetFileNameWithoutExtension(modpath)} begins with a \".\" and is thus considered disabled. Ignoring.");
@@ -1011,7 +1014,7 @@ public partial class HoneyPatcher : Node2D
 							break;
 						}
 					}
-					fvdirs = new string[] { Path.Combine(gameDir, "NPUB30929"), Path.Combine(gameDir, "NPEB01164"), Path.Combine("NPJB00252"), Path.Combine("NPHB00516") };
+					fvdirs = new string[] { Path.Combine(gameDir, "NPUB30929"), Path.Combine(gameDir, "NPEB01164"), Path.Combine(gameDir, "NPJB00252"), Path.Combine(gameDir, "NPHB00516") };
 					foreach (string fvdir in fvdirs){
 						if (Directory.Exists(fvdir)){
 							defaultConfig = defaultConfig.Replace("fvusrdir = .", $"fvusrdir = {fvdir}/USRDIR");
@@ -1316,6 +1319,9 @@ public partial class HoneyPatcher : Node2D
 		Array.Sort(files);
 		foreach (string file in files){
 			string mod = Path.GetFileName(file);
+			if (mod == ".DS_Store"){
+				continue;
+			}
 			if (mod[0].ToString() == "."){
 				_disabledmods.AddItem(mod.Remove(0,1));
 			}
