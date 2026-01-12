@@ -114,7 +114,7 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_progress", "_game", "_patchname", "_patchesfolder", "_gameselector", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_gamebutton", "_enabledmods", "_disabledmods")]
+[node name="HoneyPatcher" type="Node2D" node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -127,11 +127,12 @@ _modslist = NodePath("ModsList")
 _closemodslist = NodePath("CloseModsList")
 _enableall = NodePath("EnableAll")
 _disableall = NodePath("DisableAll")
+_patchesfolder = NodePath("PatchesFolder")
+_gamebutton = NodePath("MenuBar")
+_gameselector = NodePath("MenuBar/PopupMenu")
 _progress = NodePath("Progress")
 _game = NodePath("game")
 _patchname = NodePath("PatchName")
-_patchesfolder = NodePath("PatchesFolder")
-_gameselector = NodePath("MenuBar/PopupMenu")
 _confirm = NodePath("AudioPlayers/Confirm")
 _back = NodePath("AudioPlayers/Back")
 _select = NodePath("AudioPlayers/Select")
@@ -141,7 +142,6 @@ _vf2a = NodePath("AudioPlayers/VF2")
 _omga = NodePath("AudioPlayers/OMG")
 _logoskip = NodePath("Logoskip")
 _cleanup = NodePath("Cleanup")
-_gamebutton = NodePath("MenuBar")
 _enabledmods = NodePath("EnabledMods")
 _disabledmods = NodePath("DisabledMods")
 
