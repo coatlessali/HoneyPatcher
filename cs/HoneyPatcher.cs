@@ -998,7 +998,7 @@ public partial class HoneyPatcher : Node2D
 			switch (OS.GetName()){
 				case "macOS":
 					gameDir = $"/Users/{System.Environment.UserName}/Library/Application Support/rpcs3/dev_hdd0/game/";
-					stfdirs = new string[] { Path.Combine(gameDir, "NPUB30927"), Path.Combine(gameDir, "NPEB01162"), Path.Combine("NPJB00250"), Path.Combine("NPHB00515") };
+					stfdirs = new string[] { Path.Combine(gameDir, "NPUB30927"), Path.Combine(gameDir, "NPEB01162"), Path.Combine(gameDir, "NPJB00250"), Path.Combine(gameDir, "NPHB00515") };
 					foreach (string stfdir in stfdirs){
 						if (Directory.Exists(stfdir)){
 							defaultConfig = defaultConfig.Replace("stfusrdir = .", $"stfusrdir = {stfdir}/USRDIR");
@@ -1006,7 +1006,7 @@ public partial class HoneyPatcher : Node2D
 							break;
 						}
 					}
-					vf2dirs = new string[] { Path.Combine(gameDir, "NPUB30928"), Path.Combine(gameDir, "NPEB01163"), Path.Combine("NPJB00251"), Path.Combine("NPHB00517") };
+					vf2dirs = new string[] { Path.Combine(gameDir, "NPUB30928"), Path.Combine(gameDir, "NPEB01163"), Path.Combine(gameDir, "NPJB00251"), Path.Combine(gameDir, "NPHB00517") };
 					foreach (string vf2dir in vf2dirs){
 						if (Directory.Exists(vf2dir)){
 							defaultConfig = defaultConfig.Replace("vf2usrdir = .", $"vf2usrdir = {vf2dir}/USRDIR");
