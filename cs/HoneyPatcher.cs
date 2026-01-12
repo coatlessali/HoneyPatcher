@@ -250,7 +250,9 @@ public partial class HoneyPatcher : Node2D
 		try{
 			// Runs the below function
 			string[] files = Directory.GetFiles(Path.Combine(modsDir, game))
-				.Where(file => !Path.GetFileNameWithoutExtension(file).StartsWith("."))
+				.Where(file =>
+					!Path.GetFileNameWithoutExtension(file).StartsWith(".") &&
+					Path.GetFileName(file) != ".DS_Store")
 				.ToArray();
 			if (files.Length > 0){
 				await Task.Run(() => { InstallAsync(); });
