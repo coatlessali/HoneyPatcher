@@ -181,7 +181,7 @@ volume_db = -19.81
 offset_top = 47.0
 offset_right = 960.0
 offset_bottom = 70.0
-text = "HoneyPatcher: Arcade Stage 8 Infinity +B"
+text = "HoneyPatcher: Arcade Stage 8 Infinity"
 horizontal_alignment = 1
 script = ExtResource("24_iwxrx")
 
