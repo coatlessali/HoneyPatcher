@@ -536,6 +536,10 @@ public partial class HoneyPatcher : Node2D
 			string patchextension = Path.GetFileNameWithoutExtension(Path.Combine(workbenchDir, "original", game, filename));
 			byte[] original = File.ReadAllBytes(Path.Combine(workbenchDir, "original", game, filename));
 			byte[] modified = File.ReadAllBytes(Path.Combine(workbenchDir, "modified", game, filename));
+			if (original.Length != modified.Length){
+				HoneyLog(2, $"Skipping {filename} because the length differs and this would be terrible. How did you even do this without the game crashing? ({original.Length} : {modified.Length})");
+				continue;
+			}
 			foreach (byte b in original){
 				if (b != modified[count]){
 					locations.Add(count.ToString());
