@@ -448,11 +448,16 @@ public partial class HoneyPatcher : Node2D
 		}
 		/* Clear contents of USRDIR */
 		try{
-			Directory.Delete(usrdir, true);
-			HoneyLog(4, $"Deleted {usrdir}.");
-			Directory.CreateDirectory(usrdir);
-			HoneyLog(4, $"Created {usrdir}.");
-			HoneyLog(3, "Wiped game files.");
+			if (usrdir.EndsWith("USRDIR")){
+				Directory.Delete(usrdir, true);
+				HoneyLog(4, $"Deleted {usrdir}.");
+				Directory.CreateDirectory(usrdir);
+				HoneyLog(4, $"Created {usrdir}.");
+				HoneyLog(3, "Wiped game files.");
+			}
+			else{
+				HoneyLog(2, "Somehow, your USRDIR does not seem to be named \"USRDIR\". Not deleting anything just to be safe.");
+			}
 		}
 		catch (Exception e){
 			_back.Play();
