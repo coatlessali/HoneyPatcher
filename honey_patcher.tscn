@@ -54,6 +54,8 @@
 [ext_resource type="AudioStream" uid="uid://ixlepfnpodue" path="res://assets/sounds/fv.ogg" id="47_stow7"]
 [ext_resource type="AudioStream" uid="uid://510y6d5vln7n" path="res://assets/sounds/omg.ogg" id="48_24roi"]
 [ext_resource type="Script" uid="uid://drsoj1b832a87" path="res://gd/help.gd" id="54_i4k5d"]
+[ext_resource type="Texture2D" uid="uid://ctw4qpi3o0tl" path="res://assets/sprites/activate.png" id="55_x5qtp"]
+[ext_resource type="Script" uid="uid://c35dmt3ayebga" path="res://watermark.gd" id="56_kqs0u"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_dcw1t"]
 animations = [{
@@ -497,6 +499,14 @@ offset_right = 939.0
 offset_bottom = 45.0
 text = "Get Help"
 script = ExtResource("54_i4k5d")
+
+[node name="Watermark" type="Sprite2D" parent="." unique_id=439897890 node_paths=PackedStringArray("progress")]
+visible = false
+z_index = 67
+position = Vector2(614, 474)
+texture = ExtResource("55_x5qtp")
+script = ExtResource("56_kqs0u")
+progress = NodePath("../Progress")
 
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
