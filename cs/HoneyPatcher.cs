@@ -28,6 +28,7 @@ public partial class HoneyPatcher : Node2D
 {	
 	[Export] public AcceptDialog _acceptdialog; // Errors and whatnot
 	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
+	[Export] public FileDialog _android; // Android Button
 	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
 	[Export] public Button _restoreusrdir; // Restore USRDIR button
@@ -98,6 +99,7 @@ public partial class HoneyPatcher : Node2D
 	
 	byte loglevel = 2;
 	
+	bool debug = false;
 	bool nomods = false;
 	bool logoskip = false;
 	bool cleanup = true;
@@ -132,7 +134,13 @@ public partial class HoneyPatcher : Node2D
 		}
 		
 		LoadConfig();
-		File.Create(honeyLog).Close();
+		try{
+			File.Create(honeyLog).Close();
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was a problem creating the HoneyLog. Uh oh.");
+			HoneyLog(1, e.ToString(), true);
+		}
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
 		foreach (string h in essentialDirs){
@@ -1169,6 +1177,9 @@ public partial class HoneyPatcher : Node2D
 			default: return;
 		}
 		if (exception){	
+			if (debug == true){
+				_progress.CallDeferred("append_text", $"[{d}] {message}\n");
+			}
 			GD.Print($"[{d}] {message}");
 			using (StreamWriter sw = File.AppendText(honeyLog))
 			{

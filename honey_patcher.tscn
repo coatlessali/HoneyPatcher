@@ -116,10 +116,19 @@ animations = [{
 "speed": 15.0
 }]
 
-[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
+[sub_resource type="GDScript" id="GDScript_kqs0u"]
+script/source = "extends Button
+
+func ready() -> void:
+	if OS.get_name() == \"Android\":
+		disabled = true
+"
+
+[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_android", "_selectusrdir", "_install", "_restoreusrdir", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
+_android = NodePath("")
 _selectusrdir = NodePath("SelectUSRDIR")
 _install = NodePath("Install")
 _restoreusrdir = NodePath("RestoreUSRDIR")
@@ -211,6 +220,7 @@ offset_right = 563.0
 offset_bottom = 320.0
 text = "Open mods folder...
 "
+script = SubResource("GDScript_kqs0u")
 
 [node name="Install" type="Button" parent="." unique_id=1966008450]
 offset_left = 397.0

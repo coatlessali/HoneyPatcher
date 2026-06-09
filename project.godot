@@ -23,7 +23,7 @@ config/features=PackedStringArray("4.6", "C#", "Mobile")
 window/size/viewport_width=960
 window/size/viewport_height=540
 window/size/resizable=false
-window/stretch/scale_mode="integer"
+window/stretch/mode="viewport"
 
 [dotnet]
 
