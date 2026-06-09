@@ -1,6 +1,6 @@
 # *HoneyPatcher!*
 
-A mod installer and tool for SEGA AM2 games on RPCS3, available for Windows and Linux/SteamOS.
+A mod installer and tool for SEGA AM2 games on RPCS3, available for Windows, macOS, and Linux/SteamOS.
 
 It supports the following games:
 - Sonic the Fighters \[STF\]
