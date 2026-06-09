@@ -55,7 +55,7 @@
 [ext_resource type="AudioStream" uid="uid://510y6d5vln7n" path="res://assets/sounds/omg.ogg" id="48_24roi"]
 [ext_resource type="Script" uid="uid://drsoj1b832a87" path="res://gd/help.gd" id="54_i4k5d"]
 [ext_resource type="Texture2D" uid="uid://ctw4qpi3o0tl" path="res://assets/sprites/activate.png" id="55_x5qtp"]
-[ext_resource type="Script" uid="uid://c35dmt3ayebga" path="res://watermark.gd" id="56_kqs0u"]
+[ext_resource type="Script" uid="uid://c35dmt3ayebga" path="res://gd/watermark.gd" id="56_kqs0u"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_dcw1t"]
 animations = [{
