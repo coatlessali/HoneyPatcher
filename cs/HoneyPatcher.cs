@@ -139,8 +139,7 @@ public partial class HoneyPatcher : Node2D
 			File.Create(honeyLog).Close();
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was a problem creating the HoneyLog. Uh oh.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was a problem creating the HoneyLog. Uh oh.", e);
 		}
 		
 		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
@@ -150,8 +149,7 @@ public partial class HoneyPatcher : Node2D
 				HoneyLog(4, $"Created directory {h}.");
 			}
 			catch (Exception e){
-				HoneyLog(1, $"Failed to create directory {h}");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, $"Failed to create directory {h}", e);
 			}
 		}
 		foreach (string h in gamesList){
@@ -274,7 +272,7 @@ public partial class HoneyPatcher : Node2D
 				// Restore eboot regardless to catch edge case
 				await Task.Run(() => { RestoreEbootAsync(); });
 				if (!cleanup){
-					await Task.Run(() => { ExtractAsync(); });
+					await Task.Run(() => { InstallAsync(true); });
 					GameSound();
 					HoneyLog(3, "Extracted files.");
 					ShowError("Success!", "Files have been extracted.");
@@ -288,8 +286,7 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		catch (Exception e){
-			HoneyLog(1, $"Failed to install mods. See HoneyLog.txt for more information.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, $"Failed to install mods. See HoneyLog.txt for more information.", e);
 		}
 		finally
 		{
@@ -299,7 +296,7 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	/* Install mods */
-	private void InstallAsync(){
+	private void InstallAsync(bool just_extract = false){
 		/* Make backup if valid stf found and no backup exists */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (game == "daytona")
@@ -311,8 +308,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Created backup.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.", e);
 		}
 		
 		/* This gets AcbEditor working. */
@@ -329,77 +325,29 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Extracted rom.psarc");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.", e);
 		}
 		try{
 			File.Delete(psarc_path);
 			HoneyLog(4, "Removed rom.psarc.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
-		}
-		FarcUnpack();
-		UnpackAcb();
-		ExtractMods();
-		ApplyPatches();
-		DbToXml();
-		InjectModels(); // LibSTF by Bekzii
-		DDSFixHeader();
-		InjectModsStr();
-		XmlToDb();
-		FarcPack();
-		PackAcb();
-		CleanUp();
-		LogoSkip();
-	}
-	
-	/* Just Extract Files */
-	private void ExtractAsync(){
-		/* Make backup if valid stf found and no backup exists */
-		string psarc_path = Path.Combine(usrdir, "rom.psarc");
-		if (game == "daytona")
-			psarc_path = Path.Combine(usrdir, "ps3", "rom.psarc");
-		string gameBackupDir = Path.Combine(backupDir, game);
-		try{
-			Directory.CreateDirectory(gameBackupDir);
-			CopyFilesRecursively(usrdir, gameBackupDir);
-			HoneyLog(3, "Created backup.");
-		}
-		catch (Exception e){
-			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
-		}
-		
-		/* This gets AcbEditor working. */
-		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-		
-		/* Extract rom.psarc - used UnPSARC by NoobInCoding as a base, stripped it down,
-		   and turned it into a DLL. It's honestly still really bloated and could do with
-		   a bit more cleanup. */
-		try{
-			if (game == "daytona")
-				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "ps3", "rom"));
-			else
-				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
-			HoneyLog(3, "Extracted rom.psarc");
-		}
-		catch (Exception e){
-			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
-		}
-		try{
-			File.Delete(psarc_path);
-			HoneyLog(4, "Removed rom.psarc.");
-		}
-		catch (Exception e){
-			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.", e);
 		}
 		FarcUnpack();
 		UnpackAcb();
 		DbToXml();
+		if (!just_extract){
+			ExtractMods();
+			ApplyPatches();
+			InjectModels(); // LibSTF by Bekzii
+			DDSFixHeader();
+			InjectModsStr();
+			XmlToDb();
+			FarcPack();
+			PackAcb();
+			CleanUp();
+		}
 		LogoSkip();
 	}
 	
@@ -414,8 +362,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Created backup.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.", e);
 		}
 		LogoSkip();
 	}
@@ -441,8 +388,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Restored game files.");
 		}
 		catch (Exception e){
-			HoneyLog(1, $"Failed to restore game files. See HoneyLog.txt for more information.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, $"Failed to restore game files. See HoneyLog.txt for more information.", e);
 		}
 		finally
 		{
@@ -462,8 +408,7 @@ public partial class HoneyPatcher : Node2D
 			}
 			catch (Exception e){
 				_back.Play();
-				HoneyLog(1, "Error creating a backup. See HoneyLog.txt for more details.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, "Error creating a backup. See HoneyLog.txt for more details.", e);
 				return;
 			}
 		}
@@ -482,8 +427,7 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			_back.Play();
-			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.", e);
 			return;
 		}
 		
@@ -494,8 +438,7 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			_back.Play();
-			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "Error restoring files. See HoneyLog.txt for more details.", e);
 			return;
 		}
 	}
@@ -508,8 +451,7 @@ public partial class HoneyPatcher : Node2D
 			}
 			catch (Exception e){
 				_back.Play();
-				HoneyLog(1, "Failed to restore EBOOT.BIN. See HoneyLog.txt for more details.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, "Failed to restore EBOOT.BIN. See HoneyLog.txt for more details.", e);
 				return;
 			}
 		}
@@ -634,8 +576,7 @@ public partial class HoneyPatcher : Node2D
 					HoneyLog(4, $"Unpacked {sourceFileName}.");
 				}
 				catch (Exception e){
-					HoneyLog(1, $"{sourceFileName} could not be unpacked.");
-					HoneyLog(1, e.ToString(), true);
+					HoneyLog(1, $"{sourceFileName} could not be unpacked.", e);
 				}
 			}
 		}
@@ -676,17 +617,14 @@ public partial class HoneyPatcher : Node2D
 				}
 				catch (Exception e)
 				{
-					HoneyLog(1, $"Failed to delete {sourceFileName}. Check HoneyLog.txt for more details.");
-					HoneyLog(1, e.ToString(), true);
+					HoneyLog(1, $"Failed to delete {sourceFileName}. Check HoneyLog.txt for more details.", e);
 				}
 			}
 			catch (Exception e){
 				if (!Directory.Exists(sourceFileName))
 					HoneyLog(4, $"{sourceFileName} does not exist. Skipping.");
-				else{
-					HoneyLog(1, $"{sourceFileName} could not be repacked. See HoneyLog.txt for more details.");
-					HoneyLog(1, e.ToString(), true);
-				}
+				else
+					HoneyLog(1, $"{sourceFileName} could not be repacked. See HoneyLog.txt for more details.", e);
 			}
 		}
 		HoneyLog(3, "Repacked farc files.");
@@ -758,8 +696,7 @@ public partial class HoneyPatcher : Node2D
 				}
 			}
 			catch (Exception e){
-				HoneyLog(1, "There was an issue extracting your mods. Check HoneyLog.txt for more information.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, "There was an issue extracting your mods. Check HoneyLog.txt for more information.", e);
 			}
 		}
 		HoneyLog(3, "Extracted mods.");
@@ -819,8 +756,7 @@ public partial class HoneyPatcher : Node2D
 			}
 			catch (Exception e)
 			{
-				HoneyLog(1, "Failed to apply patches to one or more files. Check HoneyLog.txt for more information.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, "Failed to apply patches to one or more files. Check HoneyLog.txt for more information.", e);
 			}
 		}
 		HoneyLog(3, "Applied patches.");
@@ -857,8 +793,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Injected models for Sonic the Fighters.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.", e);
 		}
 	}
 	
@@ -866,7 +801,7 @@ public partial class HoneyPatcher : Node2D
 		/* AcbEditor by Skyth - did you know the upstream build literally can't run without a console? */
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
 		if (game == "daytona")
-			AcbFile = new string[] {Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE.csb")};
+			AcbFile = [Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE.csb")];
 		try{
 			if (game == "daytona")
 				CsbEditorThing.CsbEdit(AcbFile);
@@ -876,17 +811,16 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			if (game == "daytona")
-				HoneyLog(1, $"There was an issue extracting SE.csb. Check HoneyLog.txt for more details.");
+				HoneyLog(1, $"There was an issue extracting SE.csb. Check HoneyLog.txt for more details.", e);
 			else
-				HoneyLog(1, $"There was an issue extracting {game}_all.acb. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, $"There was an issue extracting {game}_all.acb. Check HoneyLog.txt for more details.", e);
 		}
 	}
 
 	private void PackAcb(){
 		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
 		if (game == "daytona")
-			AcbFolder = new string[] {Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE")};
+			AcbFolder = [Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE")];
 		try{
 			if (game == "daytona")
 				CsbEditorThing.CsbEdit(AcbFolder);
@@ -896,10 +830,9 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			if (game == "daytona")
-				HoneyLog(1, "There was an issue repacking SE.csb. Check HoneyLog.txt for more details.");
+				HoneyLog(1, "There was an issue repacking SE.csb. Check HoneyLog.txt for more details.", e);
 			else
-				HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.", e);
 		}
 		/* Cleanup */
 		try{
@@ -909,8 +842,7 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		catch (Exception e){
-			HoneyLog(1, $"There was an issue deleting the ACB/CSB folder. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, $"There was an issue deleting the ACB/CSB folder. Check HoneyLog.txt for more details.", e);
 		}
 	}
 	
@@ -934,8 +866,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Converted string DBs to XML.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was a problem converting one of your string arrays to XML. Check HoneyLog.txt for more information.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was a problem converting one of your string arrays to XML. Check HoneyLog.txt for more information.", e);
 		}
 	}
 	
@@ -958,8 +889,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Converted string XMLs to DBs.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue converting your string XMLs to DB format. Check HoneyLog.txt for more information.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue converting your string XMLs to DB format. Check HoneyLog.txt for more information.", e);
 		}
 	}
 	
@@ -995,8 +925,7 @@ public partial class HoneyPatcher : Node2D
 				HoneyLog(4, $"Replaced {old_string} with {new_strings[strCount]}.");
 			}
 			catch (Exception e){
-				HoneyLog(1, $"Possible out of bounds error on custom string replacement. Attempting to ignore.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, $"Possible out of bounds error on custom string replacement. Attempting to ignore.", e);
 			}
 			strCount++;
 		}
@@ -1007,8 +936,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, "Injected mod list into string_array_en.xml.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "There was an issue saving string_array_en.xml. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "There was an issue saving string_array_en.xml. Check HoneyLog.txt for more details.", e);
 		}
 	}
 	
@@ -1159,8 +1087,7 @@ public partial class HoneyPatcher : Node2D
 				HoneyLog(3, "Created default configuration file.");
 			}
 			catch (Exception e){
-				HoneyLog(1, "There was an issue creating the configuration. See HoneyLog.txt for more details.");
-				HoneyLog(1, e.ToString(), true);
+				HoneyLog(1, "There was an issue creating the configuration. See HoneyLog.txt for more details.", e);
 			}
 		}
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
@@ -1179,7 +1106,7 @@ public partial class HoneyPatcher : Node2D
 			}
 		}
 		catch{
-			HoneyLog(4, "Skipping migration.", false);
+			HoneyLog(4, "Skipping migration.");
 		}
 		
 		try{
@@ -1231,10 +1158,12 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, "loaded HoneyConfig.ini");
 	}
 	
-	private void HoneyLog(byte severity, string message, bool exception = false){
-		if (severity > loglevel){
-			return;
-		}
+	private void HoneyLog(byte severity, string message, Exception exception = null){
+		if (severity > loglevel) return;
+		
+		string ex = String.Empty;
+		if (exception != null)
+			ex = (": " + exception.ToString());
 		string d = "?";
 		switch (severity){
 			case 1: d = "E"; break; // Error
@@ -1243,24 +1172,12 @@ public partial class HoneyPatcher : Node2D
 			case >= 4: d = "D"; break; // Debug
 			default: return;
 		}
-		if (exception){	
-			if (debug == true){
-				_progress.CallDeferred("append_text", $"[{d}] {message}\n");
-			}
-			GD.Print($"[{d}] {message}");
-			using (StreamWriter sw = File.AppendText(honeyLog))
-			{
-				sw.WriteLine($"[{d}] {message}");
-			}	
-		}
-		else{
-			/* This fixes multithreading. */
-			_progress.CallDeferred("append_text", $"[{d}] {message}\n");
-		}
-		GD.Print($"[{d}] {message}");
+		/* This fixes multithreading. */
+		_progress.CallDeferred("append_text", $"[{d}] {message}\n");
+		GD.Print($"[{d}] {message} {ex}");
 		using (StreamWriter sw = File.AppendText(honeyLog))
 		{
-			sw.WriteLine($"[{d}] {message}");
+			sw.WriteLine($"[{d}] {message} {ex}");
 		}	
 	}
 	
@@ -1278,8 +1195,7 @@ public partial class HoneyPatcher : Node2D
 					HoneyLog(4, $"Deleted {file}.");
 				}
 				catch (Exception e){
-					HoneyLog(1, $"There was an issue cleaning up {file}. Check HoneyLog.txt for more details.");
-					HoneyLog(1, e.ToString(), true);
+					HoneyLog(1, $"There was an issue cleaning up {file}. Check HoneyLog.txt for more details.", e);
 				}
 			}
 		}
@@ -1288,24 +1204,16 @@ public partial class HoneyPatcher : Node2D
 	
 	private void ToggleLogoskip(bool toggle){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
-		data["main"]["logoskip"] = "false";
-		logoskip = false;
-		if (toggle){
-			data["main"]["logoskip"] =  "true";
-			logoskip = true;
-		}
+		logoskip = toggle;
+		data["main"]["logoskip"] = toggle.ToString().ToLower();
 		new FileIniDataParser().WriteFile(honeyConfig, data);
 		HoneyLog(3, "Toggled logoskip.");
 	}
 	
 	private void ToggleCleanup(bool toggle){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
-		data["main"]["cleanup"] = "false";
-		cleanup = false;
-		if (toggle){
-			data["main"]["cleanup"] =  "true";
-			cleanup = true;
-		}
+		cleanup = toggle;
+		data["main"]["cleanup"] = toggle.ToString().ToLower();
 		new FileIniDataParser().WriteFile(honeyConfig, data);
 		HoneyLog(3, "Toggled cleanup.");
 	}
@@ -1313,12 +1221,8 @@ public partial class HoneyPatcher : Node2D
 	private void LogoSkip(){
 		string bin = Path.Combine(usrdir, "EBOOT.BIN"); // retail bin
 		/* Sanity Checks. */
-		if (game != "stf"){
-			HoneyLog(4, "Game is not Sonic the Fighters. Skipping.");
-			return;
-		}
-		if (!logoskip){
-			HoneyLog(4, "LogoSkip disabled. Skipping.");
+		if (game != "stf" || !logoskip){
+			HoneyLog(4, "Game is not Sonic the Fighters, or logoskip is disabled.");
 			return;
 		}
 		/* Attempt a local copy first, as a manual override. */
@@ -1344,8 +1248,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(3, $"Copied EBOOT to local directory.");
 		}
 		catch (Exception e){
-			HoneyLog(1, "A problem occurred trying to download EBOOT.bin. Check HoneyLog.txt for more details.");
-			HoneyLog(1, e.ToString(), true);
+			HoneyLog(1, "A problem occurred trying to download EBOOT.bin. Check HoneyLog.txt for more details.", e);
 		}
 	}
 	
