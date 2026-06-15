@@ -1,6 +1,5 @@
 extends AudioStreamPlayer
 
-
 func _on_usrdir_dialog_confirmed() -> void:
 	play()
 func _on_accept_dialog_confirmed() -> void:

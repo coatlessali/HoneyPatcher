@@ -32,7 +32,6 @@ public partial class HoneyPatcher : Node2D
 	[Export] public FileDialog _android; // Android Button
 	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
-	[Export] public Button _restoreusrdir; // Restore USRDIR button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
 	[Export] public Button _genpatches; // Generate Patches button
 	[Export] public Button _modslist;
@@ -113,7 +112,6 @@ public partial class HoneyPatcher : Node2D
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
-		_restoreusrdir.Pressed += OnRestoreUsrdirPressed;
 		_modsfolder.Pressed += OpenModsFolder;
 		_genpatches.Pressed += CreatePatches;
 		_patchesfolder.Pressed += OpenPatchesFolder;
@@ -212,7 +210,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void EnableButtons(){
 		_install.Disabled = false;
-		_restoreusrdir.Disabled = false;
 		_genpatches.Disabled = false;
 		_gamebutton.Visible = true;
 		_logoskip.Disabled = false;
@@ -221,7 +218,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void DisableButtons(){
 		_install.Disabled = true;
-		_restoreusrdir.Disabled = true;
 		_genpatches.Disabled = true;
 		_gamebutton.Visible = false;
 		_logoskip.Disabled = true;

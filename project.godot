@@ -8,10 +8,6 @@
 
 config_version=5
 
-[animation]
-
-compatibility/default_parent_skeleton_in_mesh_instance_3d=true
-
 [application]
 
 config/name="HoneyPatcher"
@@ -20,6 +16,10 @@ config/features=PackedStringArray("4.6", "C#", "Mobile")
 boot_splash/stretch_mode=0
 boot_splash/use_filter=false
 boot_splash/image="uid://ca0i6h6e1x3fe"
+
+[debug]
+
+gdscript/warnings/confusable_capture_reassignment=0
 
 [display]
 

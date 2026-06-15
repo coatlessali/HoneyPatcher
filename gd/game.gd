@@ -7,9 +7,6 @@ extends Label
 @export var hp : Node2D
 
 @export var daytona_background : Sprite2D
-@export var description : Label
-@export var log : RichTextLabel
-@export var title : Label
 @export var box_left : Sprite2D
 @export var box : Sprite2D
 @export var box_right : Sprite2D
@@ -90,51 +87,35 @@ func _process(delta: float) -> void:
 	daytona.scale.x = rot
 
 func _on_popup_menu_id_pressed(id: int) -> void:
+	stf.hide()
+	fv.hide()
+	vf2.hide()
+	omg.hide()
+	daytona.hide()
 	match id:
 		0:
 			stf.show()
-			fv.hide()
-			vf2.hide()
-			omg.hide()
-			daytona.hide()
 			stfa.play()
 			daytona_desc(false)
 		2:
-			stf.hide()
 			fv.show()
-			vf2.hide()
-			omg.hide()
-			daytona.hide()
 			fva.play()
 			daytona_desc(false)
 		1:
-			stf.hide()
-			fv.hide()
 			vf2.show()
-			omg.hide()
-			daytona.hide()
 			vf2a.play()
 			daytona_desc(false)
 		3:
-			stf.hide()
-			fv.hide()
-			vf2.hide()
 			omg.show()
-			daytona.hide()
 			omga.play()
 			daytona_desc(false)
 		4:
-			stf.hide()
-			fv.hide()
-			vf2.hide()
-			omg.hide()
 			daytona.show()
 			daytonaa.play()
 			daytona_desc(true)
 
 func daytona_desc(flag):
 	var target_alpha = 1.0 if flag else 0.0
-
 	var tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(box_left, "modulate:a", target_alpha, 0.5)

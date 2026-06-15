@@ -6,16 +6,10 @@ extends Button
 @export var lightningsound : AudioStreamPlayer
 @export var explotano : Sprite2D
 
-var rng = RandomNumberGenerator.new()
-var magic_number : int
-
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	pressed.connect(self._button_pressed)
 
 func _button_pressed():
-	#magic_number = rng.randi_range(1, 2)
-	#if magic_number == 1:
 	lightning.modulate.a = 1.0
 	if explotano.visible == false:
 		honeynow.modulate.a = 1.0

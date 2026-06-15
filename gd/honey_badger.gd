@@ -11,9 +11,6 @@ func _ready() -> void:
 	if magic_number == 1:
 		cat_explotano()
 
-func _process(_delta: float) -> void:
-	pass
-
 func cat_explotano():
 	explode.visible = true
 	explotano.visible = true
