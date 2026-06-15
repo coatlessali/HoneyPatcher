@@ -29,7 +29,6 @@ public partial class HoneyPatcher : Node2D
 {	
 	[Export] public AcceptDialog _acceptdialog; // Errors and whatnot
 	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
-	[Export] public FileDialog _android; // Android Button
 	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
@@ -98,17 +97,14 @@ public partial class HoneyPatcher : Node2D
 	string pretty_game = "Sonic the Fighters";
 	string log;
 	string modsStr;
-	
 	byte loglevel = 2;
 	
-	bool debug = false;
 	bool nomods = false;
 	bool logoskip = false;
 	bool cleanup = true;
 	bool gemsSfx = false;
 	
 	public override void _Ready(){	
-		
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
@@ -168,8 +164,6 @@ public partial class HoneyPatcher : Node2D
 			_back.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_back.ogg"));
 			_select.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_select.ogg"));
 		}
-		
-		/* Migration code has been removed from this spot. Please just use V7 if you need this. */
 	}
 
 	private void OnUsrdirDialog(string dir){
