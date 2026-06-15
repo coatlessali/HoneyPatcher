@@ -31,6 +31,7 @@
 [ext_resource type="Texture2D" uid="uid://ca0i6h6e1x3fe" path="res://assets/sprites/logo-full.png" id="25_rjlfy"]
 [ext_resource type="Texture2D" uid="uid://d2vo7b3aa88v3" path="res://assets/sprites/icons/stf-big.png" id="26_8beqc"]
 [ext_resource type="Script" uid="uid://c1iy6n6x414gl" path="res://gd/logoskip.gd" id="26_hph0u"]
+[ext_resource type="Texture2D" uid="uid://lh3qdb3ubedn" path="res://assets/D.png" id="26_kys1o"]
 [ext_resource type="Script" uid="uid://7sj8o8ydv082" path="res://gd/game.gd" id="26_x8lee"]
 [ext_resource type="Script" uid="uid://dmt3ma53sykab" path="res://gd/lightning.gd" id="27_0b2i5"]
 [ext_resource type="Texture2D" uid="uid://dc6uccaglxl3j" path="res://assets/sprites/honeybadger/HONEYNOW.png" id="27_iaya5"]
@@ -187,7 +188,7 @@ explodesound = NodePath("../ExplodeSound")
 
 [node name="Explode" type="Sprite2D" parent="." unique_id=1674180604]
 visible = false
-position = Vector2(480, 160.00002)
+position = Vector2(480, 181)
 scale = Vector2(0.517134, 0.552542)
 texture = ExtResource("5_idu76")
 
@@ -203,8 +204,14 @@ stream = ExtResource("23_1qnki")
 volume_db = -19.81
 
 [node name="Logo" type="Sprite2D" parent="." unique_id=1145517360]
+texture_filter = 2
+texture_repeat = 1
 position = Vector2(471, 52)
 texture = ExtResource("25_rjlfy")
+
+[node name="Revision" type="Sprite2D" parent="Logo" unique_id=191599033]
+position = Vector2(251, 25)
+texture = ExtResource("26_kys1o")
 
 [node name="Title" type="Label" parent="." unique_id=832992374]
 visible = false

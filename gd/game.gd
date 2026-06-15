@@ -32,45 +32,51 @@ func _ready() -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
-			white()
-			daytona_desc(false)
-			daytona_background.hide()
+			box.modulate.a = 0.0
+			box_right.modulate.a = 0.0
+			box_left.modulate.a = 0.0
+			daytona_background.modulate.a = 0.0
 		"fv":
 			stf.hide()
 			fv.show()
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
-			white()
-			daytona_desc(false)
-			daytona_background.hide()
+			box.modulate.a = 0.0
+			box_right.modulate.a = 0.0
+			box_left.modulate.a = 0.0
+			daytona_background.modulate.a = 0.0
 		"vf2":
 			stf.hide()
 			fv.hide()
 			vf2.show()
 			omg.hide()
 			daytona.hide()
-			white()
-			daytona_desc(false)
-			daytona_background.hide()
+			box.modulate.a = 0.0
+			box_right.modulate.a = 0.0
+			box_left.modulate.a = 0.0
+			daytona_background.modulate.a = 0.0
 		"omg":
 			stf.hide()
 			fv.hide()
 			vf2.hide()
 			omg.show()
 			daytona.hide()
-			white()
-			daytona_desc(false)
-			daytona_background.hide()
+			box.modulate.a = 0.0
+			box_right.modulate.a = 0.0
+			box_left.modulate.a = 0.0
+			daytona_background.modulate.a = 0.0
 		"daytona":
 			stf.hide()
 			fv.hide()
 			vf2.hide()
 			omg.hide()
 			daytona.show()
-			black()
 			daytona_desc(true)
-			daytona_background.show()
+			box.modulate.a = 1.0
+			box_right.modulate.a = 1.0
+			box_left.modulate.a = 1.0
+			daytona_background.modulate.a = 1.0
 
 func _process(delta: float) -> void:
 	# rotation
@@ -91,8 +97,6 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
-			daytona_background.hide()
-			white()
 			stfa.play()
 			daytona_desc(false)
 		2:
@@ -101,8 +105,6 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
-			daytona_background.hide()
-			white()
 			fva.play()
 			daytona_desc(false)
 		1:
@@ -111,8 +113,6 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			vf2.show()
 			omg.hide()
 			daytona.hide()
-			daytona_background.hide()
-			white()
 			vf2a.play()
 			daytona_desc(false)
 		3:
@@ -121,8 +121,6 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			vf2.hide()
 			omg.show()
 			daytona.hide()
-			daytona_background.hide()
-			white()
 			omga.play()
 			daytona_desc(false)
 		4:
@@ -131,29 +129,15 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.show()
-			daytona_background.show()
-			black()
 			daytonaa.play()
 			daytona_desc(true)
 
 func daytona_desc(flag):
-	if flag:
-		box_left.show()
-		box_right.show()
-		box.show()
-	else:
-		box_left.hide()
-		box_right.hide()
-		box.hide()
+	var target_alpha = 1.0 if flag else 0.0
 
-func white() -> void:
-	description.remove_theme_color_override("font_color")
-	title.remove_theme_color_override("font_color")
-	log.remove_theme_color_override("default_color")
-	pass
-
-func black() -> void:
-	#description.add_theme_color_override("font_color", Color.BLACK)
-	#title.add_theme_color_override("font_color", Color.BLACK)
-	#log.add_theme_color_override("default_color", Color.BLACK)
-	pass
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(box_left, "modulate:a", target_alpha, 0.5)
+	tween.tween_property(box_right, "modulate:a", target_alpha, 0.5)
+	tween.tween_property(box, "modulate:a", target_alpha, 0.5)
+	tween.tween_property(daytona_background, "modulate:a", target_alpha, 0.5)
