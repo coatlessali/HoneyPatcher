@@ -1108,7 +1108,6 @@ public partial class HoneyPatcher : Node2D
 		catch{
 			HoneyLog(4, "Skipping migration.");
 		}
-		
 		try{
 			game = data["main"]["game"];
 		}
@@ -1321,6 +1320,5 @@ public partial class HoneyPatcher : Node2D
 				_enabledmods.AddItem(mod);
 			}
 		}
-		
 	}
 }
