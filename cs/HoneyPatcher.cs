@@ -533,6 +533,7 @@ public partial class HoneyPatcher : Node2D
 			case "vf2": roms = vf2_roms.ToList(); break;
 			case "fv": roms = fv_roms.ToList(); break;
 			case "omg": roms = omg_roms.ToList(); break;
+			case "daytona": roms = daytona_roms.ToList(); break;y
 		}
 		
 		foreach (string rawhm in roms){
