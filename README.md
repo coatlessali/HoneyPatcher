@@ -1,4 +1,4 @@
-# *HoneyPatcher!*
+<img width="453" height="73" alt="logo" src="https://github.com/user-attachments/assets/0d1049c8-0e4c-4fc2-be66-453955edbe35" />
 
 A mod installer and tool for SEGA AM2 games on RPCS3, available for Windows, macOS, and Linux/SteamOS.
 
@@ -9,9 +9,7 @@ It supports the following games:
 - Cyber Troopers Virtual-On: Operation Moongate \[OMG\]
 - Daytona USA \[Daytona\]
 
-![coollogo_com-1489161](https://github.com/user-attachments/assets/49e20382-172d-4719-9afd-50e0a74755f5)
-
-See ***THE ALMIGHTY GUIDE WIKI PAGE*** [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide-(V5))
+See the guide [here.](https://github.com/coatlessali/HoneyPatcher/wiki/Install-&-Usage-Guide)
 
 ### Credits
 
