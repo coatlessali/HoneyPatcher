@@ -7,6 +7,7 @@ It supports the following games:
 - Fighting Vipers \[FV\]
 - Virtua Fighter 2 \[VF2\]
 - Cyber Troopers Virtual-On: Operation Moongate \[OMG\]
+- Daytona USA \[Daytona\]
 
 ![coollogo_com-1489161](https://github.com/user-attachments/assets/49e20382-172d-4719-9afd-50e0a74755f5)
 
@@ -18,7 +19,7 @@ HoneyPatcher uses borrowed code and libraries from the following places:
 - [LibSTF](https://github.com/zeesworth/LibSTF) by [bekzii](https://github.com/zeesworth). Licensed under the [GNU Lesser General Public License 2.1](https://github.com/zeesworth/LibSTF?tab=LGPL-2.1-1-ov-file#readme).
 - [ini-parser](https://github.com/rickyah/ini-parser) by [rickyah](https://github.com/rickyah). Licensed under the [MIT License](https://github.com/rickyah/ini-parser/blob/development/LICENSE).
 - [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
-- [SonicAudioTools](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/SonicAudioTools?tab=MIT-1-ov-file#readme).
+- [SonicAudioTools](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/SonicAudioTools?tab=MIT-1-ov-file#readme). [Fork](https://github.com/coatlessali/SonicAudiotools) by me.
 - [xdelta-sharp](https://github.com/pleonex/xdelta-sharp) by [pleonex](https://github.com/pleonex). Licensed under the [MIT License](https://github.com/pleonex/xdelta-sharp/blob/main/LICENSE).
 - [FarcPack](https://github.com/blueskythlikesclouds/MikuMikuLibrary/releases) from [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
 - [UnPSARC](https://github.com/rm-NoobInCoding/UnPSARC) by [NoobInCoding](https://github.com/rm-NoobInCoding), licensed under the [MIT License](https://github.com/rm-NoobInCoding/UnPSARC?tab=MIT-1-ov-file#readme).
@@ -29,5 +30,6 @@ Special thanks to the following people:
 - Bekzii for the model injector. Genuinely a game changer.
 - Lodsaemone for testing, and making me want to add Fighting Vipers support.
 - IndigoTrance for contributing to OMG support.
+- Skyth for most of the [CRIWARE related libraries](https://xkcd.com/2347/).
 
 <sub>*...because if you don't look sweet, you're not wearing Honey!*</sub>

@@ -8,11 +8,9 @@ var rng = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	var magic_number = rng.randi_range(1, 10)
-	# magic_number = 1
 	if magic_number == 1:
 		cat_explotano()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	pass
 

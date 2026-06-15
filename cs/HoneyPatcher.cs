@@ -19,6 +19,7 @@ using MikuMikuLibrary.IO;
 using Newtonsoft.Json;
 using DatabaseConverter;
 using AcbEditor;
+using CsbEditor;
 using LibSTF;
 using IniParser;
 using IniParser.Model;
@@ -51,6 +52,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _fva;
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
+	[Export] public AudioStreamPlayer _daytonaa;
 	[Export] public CheckButton _logoskip;
 	[Export] public CheckButton _cleanup;
 	[Export] public ItemList _enabledmods;
@@ -86,7 +88,8 @@ public partial class HoneyPatcher : Node2D
 	string[] fv_roms = {"rom_code1.bin", "rom_code2.bin", "rom_data.bin", "rom_ep1.bin", "rom_ep2.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] vf2_roms = {"ic12_13.bin", "ic12_15.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] omg_roms = {"farc_tex.bin", "rom_code.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin", "string_array2_en.bin", "string_array2_jp.bin"};
-	string[] gamesList = {"stf", "vf2", "fv", "omg"};
+	string[] daytona_roms = {"rom_code1.bin", "rom_code2.bin", "rom_copro.bin", "rom_data.bin", "rom_ep1.bin", "rom_pol.bin", "rom_tex.bin"};
+	string[] gamesList = {"stf", "vf2", "fv", "omg", "daytona"};
 	List<string> old_strings = new List<string>();
 	List<string> new_strings = new List<string>();
 	
@@ -187,6 +190,7 @@ public partial class HoneyPatcher : Node2D
 			case "vf2": pretty_game = "Virtua Fighter 2"; break;
 			case "fv": pretty_game = "Fighting Vipers"; break;
 			case "omg": pretty_game = "Cyber Troopers Virtual-On: Operation Moongate"; break;
+			case "daytona": pretty_game = "Daytona USA"; break;
 		}
 	}
 	
@@ -197,6 +201,7 @@ public partial class HoneyPatcher : Node2D
 			case 1: game = "vf2"; break;
 			case 2: game = "fv"; break;
 			case 3: game = "omg"; break;
+			case 4: game = "daytona"; break;
 		}
 		UpdateGame();
 		data["main"]["game"] = game;
@@ -230,7 +235,7 @@ public partial class HoneyPatcher : Node2D
 		DisableButtons();
 		HoneyLog(4, "Disabled Menu buttons.");
 		/* Check if usrdir is set. */
-		if (usrdir == "."){
+		if (usrdir == null || usrdir == "."){
 			_back.Play();
 			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
 			HoneyLog(1, "usrdir is unset.");
@@ -240,6 +245,8 @@ public partial class HoneyPatcher : Node2D
 		}
 		/* Check for clean copy of game w/ rom.psarc still intact */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		if (game == "daytona")
+			psarc_path = Path.Combine(usrdir, "ps3", "rom.psarc");
 		if (!File.Exists(psarc_path)){
 			try{
 				// restore entire game if not there
@@ -299,6 +306,8 @@ public partial class HoneyPatcher : Node2D
 	private void InstallAsync(){
 		/* Make backup if valid stf found and no backup exists */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		if (game == "daytona")
+			psarc_path = Path.Combine(usrdir, "ps3", "rom.psarc");
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
 			Directory.CreateDirectory(gameBackupDir);
@@ -317,7 +326,10 @@ public partial class HoneyPatcher : Node2D
 		   and turned it into a DLL. It's honestly still really bloated and could do with
 		   a bit more cleanup. */
 		try{
-			PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
+			if (game == "daytona")
+				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "ps3", "rom"));
+			else
+				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 			HoneyLog(3, "Extracted rom.psarc");
 		}
 		catch (Exception e){
@@ -351,6 +363,8 @@ public partial class HoneyPatcher : Node2D
 	private void ExtractAsync(){
 		/* Make backup if valid stf found and no backup exists */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
+		if (game == "daytona")
+			psarc_path = Path.Combine(usrdir, "ps3", "rom.psarc");
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
 			Directory.CreateDirectory(gameBackupDir);
@@ -369,7 +383,10 @@ public partial class HoneyPatcher : Node2D
 		   and turned it into a DLL. It's honestly still really bloated and could do with
 		   a bit more cleanup. */
 		try{
-			PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
+			if (game == "daytona")
+				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "ps3", "rom"));
+			else
+				PsarcThing.UnpackArchiveFile(psarc_path, Path.Combine(usrdir, "rom"));
 			HoneyLog(3, "Extracted rom.psarc");
 		}
 		catch (Exception e){
@@ -590,6 +607,8 @@ public partial class HoneyPatcher : Node2D
 	
 	private void FarcUnpack(){
 		string romdir = Path.Combine(usrdir, "rom");
+		if (game == "daytona")
+			romdir = Path.Combine(usrdir, "ps3", "rom");
 		List<string> unpacked = new List<string>();
 		
 		for (int i = 0; i < 2; i++){
@@ -628,6 +647,8 @@ public partial class HoneyPatcher : Node2D
 	
 	private void FarcPack(){
 		string romdir = Path.Combine(usrdir, "rom");
+		if (game == "daytona")
+			romdir = Path.Combine(usrdir, "ps3", "rom");
 		string[] farcs = Directory.GetFiles(romdir, "*.farc", SearchOption.AllDirectories);
 		Array.Reverse(farcs);
 	
@@ -686,6 +707,9 @@ public partial class HoneyPatcher : Node2D
 		foreach (string mod in files){
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
+			// Due to Daytona's split structure, all mods should assume the USRDIR to be root
+			if (game == "daytona")
+				romdir = usrdir;
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			if (Path.GetFileName(mod) == ".DS_Store"){
 				continue;
@@ -747,11 +771,15 @@ public partial class HoneyPatcher : Node2D
 	private void ApplyPatches(){
 		/* Get list of files in rom folder */
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
+		if (game == "daytona")
+			files = Directory.GetFiles(Path.Combine(usrdir, "ps3", "rom"));
 		/* Apply in alphabetical order */
 		Array.Sort(files);
 		foreach (string mod in files){
 			string modpath = mod; // patch
 			string romdir = Path.Combine(usrdir, "rom");
+			if (game == "daytona")
+				romdir = Path.Combine(usrdir, "ps3", "rom");
 			string stf_rom = Path.Combine(romdir, $"{game}_rom");
 			string patchdest; // file to be patched
 			switch(Path.GetExtension(modpath)){
@@ -760,6 +788,7 @@ public partial class HoneyPatcher : Node2D
 				case ".rom_code1": patchdest = Path.Combine(stf_rom, "rom_code1.bin"); break;
 				case ".rom_code2": patchdest = Path.Combine(stf_rom, "rom_code2.bin"); break;
 				case ".rom_cop": patchdest = Path.Combine(stf_rom, "rom_cop.bin"); break;
+				case ".rom_copro": patchdest = Path.Combine(stf_rom, "rom_copro.bin"); break;
 				case ".rom_data": patchdest = Path.Combine(stf_rom, "rom_data.bin"); break;
 				case ".rom_ep": patchdest = Path.Combine(stf_rom, "rom_ep.bin"); break;
 				case ".rom_ep1": patchdest = Path.Combine(stf_rom, "rom_ep1.bin"); break;
@@ -769,7 +798,7 @@ public partial class HoneyPatcher : Node2D
 				case ".ic12_13": patchdest = Path.Combine(stf_rom, "ic12_13.bin"); break;
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				
-				// BREAKING: no longer byte patching this bc it makes no sense
+				// We are keeping byte patching around for backwards compatibility but PLEASE don't keep using it.
 				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
 				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
 				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
@@ -839,35 +868,51 @@ public partial class HoneyPatcher : Node2D
 	private void UnpackAcb(){
 		/* AcbEditor by Skyth - did you know the upstream build literally can't run without a console? */
 		string[] AcbFile = {Path.Combine(usrdir, "rom", "sound", $"{game}_all.acb")};
+		if (game == "daytona")
+			AcbFile = new string[] {Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE.csb")};
 		try{
-			AcbEditorThing.AcbEdit(AcbFile);
-			HoneyLog(3, "Unpacked ACB file.");
+			if (game == "daytona")
+				CsbEditorThing.CsbEdit(AcbFile);
+			else
+				AcbEditorThing.AcbEdit(AcbFile);
+			HoneyLog(3, "Unpacked ACB/CSB file.");
 		}
 		catch (Exception e){
-			HoneyLog(1, $"There was an issue extracting {game}_all.acb. Check HoneyLog.txt for more details.");
+			if (game == "daytona")
+				HoneyLog(1, $"There was an issue extracting SE.csb. Check HoneyLog.txt for more details.");
+			else
+				HoneyLog(1, $"There was an issue extracting {game}_all.acb. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
 	}
 
 	private void PackAcb(){
 		string[] AcbFolder = {Path.Combine(usrdir, "rom", "sound", $"{game}_all")};
+		if (game == "daytona")
+			AcbFolder = new string[] {Path.Combine(usrdir, "ps3", "rom", "sound", "csb", "SE")};
 		try{
-			AcbEditorThing.AcbEdit(AcbFolder);
-			HoneyLog(3, "Repacked ACB file.");
+			if (game == "daytona")
+				CsbEditorThing.CsbEdit(AcbFolder);
+			else
+				AcbEditorThing.AcbEdit(AcbFolder);
+			HoneyLog(3, "Repacked ACB/CSB file.");
 		}
 		catch (Exception e){
-			HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.");
+			if (game == "daytona")
+				HoneyLog(1, "There was an issue repacking SE.csb. Check HoneyLog.txt for more details.");
+			else
+				HoneyLog(1, $"There was an issue repacking {game}_all.acb. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
 		/* Cleanup */
 		try{
 			if (cleanup){
 				Directory.Delete(AcbFolder[0], true);
-				HoneyLog(4, "Cleaned up ACB Folder");
+				HoneyLog(4, "Cleaned up ACB/CSB Folder");
 			}
 		}
 		catch (Exception e){
-			HoneyLog(1, $"There was an issue deleting {game}_all.acb. Check HoneyLog.txt for more details.");
+			HoneyLog(1, $"There was an issue deleting the ACB/CSB folder. Check HoneyLog.txt for more details.");
 			HoneyLog(1, e.ToString(), true);
 		}
 	}
@@ -875,6 +920,8 @@ public partial class HoneyPatcher : Node2D
 	private void DbToXml(){
 		/* DatabaseConverter by Skyth - did you know the upstream build will fail due to invalid xml characters? */
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
+		if (game == "daytona")
+			stringArrayDir = Path.Combine(usrdir, "ps3", "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.bin"), Path.Combine(stringArrayDir, "string_array2_en.bin"), Path.Combine(stringArrayDir, "string_array_jp.bin"), Path.Combine(stringArrayDir, "string_array2_jp.bin")};
 		string[] dbFile = new string[1];
 		try{
@@ -897,6 +944,8 @@ public partial class HoneyPatcher : Node2D
 	
 	private void XmlToDb(){
 		string stringArrayDir = Path.Combine(usrdir, "rom", "string_array");
+		if (game == "daytona")
+			stringArrayDir = Path.Combine(usrdir, "ps3", "rom", "string_array");
 		string[] stringArrays = {Path.Combine(stringArrayDir, "string_array_en.xml"), Path.Combine(stringArrayDir, "string_array2_en.xml"), Path.Combine(stringArrayDir, "string_array_jp.xml"), Path.Combine(stringArrayDir, "string_array2_jp.xml")};
 		string[] dbFile = new string[1];
 		try{
@@ -919,6 +968,8 @@ public partial class HoneyPatcher : Node2D
 	
 	private void InjectModsStr(){
 		string stringArrayEnPath = Path.Combine(usrdir, "rom", "string_array", "string_array_en.xml");
+		if (game == "daytona")
+			stringArrayEnPath = Path.Combine(usrdir, "ps3", "rom", "string_array", "string_array_en.xml");
 		string stringArrayEn = File.ReadAllText(stringArrayEnPath);
 		/* These lines will always be replaced. */
 		stringArrayEn = stringArrayEn.Replace(":Information", ":Show Mods");
@@ -999,6 +1050,7 @@ public partial class HoneyPatcher : Node2D
 			case "fv": _fva.Play(); break;
 			case "vf2": _vf2a.Play(); break;
 			case "omg": _omga.Play(); break;
+			case "daytona": _daytonaa.Play(); break;
 		}
 	}
 	
@@ -1010,9 +1062,10 @@ public partial class HoneyPatcher : Node2D
 		string[] vf2dirs = new string[4];
 		string[] fvdirs = new string[4];
 		string omgdir;
+		string[] daytonadirs = new string[4];
 		/* Generate default config file */
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ndaytonausrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
 			/* Autodetect USRDIR on macOS/Linux */
 			switch (OS.GetName()){
 				case "macOS":
@@ -1021,7 +1074,7 @@ public partial class HoneyPatcher : Node2D
 					foreach (string stfdir in stfdirs){
 						if (Directory.Exists(stfdir)){
 							defaultConfig = defaultConfig.Replace("stfusrdir = .", $"stfusrdir = {stfdir}/USRDIR");
-							HoneyLog(2, $"Autodetected usrdir at {stfdir}/USRDIR.");
+							HoneyLog(2, $"Autodetected Sonic the Fighters at {stfdir}/USRDIR.");
 							break;
 						}
 					}
@@ -1029,7 +1082,7 @@ public partial class HoneyPatcher : Node2D
 					foreach (string vf2dir in vf2dirs){
 						if (Directory.Exists(vf2dir)){
 							defaultConfig = defaultConfig.Replace("vf2usrdir = .", $"vf2usrdir = {vf2dir}/USRDIR");
-							HoneyLog(2, $"Autodetected usrdir at {vf2dir}/USRDIR.");
+							HoneyLog(2, $"Autodetected Virtua Fighter 2 at {vf2dir}/USRDIR.");
 							break;
 						}
 					}
@@ -1037,14 +1090,22 @@ public partial class HoneyPatcher : Node2D
 					foreach (string fvdir in fvdirs){
 						if (Directory.Exists(fvdir)){
 							defaultConfig = defaultConfig.Replace("fvusrdir = .", $"fvusrdir = {fvdir}/USRDIR");
-							HoneyLog(2, $"Autodetected usrdir at {fvdir}/USRDIR.");
+							HoneyLog(2, $"Autodetected Fighting Vipers at {fvdir}/USRDIR.");
 							break;
 						}
 					}
 					omgdir = Path.Combine(gameDir, "NPJB00321");
 					if (Directory.Exists(omgdir)){
 						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
-						HoneyLog(2, $"Autodetected usrdir at {omgdir}/USRDIR.");
+						HoneyLog(2, $"Autodetected Operation Moongate at {omgdir}/USRDIR.");
+					}
+					daytonadirs = new string[] { Path.Combine(gameDir, "NPUB30493"), Path.Combine(gameDir, "NPEB00630"), Path.Combine(gameDir, "NPJB00161"), Path.Combine(gameDir, "NPHB00383") };
+					foreach (string daytonadir in daytonadirs){
+						if (Directory.Exists(daytonadir)){
+							defaultConfig = defaultConfig.Replace("daytonausrdir = .", $"daytonausrdir = {daytonadir}/USRDIR");
+							HoneyLog(2, $"Autodetected Daytona USA at {daytonadir}/USRDIR.");
+							break;
+						}
 					}
 					break;
 				case "Linux":
@@ -1086,6 +1147,14 @@ public partial class HoneyPatcher : Node2D
 						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
 						HoneyLog(2, $"Autodetected Cyber Troopers: Virtual-On at {omgdir}/USRDIR.");
 					}
+					daytonadirs = new string[] { Path.Combine(gameDir, "NPUB30493"), Path.Combine(gameDir, "NPEB00630"), Path.Combine(gameDir, "NPJB00161"), Path.Combine(gameDir, "NPHB00383") };
+					foreach (string daytonadir in daytonadirs){
+						if (Directory.Exists(daytonadir)){
+							defaultConfig = defaultConfig.Replace("daytonausrdir = .", $"daytonausrdir = {daytonadir}/USRDIR");
+							HoneyLog(2, $"Autodetected Daytona USA at {daytonadir}/USRDIR.");
+							break;
+						}
+					}
 					break;
 			}
 			try{
@@ -1104,6 +1173,7 @@ public partial class HoneyPatcher : Node2D
 				data["main"]["vf2usrdir"] = ".";
 				data["main"]["fvusrdir"] = ".";
 				data["main"]["omgusrdir"] = ".";
+				data["main"]["daytonausrdir"] = ".";
 				data["main"]["usrdir"] = "migrated";
 				data["main"]["game"] = "stf";
 				data["main"]["loglevel"] = "2";
