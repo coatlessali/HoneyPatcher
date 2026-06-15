@@ -533,7 +533,7 @@ public partial class HoneyPatcher : Node2D
 			case "vf2": roms = vf2_roms.ToList(); break;
 			case "fv": roms = fv_roms.ToList(); break;
 			case "omg": roms = omg_roms.ToList(); break;
-			case "daytona": roms = daytona_roms.ToList(); break;y
+			case "daytona": roms = daytona_roms.ToList(); break;
 		}
 		
 		foreach (string rawhm in roms){
@@ -789,7 +789,7 @@ public partial class HoneyPatcher : Node2D
 				case ".rom_data": patchdest = Path.Combine(stf_rom, "rom_data.bin"); break;
 				case ".rom_ep": patchdest = Path.Combine(stf_rom, "rom_ep.bin"); break;
 				case ".rom_ep1": patchdest = Path.Combine(stf_rom, "rom_ep1.bin"); break;
-				case ".rom_ep2": patchdest = Path.Combine(stf_rom, "rom_ep1.bin"); break;
+				case ".rom_ep2": patchdest = Path.Combine(stf_rom, "rom_ep2.bin"); break;
 				case ".rom_pol": patchdest = Path.Combine(stf_rom, "rom_pol.bin"); break;
 				case ".rom_tex": patchdest = Path.Combine(stf_rom, "rom_tex.bin"); break;
 				case ".ic12_13": patchdest = Path.Combine(stf_rom, "ic12_13.bin"); break;
