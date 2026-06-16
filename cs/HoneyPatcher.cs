@@ -95,11 +95,9 @@ public partial class HoneyPatcher : Node2D
 	string patchname = "Default";
 	string game = "stf";
 	string pretty_game = "Sonic the Fighters";
-	string log;
 	string modsStr;
 	byte loglevel = 2;
 	
-	bool nomods = false;
 	bool logoskip = false;
 	bool cleanup = true;
 	bool gemsSfx = false;
@@ -361,36 +359,6 @@ public partial class HoneyPatcher : Node2D
 		LogoSkip();
 	}
 	
-	private async void OnRestoreUsrdirPressed(){
-		/* Disable buttons */
-		DisableButtons();
-		HoneyLog(4, "Disabled Menu Buttons.");
-		/* Check if backup exists */
-		if (!Directory.Exists(Path.Combine(backupDir, game))){
-			_back.Play();
-			ShowError("Error", "No backup found.");
-			HoneyLog(1, "No backup found.");
-			EnableButtons();
-			HoneyLog(4, "Enabled Menu buttons.");
-			return;
-		}
-		try{
-			// Runs the below function
-			await Task.Run(() => { RestoreAsync(); });
-			GameSound();
-			ShowError("Success", "Files restored.");
-			HoneyLog(3, "Restored game files.");
-		}
-		catch (Exception e){
-			HoneyLog(1, $"Failed to restore game files. See HoneyLog.txt for more information.", e);
-		}
-		finally
-		{
-			EnableButtons();
-			HoneyLog(4, $"Enabled Menu Buttons.");
-		}
-	}
-	
 	/* Uninstall Mods */
 	private void RestoreAsync(){
 		if (!Directory.Exists(Path.Combine(backupDir, game))){
@@ -625,24 +593,18 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ExtractMods(){
-		modsStr = "Mods installed:\n";
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		Array.Sort(files);
-		switch (files.Length){
-			case 0: nomods = true; return;
-			default: nomods = false; break;
-		}
+		if (files.Length == 0) return;
 		
+		modsStr = "Mods installed:\n";
 		foreach (string mod in files){
 			string modpath = mod;
 			string romdir = Path.Combine(usrdir, "rom");
-			// Due to Daytona's split structure, all mods should assume the USRDIR to be root
 			if (game == "daytona")
-				romdir = usrdir;
-			string stf_rom = Path.Combine(romdir, $"{game}_rom");
-			if (Path.GetFileName(mod) == ".DS_Store"){
-				continue;
-			}
+				romdir = usrdir; // Due to Daytona's split structure, all mods should assume the USRDIR to be root
+			if (Path.GetFileName(mod) == ".DS_Store") continue; // Ignore .DS_Store on macOS
+			
 			try{
 				if (Path.GetFileNameWithoutExtension(modpath)[0].ToString() == "."){
 					HoneyLog(4, $"{Path.GetFileNameWithoutExtension(modpath)} begins with a \".\" and is thus considered disabled. Ignoring.");
@@ -733,7 +695,6 @@ public partial class HoneyPatcher : Node2D
 				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
 				default: continue;
 			}
-			byte[] original = File.ReadAllBytes(patchdest);
 			byte[] changes = File.ReadAllBytes(modpath);
 			string[] locations = File.ReadAllLines(modpath+".loc");
 			uint inc = 0;
@@ -758,7 +719,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void InjectModels(){
 		if (game != "stf"){
-			HoneyLog(3, "Game is not Sonic the Fighters. Skipping model injection.");
+			HoneyLog(4, "Game is not Sonic the Fighters. Skipping model injection.");
 			return;
 		}
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
