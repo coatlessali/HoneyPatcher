@@ -324,7 +324,6 @@ public partial class HoneyPatcher : Node2D
 	/* Just Apply Logoskip */
 	private void LogoSkipAsync(){
 		/* Make backup if valid stf found and no backup exists */
-		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
 			Directory.CreateDirectory(gameBackupDir);
@@ -701,8 +700,7 @@ public partial class HoneyPatcher : Node2D
 		string[] files = Directory.GetFiles(Path.Combine(usrdir, "rom"));
 		Array.Sort(files);
 		foreach (string model in files){
-			if (Path.GetExtension(model) != ".stfmdl")
-				continue;
+			if (Path.GetExtension(model) != ".stfmdl") continue;
 			string fileName = Path.GetFileName(model);
 			/* get the first 4 digits of the filename to be the id */
 			fileName = fileName.Substring(0, 4);
@@ -878,8 +876,7 @@ public partial class HoneyPatcher : Node2D
 				byte[] headerbytes = new byte[3];
 				fs.Read(headerbytes, 0, 3);
 				string header = System.Text.Encoding.UTF8.GetString(headerbytes, 0, 3);
-				const string valid = "DDS";
-				if (header != valid){
+				if (header != "DDS"){
 					HoneyLog(2, $"DDS file {dds} has invalid header magic. Skipping.");
 					continue;
 				}
@@ -1196,7 +1193,8 @@ public partial class HoneyPatcher : Node2D
 	private void EnableAll(){
 		string[] files = Directory.GetFiles(Path.Combine(modsDir, game));
 		foreach (string file in files){
-			if (Path.GetFileNameWithoutExtension(file).StartsWith(@".") && Path.GetFileNameWithoutExtension(file) != @"." ){
+			string name = Path.GetFileNameWithoutExtension(file);
+			if (name.StartsWith(@".") && name != @"." ){
 				File.Move(file, Path.Combine(modsDir, game, Path.GetFileName(file).Remove(0,1)));
 			}
 		}
@@ -1240,15 +1238,11 @@ public partial class HoneyPatcher : Node2D
 		Array.Sort(files);
 		foreach (string file in files){
 			string mod = Path.GetFileName(file);
-			if (mod == ".DS_Store"){
-				continue;
-			}
-			if (mod[0].ToString() == "."){
+			if (mod == ".DS_Store") continue;
+			if (mod[0] == '.')
 				_disabledmods.AddItem(mod.Remove(0,1));
-			}
-			else{
+			else
 				_enabledmods.AddItem(mod);
-			}
 		}
 	}
 }
