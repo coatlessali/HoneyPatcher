@@ -136,16 +136,7 @@ public partial class HoneyPatcher : Node2D
 			HoneyLog(1, "There was a problem creating the HoneyLog. Uh oh.", e);
 		}
 		
-		string[] essentialDirs = {modsDir, workbenchDir, Path.Combine(workbenchDir, "original"), Path.Combine(workbenchDir, "modified"), Path.Combine(workbenchDir, "patches")};
-		foreach (string h in essentialDirs){
-			try{
-				Directory.CreateDirectory(h);
-				HoneyLog(4, $"Created directory {h}.");
-			}
-			catch (Exception e){
-				HoneyLog(1, $"Failed to create directory {h}", e);
-			}
-		}
+		// Create directories
 		foreach (string h in gamesList){
 			Directory.CreateDirectory(Path.Combine(modsDir, h));
 			HoneyLog(4, $"Created directory {Path.Combine(modsDir, h)}.");
@@ -184,13 +175,7 @@ public partial class HoneyPatcher : Node2D
 	
 	private void GameSelector(long id){
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig); // Open config file
-		switch (id){
-			case 0: game = "stf"; break;
-			case 1: game = "vf2"; break;
-			case 2: game = "fv"; break;
-			case 3: game = "omg"; break;
-			case 4: game = "daytona"; break;
-		}
+		game = gamesList[id]; // replaced huge switch
 		UpdateGame();
 		data["main"]["game"] = game;
 		new FileIniDataParser().WriteFile(honeyConfig, data); // Write config file
@@ -198,34 +183,27 @@ public partial class HoneyPatcher : Node2D
 		HoneyLog(3, $"Changed game: {pretty_game}.");
 	}
 	
-	private void EnableButtons(){
-		_install.Disabled = false;
-		_genpatches.Disabled = false;
-		_gamebutton.Visible = true;
-		_logoskip.Disabled = false;
-		_selectusrdir.Disabled = false;
-	}
-	
-	private void DisableButtons(){
-		_install.Disabled = true;
-		_genpatches.Disabled = true;
-		_gamebutton.Visible = false;
-		_logoskip.Disabled = true;
-		_selectusrdir.Disabled = true;
+	// Consolidated EnableButtons/DisableButtons into one method
+	private void EnableButtons(bool enable){
+		_install.Disabled = !enable;
+		_genpatches.Disabled = !enable;
+		_gamebutton.Visible = enable;
+		_logoskip.Disabled = !enable;
+		_selectusrdir.Disabled = !enable;
 	}
 	
 	private async void OnInstallPressed(){
 		// disable buttons
 		old_strings.Clear();
 		new_strings.Clear();
-		DisableButtons();
+		EnableButtons(false);
 		HoneyLog(4, "Disabled Menu buttons.");
 		/* Check if usrdir is set. */
 		if (usrdir == null || usrdir == "."){
 			_back.Play();
 			ShowError("Error", "USRDIR is unset. Please select a USRDIR.");
 			HoneyLog(1, "usrdir is unset.");
-			EnableButtons();
+			EnableButtons(true);
 			HoneyLog(4, "Enabled Menu buttons.");
 			return;
 		}
@@ -242,7 +220,7 @@ public partial class HoneyPatcher : Node2D
 				_back.Play();
 				ShowError("Error", $"rom.psarc could not be found, and a backup could not be restored. Please ensure you have a clean copy of {pretty_game} if this\nis your first time, or Uninstall mods before proceeding.");
 				HoneyLog(1, $"rom.psarc not found at {psarc_path}.");
-				EnableButtons();
+				EnableButtons(true);
 				HoneyLog(4, "Enabled Menu buttons.");
 				return;
 			}
@@ -282,7 +260,7 @@ public partial class HoneyPatcher : Node2D
 		}
 		finally
 		{
-			EnableButtons();
+			EnableButtons(true);
 			HoneyLog(4, $"Enabled Menu Buttons.");
 		}
 	}
@@ -447,9 +425,7 @@ public partial class HoneyPatcher : Node2D
 				ShowError("Error", "Original " + rawhm + "not found.");
 				return;
 			}
-			else{
-				files.Add(rawhm);
-			}
+			files.Add(rawhm);
 		}
 		foreach (string filename in files){
 			if (!File.Exists(Path.Combine(workbenchDir, "modified", game, filename))){
@@ -1114,7 +1090,6 @@ public partial class HoneyPatcher : Node2D
 	
 	private void HoneyLog(byte severity, string message, Exception exception = null){
 		if (severity > loglevel) return;
-		
 		string ex = String.Empty;
 		if (exception != null)
 			ex = (": " + exception.ToString());
@@ -1207,7 +1182,7 @@ public partial class HoneyPatcher : Node2D
 	}
 	
 	private void ModsList(){
-		DisableButtons();
+		EnableButtons(false);
 		RefreshMods();
 		_enabledmods.Visible = true;
 		_disabledmods.Visible = true;
@@ -1248,7 +1223,7 @@ public partial class HoneyPatcher : Node2D
 			File.Move(Path.Combine(modsDir, game, @"." + _disabledmods.GetItemText(selectedId)), Path.Combine(modsDir, game, _disabledmods.GetItemText(selectedId)));
 		}
 		RefreshMods();
-		EnableButtons();
+		EnableButtons(true);
 		_enabledmods.Visible = false;
 		_disabledmods.Visible = false;
 		_closemodslist.Visible = false;
