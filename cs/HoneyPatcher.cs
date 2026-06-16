@@ -1238,7 +1238,8 @@ public partial class HoneyPatcher : Node2D
 		Array.Sort(files);
 		foreach (string file in files){
 			string mod = Path.GetFileName(file);
-			if (mod == ".DS_Store") continue;
+			if (mod == ".DS_Store")
+				continue;
 			if (mod[0] == '.')
 				_disabledmods.AddItem(mod.Remove(0,1));
 			else
