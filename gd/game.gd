@@ -4,6 +4,7 @@ extends Label
 @export var vf2 : Sprite2D
 @export var omg : Sprite2D
 @export var daytona : Sprite2D
+@export var vs : Sprite2D
 @export var hp : Node2D
 
 @export var daytona_background : Sprite2D
@@ -16,6 +17,7 @@ extends Label
 @export var fva : AudioStreamPlayer
 @export var omga : AudioStreamPlayer
 @export var daytonaa : AudioStreamPlayer
+@export var vsa : AudioStreamPlayer
 
 var time = 0.0
 
@@ -29,6 +31,7 @@ func _ready() -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
+			vs.hide()
 			box.modulate.a = 0.0
 			box_right.modulate.a = 0.0
 			box_left.modulate.a = 0.0
@@ -39,6 +42,7 @@ func _ready() -> void:
 			vf2.hide()
 			omg.hide()
 			daytona.hide()
+			vs.hide()
 			box.modulate.a = 0.0
 			box_right.modulate.a = 0.0
 			box_left.modulate.a = 0.0
@@ -49,6 +53,7 @@ func _ready() -> void:
 			vf2.show()
 			omg.hide()
 			daytona.hide()
+			vs.hide()
 			box.modulate.a = 0.0
 			box_right.modulate.a = 0.0
 			box_left.modulate.a = 0.0
@@ -59,6 +64,7 @@ func _ready() -> void:
 			vf2.hide()
 			omg.show()
 			daytona.hide()
+			vs.hide()
 			box.modulate.a = 0.0
 			box_right.modulate.a = 0.0
 			box_left.modulate.a = 0.0
@@ -68,12 +74,24 @@ func _ready() -> void:
 			fv.hide()
 			vf2.hide()
 			omg.hide()
+			vs.hide()
 			daytona.show()
 			daytona_desc(true)
 			box.modulate.a = 1.0
 			box_right.modulate.a = 1.0
 			box_left.modulate.a = 1.0
 			daytona_background.modulate.a = 1.0
+		"vs":
+			stf.hide()
+			fv.hide()
+			vf2.hide()
+			omg.hide()
+			daytona.hide()
+			vs.show()
+			box.modulate.a = 0.0
+			box_right.modulate.a = 0.0
+			box_left.modulate.a = 0.0
+			daytona_background.modulate.a = 0.0
 
 func _process(delta: float) -> void:
 	# rotation
@@ -85,6 +103,7 @@ func _process(delta: float) -> void:
 	vf2.scale.x = rot
 	omg.scale.x = rot
 	daytona.scale.x = rot
+	vs.scale.x = rot
 
 func _on_popup_menu_id_pressed(id: int) -> void:
 	stf.hide()
@@ -92,6 +111,7 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 	vf2.hide()
 	omg.hide()
 	daytona.hide()
+	vs.hide()
 	match id:
 		0:
 			stf.show()
@@ -113,6 +133,10 @@ func _on_popup_menu_id_pressed(id: int) -> void:
 			daytona.show()
 			daytonaa.play()
 			daytona_desc(true)
+		5:
+			vs.show()
+			vsa.play()
+			daytona_desc(false)
 
 func daytona_desc(flag):
 	var target_alpha = 1.0 if flag else 0.0

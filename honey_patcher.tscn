@@ -48,10 +48,12 @@
 [ext_resource type="Texture2D" uid="uid://cenkujxx34mei" path="res://assets/sprites/icons/daytona-big.png" id="33_ggt14"]
 [ext_resource type="Texture2D" uid="uid://da2amo7v0fguv" path="res://assets/sprites/icons/fv.png" id="33_kdmha"]
 [ext_resource type="Texture2D" uid="uid://dknn6c0wrr48" path="res://assets/sprites/icons/omg.png" id="34_ct2dv"]
+[ext_resource type="Texture2D" uid="uid://6gg3rhu53jqh" path="res://assets/sprites/icons/vs-big.png" id="38_bhyg2"]
 [ext_resource type="Texture2D" uid="uid://n7l8r1gy50iu" path="res://assets/sprites/icons/daytona.png" id="38_yvb3l"]
 [ext_resource type="AudioStream" uid="uid://ceyekxnhf0vsk" path="res://assets/sounds/m2_confirm.wav" id="42_ct2dv"]
 [ext_resource type="Script" uid="uid://bbhm0cla3xc67" path="res://gd/confirm.gd" id="43_24roi"]
 [ext_resource type="AudioStream" uid="uid://c6mgn4fpyh35b" path="res://assets/sounds/m2_back.wav" id="43_242uk"]
+[ext_resource type="Texture2D" uid="uid://bnhvkvyanqieb" path="res://assets/sprites/icons/vs.png" id="43_rjlfy"]
 [ext_resource type="AudioStream" uid="uid://dsophfplnw3dd" path="res://assets/sounds/m2_select.wav" id="44_wwrar"]
 [ext_resource type="Script" uid="uid://d3srbhwm6fuh" path="res://gd/back.gd" id="45_hph0u"]
 [ext_resource type="AudioStream" uid="uid://c83od0c41u6d8" path="res://assets/sounds/stf.ogg" id="45_l0yo4"]
@@ -61,6 +63,7 @@
 [ext_resource type="AudioStream" uid="uid://510y6d5vln7n" path="res://assets/sounds/omg.ogg" id="48_24roi"]
 [ext_resource type="AudioStream" uid="uid://d3ux1ntitrmgj" path="res://assets/sounds/daytona.ogg" id="55_vnpna"]
 [ext_resource type="Texture2D" uid="uid://ctw4qpi3o0tl" path="res://assets/sprites/activate.png" id="55_x5qtp"]
+[ext_resource type="AudioStream" uid="uid://cscfa1e1jf1a" path="res://assets/sounds/vs.ogg" id="62_kys1o"]
 [ext_resource type="Script" uid="uid://bo7hiqlkt8wie" path="res://cs/Help.cs" id="63_kys1o"]
 [ext_resource type="Script" uid="uid://cy7bdrcihsldb" path="res://cs/Watermark.cs" id="65_kys1o"]
 
@@ -118,7 +121,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("22_215ki")
 }],
-"loop": false,
+"loop": 0,
 "name": &"default",
 "speed": 15.0
 }]
@@ -135,7 +138,7 @@ func ready() -> void:
 script/source = "extends CheckButton
 "
 
-[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_daytonaa", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
+[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_modsfolder", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_daytonaa", "_vsa", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -161,6 +164,7 @@ _fva = NodePath("AudioPlayers/FV")
 _vf2a = NodePath("AudioPlayers/VF2")
 _omga = NodePath("AudioPlayers/OMG")
 _daytonaa = NodePath("AudioPlayers/Daytona")
+_vsa = NodePath("AudioPlayers/VS")
 _logoskip = NodePath("Logoskip")
 _cleanup = NodePath("Cleanup")
 _enabledmods = NodePath("EnabledMods")
@@ -312,7 +316,7 @@ offset_right = 861.0
 offset_bottom = 206.0
 placeholder_text = "Patch name..."
 
-[node name="game" type="Label" parent="." unique_id=294257158 node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "daytona", "hp", "daytona_background", "box_left", "box", "box_right", "stfa", "vf2a", "fva", "omga", "daytonaa")]
+[node name="game" type="Label" parent="." unique_id=294257158 node_paths=PackedStringArray("stf", "fv", "vf2", "omg", "daytona", "vs", "hp", "daytona_background", "box_left", "box", "box_right", "stfa", "vf2a", "fva", "omga", "daytonaa", "vsa")]
 offset_left = 661.0
 offset_top = 516.0
 offset_right = 960.0
@@ -324,6 +328,7 @@ fv = NodePath("FV")
 vf2 = NodePath("VF2")
 omg = NodePath("OMG")
 daytona = NodePath("Daytona")
+vs = NodePath("VS")
 hp = NodePath("..")
 daytona_background = NodePath("../DaytonaBackground")
 box_left = NodePath("../Description/box-left")
@@ -334,6 +339,7 @@ vf2a = NodePath("../AudioPlayers/VF2")
 fva = NodePath("../AudioPlayers/FV")
 omga = NodePath("../AudioPlayers/OMG")
 daytonaa = NodePath("../AudioPlayers/Daytona")
+vsa = NodePath("../AudioPlayers/VS")
 
 [node name="STF" type="Sprite2D" parent="game" unique_id=825501548]
 z_index = -1
@@ -364,6 +370,11 @@ position = Vector2(133, -60)
 scale = Vector2(0.25, 0.25)
 texture = ExtResource("33_ggt14")
 
+[node name="VS" type="Sprite2D" parent="game" unique_id=642434585]
+position = Vector2(140, -42)
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("38_bhyg2")
+
 [node name="MenuBar" type="MenuBar" parent="." unique_id=66107069]
 offset_left = 427.0
 offset_top = 419.0
@@ -373,8 +384,10 @@ tooltip_text = "Select the game you would like to mod."
 theme_override_font_sizes/font_size = 14
 
 [node name="PopupMenu" type="PopupMenu" parent="MenuBar" unique_id=2056279474]
+oversampling_override = 1.0
 title = "Select Game..."
-item_count = 5
+size = Vector2i(461, 416)
+item_count = 6
 item_0/text = "Sonic the Fighters"
 item_0/icon = ExtResource("31_3kfbe")
 item_0/id = 0
@@ -390,6 +403,9 @@ item_3/id = 3
 item_4/text = "Daytona USA"
 item_4/icon = ExtResource("38_yvb3l")
 item_4/id = 4
+item_5/text = "Virtua Striker"
+item_5/icon = ExtResource("43_rjlfy")
+item_5/id = 5
 
 [node name="USRDIRDialog" type="FileDialog" parent="." unique_id=967953312]
 title = "Open a Directory"
@@ -474,6 +490,10 @@ volume_db = -16.817
 [node name="Daytona" type="AudioStreamPlayer" parent="AudioPlayers" unique_id=1347365153]
 stream = ExtResource("55_vnpna")
 volume_db = -24.711
+
+[node name="VS" type="AudioStreamPlayer" parent="AudioPlayers" unique_id=1674037673]
+stream = ExtResource("62_kys1o")
+volume_db = -24.608
 
 [node name="EnabledMods" type="ItemList" parent="." unique_id=1521836717]
 visible = false

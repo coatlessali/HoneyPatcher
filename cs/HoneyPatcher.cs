@@ -51,6 +51,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public AudioStreamPlayer _vf2a;
 	[Export] public AudioStreamPlayer _omga;
 	[Export] public AudioStreamPlayer _daytonaa;
+	[Export] public AudioStreamPlayer _vsa;
 	[Export] public CheckButton _logoskip;
 	[Export] public CheckButton _cleanup;
 	[Export] public ItemList _enabledmods;
@@ -86,8 +87,9 @@ public partial class HoneyPatcher : Node2D
 	string[] fv_roms = {"rom_code1.bin", "rom_code2.bin", "rom_data.bin", "rom_ep1.bin", "rom_ep2.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] vf2_roms = {"ic12_13.bin", "ic12_15.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin"};
 	string[] omg_roms = {"farc_tex.bin", "rom_code.bin", "rom_data.bin", "rom_pol.bin", "rom_tex.bin", "string_array_en.bin", "string_array_jp.bin", "string_array2_en.bin", "string_array2_jp.bin"};
+	string[] vs_roms = {"ic24_25.bin", "rom_data.bin", "rom_pol.bin", "sc.bin"};
 	string[] daytona_roms = {"rom_code1.bin", "rom_code2.bin", "rom_copro.bin", "rom_data.bin", "rom_ep1.bin", "rom_pol.bin", "rom_tex.bin"};
-	string[] gamesList = {"stf", "vf2", "fv", "omg", "daytona"};
+	string[] gamesList = {"stf", "vf2", "fv", "omg", "daytona", "vs"};
 	List<string> old_strings = new List<string>();
 	List<string> new_strings = new List<string>();
 	
@@ -170,6 +172,7 @@ public partial class HoneyPatcher : Node2D
 			case "fv": pretty_game = "Fighting Vipers"; break;
 			case "omg": pretty_game = "Cyber Troopers Virtual-On: Operation Moongate"; break;
 			case "daytona": pretty_game = "Daytona USA"; break;
+			case "vs": pretty_game = "Virtua Striker"; break;
 		}
 	}
 	
@@ -662,6 +665,8 @@ public partial class HoneyPatcher : Node2D
 				case ".rom_tex": patchdest = Path.Combine(stf_rom, "rom_tex.bin"); break;
 				case ".ic12_13": patchdest = Path.Combine(stf_rom, "ic12_13.bin"); break;
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
+				case ".ic24_25": patchdest = Path.Combine(stf_rom, "ic24_25.bin"); break;
+				case ".sc": patchdest = Path.Combine(stf_rom, "sc.bin"); break;
 				
 				// We are keeping byte patching around for backwards compatibility but PLEASE don't keep using it.
 				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
@@ -904,6 +909,7 @@ public partial class HoneyPatcher : Node2D
 			case "vf2": _vf2a.Play(); break;
 			case "omg": _omga.Play(); break;
 			case "daytona": _daytonaa.Play(); break;
+			case "vs": _vsa.Play(); break;
 		}
 	}
 	
@@ -915,10 +921,11 @@ public partial class HoneyPatcher : Node2D
 		string[] vf2dirs = new string[4];
 		string[] fvdirs = new string[4];
 		string omgdir;
+		string vsdir;
 		string[] daytonadirs = new string[4];
 		/* Generate default config file */
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ndaytonausrdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ndaytonausrdir = .\nvsdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
 			/* Autodetect USRDIR on macOS/Linux */
 			switch (OS.GetName()){
 				case "macOS":
@@ -950,7 +957,12 @@ public partial class HoneyPatcher : Node2D
 					omgdir = Path.Combine(gameDir, "NPJB00321");
 					if (Directory.Exists(omgdir)){
 						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
-						HoneyLog(2, $"Autodetected Operation Moongate at {omgdir}/USRDIR.");
+						HoneyLog(2, $"Autodetected Cyber Troopers: Virtual-On at {omgdir}/USRDIR.");
+					}
+					vsdir = Path.Combine(gameDir, "NPJB00320");
+					if (Directory.Exists(vsdir)){
+						defaultConfig = defaultConfig.Replace("vsusrdir = .", $"vsusrdir = {omgdir}/USRDIR");
+						HoneyLog(2, $"Autodetected Virtua Striker at {vsdir}/USRDIR.");
 					}
 					daytonadirs = new string[] { Path.Combine(gameDir, "NPUB30493"), Path.Combine(gameDir, "NPEB00630"), Path.Combine(gameDir, "NPJB00161"), Path.Combine(gameDir, "NPHB00383") };
 					foreach (string daytonadir in daytonadirs){
@@ -1000,6 +1012,11 @@ public partial class HoneyPatcher : Node2D
 						defaultConfig = defaultConfig.Replace("omgusrdir = .", $"omgusrdir = {omgdir}/USRDIR");
 						HoneyLog(2, $"Autodetected Cyber Troopers: Virtual-On at {omgdir}/USRDIR.");
 					}
+					vsdir = Path.Combine(gameDir, "NPJB00320");
+					if (Directory.Exists(vsdir)){
+						defaultConfig = defaultConfig.Replace("vsusrdir = .", $"vsusrdir = {vsdir}/USRDIR");
+						HoneyLog(2, $"Autodetected Virtua Striker at {vsdir}/USRDIR.");
+					}
 					daytonadirs = new string[] { Path.Combine(gameDir, "NPUB30493"), Path.Combine(gameDir, "NPEB00630"), Path.Combine(gameDir, "NPJB00161"), Path.Combine(gameDir, "NPHB00383") };
 					foreach (string daytonadir in daytonadirs){
 						if (Directory.Exists(daytonadir)){
@@ -1026,6 +1043,7 @@ public partial class HoneyPatcher : Node2D
 				data["main"]["fvusrdir"] = ".";
 				data["main"]["omgusrdir"] = ".";
 				data["main"]["daytonausrdir"] = ".";
+				data["main"]["vsusrdir"] = ".";
 				data["main"]["usrdir"] = "migrated";
 				data["main"]["game"] = "stf";
 				data["main"]["loglevel"] = "2";
