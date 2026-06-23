@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtp37lbftf72f"
-path="res://.godot/imported/Daytona.png-773ec2666ede33b24fcbd0902f87f2cf.ctex"
+uid="uid://lh3qdb3ubedn"
+path="res://.godot/imported/D.png-024ea5347cdaafd90689c2f55022236e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Daytona.png"
-dest_files=["res://.godot/imported/Daytona.png-773ec2666ede33b24fcbd0902f87f2cf.ctex"]
+source_file="res://assets/sprites/D.png"
+dest_files=["res://.godot/imported/D.png-024ea5347cdaafd90689c2f55022236e.ctex"]
 
 [params]
 
