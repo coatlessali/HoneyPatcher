@@ -21,6 +21,7 @@ HoneyPatcher uses borrowed code and libraries from the following places:
 - [xdelta-sharp](https://github.com/pleonex/xdelta-sharp) by [pleonex](https://github.com/pleonex). Licensed under the [MIT License](https://github.com/pleonex/xdelta-sharp/blob/main/LICENSE).
 - [FarcPack](https://github.com/blueskythlikesclouds/MikuMikuLibrary/releases) from [MikuMikuLibrary](https://github.com/blueskythlikesclouds/MikuMikuLibrary) by [Skyth](https://github.com/blueskythlikesclouds). Licensed under the [MIT License](https://github.com/blueskythlikesclouds/MikuMikuLibrary?tab=MIT-1-ov-file).
 - [UnPSARC](https://github.com/rm-NoobInCoding/UnPSARC) by [NoobInCoding](https://github.com/rm-NoobInCoding), licensed under the [MIT License](https://github.com/rm-NoobInCoding/UnPSARC?tab=MIT-1-ov-file#readme).
+- [libHoneyBadger](https://github.com/coatlessali/libHoneyBadger) by me.
 
 Special thanks to the following people:
 - BetaRelics for Sonic the Fighters: Community Edition, and many nights of supporting me while I slam my face into my keyboard.
