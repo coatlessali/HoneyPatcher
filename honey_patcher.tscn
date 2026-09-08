@@ -578,12 +578,13 @@ offset_bottom = 45.0
 text = "Get Help"
 script = ExtResource("63_kys1o")
 
-[node name="Watermark" type="Sprite2D" parent="." unique_id=439897890]
+[node name="Watermark" type="Sprite2D" parent="." unique_id=439897890 node_paths=PackedStringArray("Progress")]
 visible = false
 z_index = 67
 position = Vector2(614, 474)
 texture = ExtResource("55_x5qtp")
 script = ExtResource("65_kys1o")
+Progress = NodePath("../Progress")
 
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]
