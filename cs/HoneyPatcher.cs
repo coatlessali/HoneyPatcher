@@ -87,6 +87,7 @@ public partial class HoneyPatcher : Node2D
 	bool logoskip = false;
 	bool cleanup = true;
 	bool gemsSfx = false;
+	bool sevenSfx = false;
 	
 	public override void _Ready(){
 		// Signal Connection
@@ -136,9 +137,14 @@ public partial class HoneyPatcher : Node2D
 		
 		/* Easter egg. */
 		if (gemsSfx){
-			_confirm.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_confirm.ogg"));
-			_back.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_back.ogg"));
-			_select.Stream = (AudioStream)GD.Load(ProjectSettings.GlobalizePath("res://assets/sounds/gems_select.ogg"));
+			_confirm.Stream = GD.Load<AudioStream>("res://assets/sounds/gems_confirm.ogg");
+			_back.Stream = GD.Load<AudioStream>("res://assets/sounds/gems_back.ogg");
+			_select.Stream = GD.Load<AudioStream>("res://assets/sounds/gems_select.ogg");
+		}
+		if (sevenSfx){
+			_confirm.Stream = GD.Load<AudioStream>("res://assets/sounds/seven_confirm.wav");
+			_back.Stream = GD.Load<AudioStream>("res://assets/sounds/seven_back.wav");
+			_select.Stream = GD.Load<AudioStream>("res://assets/sounds/seven_select.wav");
 		}
 	}
 
@@ -652,13 +658,9 @@ public partial class HoneyPatcher : Node2D
 				case ".ic12_15": patchdest = Path.Combine(stf_rom, "ic12_15.bin"); break;
 				case ".ic24_25": patchdest = Path.Combine(stf_rom, "ic24_25.bin"); break;
 				case ".sc": patchdest = Path.Combine(stf_rom, "sc.bin"); break;
-				
-				// We are keeping byte patching around for backwards compatibility but PLEASE don't keep using it.
-				case ".string_array_en": patchdest = Path.Combine(romdir, "string_array", "string_array_en.bin"); break;
-				case ".string_array2_en": patchdest = Path.Combine(romdir, "string_array", "string_array2_en.bin"); break;
-				case ".string_array_jp": patchdest = Path.Combine(romdir, "string_array", "string_array_jp.bin"); break;
-				case ".string_array2_jp": patchdest = Path.Combine(romdir, "string_array", "string_array2_jp.bin"); break;
 				default: continue;
+				
+				/* Byte patching for strings has been removed, please reference the wiki for string replacements */
 			}
 			byte[] changes = File.ReadAllBytes(modpath);
 			string[] locations = File.ReadAllLines(modpath+".loc");
@@ -893,7 +895,7 @@ public partial class HoneyPatcher : Node2D
 		string[] daytonadirs = new string[4];
 		/* Generate default config file */
 		if(!File.Exists(honeyConfig)){
-			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ndaytonausrdir = .\nvsdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\ncleanup = true\nusrdir = migrated";
+			string defaultConfig = "[main]\nlogoskip = false\nstfusrdir = .\nvf2usrdir = .\n fvusrdir = .\n omgusrdir = .\ndaytonausrdir = .\nvsdir = .\ngame = stf\nloglevel = 2\ngemsSfx = false\nsevenSfx = false\ncleanup = true";
 			/* Autodetect USRDIR on macOS/Linux */
 			switch (OS.GetName()){
 				case "macOS":
@@ -1005,49 +1007,27 @@ public partial class HoneyPatcher : Node2D
 		}
 		IniData data = new FileIniDataParser().ReadFile(honeyConfig);
 		try{
-			if (data["main"]["usrdir"] != "migrated"){
-				data["main"]["stfusrdir"] = data["main"]["usrdir"];
-				data["main"]["vf2usrdir"] = ".";
-				data["main"]["fvusrdir"] = ".";
-				data["main"]["omgusrdir"] = ".";
-				data["main"]["daytonausrdir"] = ".";
-				data["main"]["vsusrdir"] = ".";
-				data["main"]["usrdir"] = "migrated";
-				data["main"]["game"] = "stf";
-				data["main"]["loglevel"] = "2";
-				HoneyLog(3, "Migrated old config.");
-				new FileIniDataParser().WriteFile(honeyConfig, data);
-			}
-		}
-		catch{
-			HoneyLog(4, "Skipping migration.");
-		}
-		try{
 			game = data["main"]["game"];
 		}
 		catch{
-			HoneyLog(2, "game not found in INI. Setting to default.");
 			data["main"]["game"] = game;
 		}
 		try{
 			usrdir = data["main"][$"{game}usrdir"];
 		}
 		catch{
-			HoneyLog(2, $"{game}usrdir not found in INI. Setting to default.");
 			data["main"][$"{game}usrdir"] =  ".";
 		}
 		try{
 			loglevel = Byte.Parse(data["main"]["loglevel"]);
 		}
 		catch{
-			HoneyLog(2, "loglevel not found in INI. Setting to default.");
 			data["main"]["loglevel"] = loglevel.ToString();
 		}
 		try{
 			logoskip = Boolean.Parse(data["main"]["logoskip"]);
 		}
 		catch{
-			HoneyLog(2, "logoskip not found in INI. Setting to default.");
 			data["main"]["logoskip"] =  "false";
 		}
 		_logoskip.ButtonPressed = logoskip;
@@ -1055,14 +1035,18 @@ public partial class HoneyPatcher : Node2D
 			gemsSfx = Boolean.Parse(data["main"]["gemsSfx"]);
 		}
 		catch{
-			HoneyLog(2, "gemsSfx not found in INI. Setting to default.");
 			data["main"]["gemsSfx"] = "false";
+		}
+		try{
+			sevenSfx = Boolean.Parse(data["main"]["sevenSfx"]);
+		}
+		catch{
+			data["main"]["sevenSfx"] = "false";
 		}
 		try{
 			cleanup = Boolean.Parse(data["main"]["cleanup"]);
 		}
 		catch{
-			HoneyLog(2, "cleanup not found in INI. Setting to default.");
 			data["main"]["cleanup"] = "true";
 		}
 		_cleanup.ButtonPressed = cleanup;
