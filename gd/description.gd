@@ -2,8 +2,10 @@ extends Label
 
 func _on_select_usrdir_mouse_entered() -> void:
 	text = "Set the path of your USRDIR for the PS3 version of Sonic the Fighters. (Do this before installing mods.)"
+	android_helper()
 func _on_psarc_mouse_entered() -> void:
 	text = "Opens your mods folder."
+	android_helper()
 func _on_install_mouse_entered() -> void:
 	text = "Apply all changes (mods, logoskip, extraction, etc) to your USRDIR."
 func _on_gen_patches_mouse_entered() -> void:
@@ -18,3 +20,7 @@ func _on_mods_list_mouse_entered() -> void:
 	text = "Show the mods list, where you can enable/disable mods."
 func _on_help_mouse_entered() -> void:
 	text = "Open the GitHub wiki for HoneyPatcher."
+
+func android_helper() -> void:
+	if OS.get_name() == "Android":
+		text = "This option is not supported on your device."

@@ -104,9 +104,32 @@ public partial class HoneyPatcher : Node2D
 		_enableall.Pressed += EnableAll;
 		_disableall.Pressed += DisableAll;
 		
-		
 		/* Enable portable mode because people kept asking for it. */
-		if (File.Exists("portable.txt")){
+		if (OS.GetName() == "Android"){
+			// usrdir = "/sdcard/HoneyPatcher/USRDIR";
+			try{
+				Directory.CreateDirectory("/sdcard/HoneyPatcher");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/stfusrdir");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/vf2usrdir");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/fvusrdir");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/vsusrdir");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/omgusrdir");
+				Directory.CreateDirectory("/sdcard/HoneyPatcher/daytonausrdir");
+			}
+			catch (Exception e){
+				HoneyLog(1, "Failed to create /sdcard/HoneyPatcher. Check that you have granted special permissions!");
+				return;
+			}
+			modsDir = "/sdcard/HoneyPatcher/mods";
+			workbenchDir = "/sdcard/HoneyPatcher/workbench";
+			backupDir = "/sdcard/HoneyPatcher/BACKUP";
+			honeyConfig = "/sdcard/HoneyPatcher/HoneyConfig.ini";
+			honeyLog = "/sdcard/HoneyPatcher/HoneyLog.txt";
+			elf = "/sdcard/HoneyPatcher/EBOOT.bin"; // modified bin
+			_modsfolder.Disabled = true;
+			_selectusrdir.Disabled = true;
+		}
+		else if (File.Exists("portable.txt")){
 			HoneyLog(2, "Found portable.txt. Enabling portable mode.");
 			modsDir = "mods";
 			workbenchDir = "workbench";
@@ -184,6 +207,9 @@ public partial class HoneyPatcher : Node2D
 		_gamebutton.Visible = enable;
 		_logoskip.Disabled = !enable;
 		_selectusrdir.Disabled = !enable;
+		if (OS.GetName() == "Android");{
+			_selectusrdir.Disabled = true;
+		}
 	}
 	
 	private async void OnInstallPressed(){
@@ -931,7 +957,7 @@ public partial class HoneyPatcher : Node2D
 					}
 					vsdir = Path.Combine(gameDir, "NPJB00320");
 					if (Directory.Exists(vsdir)){
-						defaultConfig = defaultConfig.Replace("vsusrdir = .", $"vsusrdir = {omgdir}/USRDIR");
+						defaultConfig = defaultConfig.Replace("vsusrdir = .", $"vsusrdir = {vsdir}/USRDIR");
 						HoneyLog(2, $"Autodetected Virtua Striker at {vsdir}/USRDIR.");
 					}
 					daytonadirs = new string[] { Path.Combine(gameDir, "NPUB30493"), Path.Combine(gameDir, "NPEB00630"), Path.Combine(gameDir, "NPJB00161"), Path.Combine(gameDir, "NPHB00383") };
@@ -996,6 +1022,10 @@ public partial class HoneyPatcher : Node2D
 						}
 					}
 					break;
+				case "Android":
+					defaultConfig = "[main]\nlogoskip = false\nstfusrdir = /sdcard/HoneyPatcher/stfusrdir/USRDIR\nvf2usrdir = /sdcard/HoneyPatcher/vf2usrdir/USRDIR\nfvusrdir = /sdcard/HoneyPatcher/fvusrdir/USRDIR\nomgusrdir = /sdcard/HoneyPatcher/omgusrdir/USRDIR\ndaytonausrdir = /sdcard/HoneyPatcher/daytonausrdir/USRDIR\nvsdir = /sdcard/HoneyPatcher/vsusrdir/USRDIR\ngame = stf\nloglevel = 2\ngemsSfx = false\nsevenSfx = false\ncleanup = true";
+					break;
+				default: break;
 			}
 			try{
 				File.WriteAllText(honeyConfig, defaultConfig);
