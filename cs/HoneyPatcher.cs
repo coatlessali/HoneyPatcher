@@ -33,6 +33,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public Button _selectusrdir; 
 	[Export] public Button _install; // Restore USRDIR button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
+	[Export] public Button _uieditor; // Opens StF Ui Editor
 	[Export] public Button _genpatches; // Generate Patches button
 	[Export] public Button _modslist;
 	[Export] public Button _closemodslist;
@@ -62,6 +63,7 @@ public partial class HoneyPatcher : Node2D
 	string modsDir = ProjectSettings.GlobalizePath("user://mods");
 	string workbenchDir = ProjectSettings.GlobalizePath("user://workbench");
 	string backupDir = ProjectSettings.GlobalizePath("user://BACKUP");
+	string forthDir = "./Forth";
 	string honeyConfig = ProjectSettings.GlobalizePath("user://HoneyConfig.ini");
 	string honeyLog = ProjectSettings.GlobalizePath("user://HoneyLog.txt");
 	string elf = ProjectSettings.GlobalizePath("user://EBOOT.bin"); // modified bin
@@ -88,12 +90,14 @@ public partial class HoneyPatcher : Node2D
 	bool cleanup = true;
 	bool gemsSfx = false;
 	bool sevenSfx = false;
+	bool portable = false;
 	
 	public override void _Ready(){
 		// Signal Connection
 		_usrdirdialog.DirSelected += OnUsrdirDialog;
 		_install.Pressed += OnInstallPressed;
 		_modsfolder.Pressed += OpenModsFolder;
+		_uieditor.Pressed += OpenStfUiEditor;
 		_genpatches.Pressed += CreatePatches;
 		_patchesfolder.Pressed += OpenPatchesFolder;
 		_gameselector.IdPressed += GameSelector;
@@ -137,6 +141,7 @@ public partial class HoneyPatcher : Node2D
 			honeyConfig = "HoneyConfig.ini";
 			honeyLog = "HoneyLog.txt";
 			elf = "EBOOT.bin";
+			portable = true;
 		}
 		
 		LoadConfig();
@@ -331,6 +336,7 @@ public partial class HoneyPatcher : Node2D
 			ExtractMods();
 			ApplyPatches();
 			InjectModels(); // LibSTF by Bekzii
+			InjectUi(); // StfUiEditor by Seek+
 			DDSFixHeader();
 			InjectModsStr();
 			XmlToDb();
@@ -422,6 +428,60 @@ public partial class HoneyPatcher : Node2D
 	
 	private void OpenPatchesFolder(){
 		OS.ShellOpen(workbenchDir);
+	}
+	
+	private void OpenStfUiEditor(){
+		if (OS.GetName() != "Windows"){
+			HoneyLog(2, "This platform does not support UI injection. Skipping.");
+			return;
+		}
+		string workbenchPath = Path.Combine(workbenchDir, "original", "stf");
+		workbenchPath = workbenchPath.Replace("/", "\\");
+		string[] originalBinFiles = Directory.GetFiles(workbenchPath);
+
+		string rom_ep = "";
+		string rom_data = "";
+		foreach (string file in originalBinFiles){
+			string fileName = Path.GetFileName(file);
+			if(fileName == "rom_ep.bin"){
+				rom_ep = workbenchPath + "\\" + fileName;
+			} else if(fileName == "rom_data.bin"){
+				rom_data = workbenchPath + "\\" + fileName;
+			}
+		}
+		
+		if(rom_ep.Length == 0 || rom_data.Length == 0) {
+			HoneyLog(1, $"Could not verify the presence of rom_ep.bin and rom_data.bin");
+			ShowError("Error", "Original rom_ep.bin and rom_data.bin must be present in the workbench/original/stf folder.\nPlace your original rom_ep.bin and rom_data.bin there and try again.");
+			return;
+		}
+		
+		if(portable){
+			rom_ep = "..\\" + rom_ep;
+			rom_data = "..\\" + rom_data;
+		}
+		
+		File.WriteAllText(Path.Combine(forthDir, "paths.ini"), ": ep-path S\" " + rom_ep + "\" ; \n: data-path S\" " + rom_data + "\" ; ");
+		Godot.Collections.Array output = new Godot.Collections.Array();
+		int exitCode = OS.Execute("cmd.exe", new string[] { "/C", "cd Forth && forth.exe stf_texture_tool.4th" }, output);
+		HoneyLog(3, string.Join(",", output));
+		
+		//Copy stfui to mods folder
+		//Delete forth versions
+		string[] files = Directory.GetFiles(forthDir);
+		Array.Sort(files);
+		int uiCount = 0;
+		foreach (string ui in files){
+			if (Path.GetExtension(ui) != ".stfui") continue;
+			uiCount += 1;
+			string fileName = Path.GetFileName(ui);
+			string srcPath = Path.Combine(forthDir, fileName);
+			string dstPath = Path.Combine(modsDir, "stf", fileName);
+			File.Move(srcPath, dstPath, overwrite: true);
+		}
+		if (uiCount > 0){
+			ShowError("Notice", $"{uiCount} generated .stfui file(s) moved to the mods folder.");
+		}
 	}
 	
 	private void CreatePatches(){
@@ -741,6 +801,76 @@ public partial class HoneyPatcher : Node2D
 		}
 		catch (Exception e){
 			HoneyLog(1, "There was an error injecting models. See HoneyLog.txt for more details.", e);
+		}
+	}
+	
+	private void InjectUi(){
+		if (game != "stf"){
+			HoneyLog(4, "Game is not Sonic the Fighters. Skipping UI injection.");
+			return;
+		}
+		if (OS.GetName() != "Windows"){
+			HoneyLog(2, "This platform does not support UI injection. Skipping.");
+			return;
+		}
+		string moddedPath = Path.Combine(usrdir, "rom", "stf_rom");
+		moddedPath = moddedPath.Replace("/", "\\");
+		string[] moddedBinFiles = Directory.GetFiles(moddedPath);
+		string rom_ep = "";
+		string rom_data = "";
+		foreach (string file in moddedBinFiles){
+			string fileName = Path.GetFileName(file);
+			if(fileName == "rom_ep.bin"){
+				rom_ep = moddedPath + "\\" + fileName;
+			} else if(fileName == "rom_data.bin"){
+				rom_data = moddedPath + "\\" + fileName;
+			}
+		}
+		
+		if(rom_ep.Length == 0 || rom_data.Length == 0) {
+			HoneyLog(1, $"Could not verify the presence of modded rom_ep.bin and rom_data.bin. Canceling UI injection.");
+			return;
+		}
+		
+		if(portable){
+			rom_ep = "..\\" + rom_ep;
+			rom_data = "..\\" + rom_data;
+		}
+		
+		try {
+			File.WriteAllText(Path.Combine(forthDir, "paths.ini"), ": ep-path S\" " + rom_ep + "\" ; \n: data-path S\" " + rom_data + "\" ; ");
+			
+			string[] files = Directory.GetFiles(Path.Combine(modsDir, "stf"));
+			Array.Sort(files);
+			int totalInjected = 0;
+			string uiList = "";
+			foreach (string ui in files){
+				string fileName = Path.GetFileName(ui);
+				if (Path.GetExtension(ui) != ".stfui" || fileName[0] == '.') continue;
+				totalInjected += 1;
+				string filePath = Path.Combine(modsDir, "stf", fileName);
+				File.Copy(filePath, Path.Combine(forthDir, fileName), overwrite: true);
+				uiList += fileName + "\r\n";
+			}
+			
+			if (totalInjected != 0){
+				File.WriteAllText(Path.Combine(forthDir, "process-list"), uiList);
+				Godot.Collections.Array output = new Godot.Collections.Array();
+				int exitCode = OS.Execute("cmd.exe", new string[] { "/C", "cd Forth && forth.exe patch_ui.4th" }, output);
+				HoneyLog(3, string.Join(",", output));
+				GD.Print(output);
+				
+				foreach (string ui in files){
+					if (Path.GetExtension(ui) != ".stfui") continue;
+					string fileName = Path.GetFileName(ui);
+					File.Delete(Path.Combine(forthDir, fileName));
+				}
+				
+				HoneyLog(3, "Injected UI for Sonic the Fighters.");
+			}
+		}
+		catch (Exception e){
+			HoneyLog(1, "There was an error injecting UI replacements. See HoneyLog.txt for more details.", e);
 		}
 	}
 	

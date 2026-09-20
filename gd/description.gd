@@ -24,3 +24,7 @@ func _on_help_mouse_entered() -> void:
 func android_helper() -> void:
 	if OS.get_name() == "Android":
 		text = "This option is not supported on your device."
+
+
+func _on_open_ui_edtior_mouse_entered() -> void:
+	pass # Replace with function body.
