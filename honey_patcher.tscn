@@ -138,7 +138,7 @@ func ready() -> void:
 script/source = "extends CheckButton
 "
 
-[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_modsfolder", "_uieditor", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_daytonaa", "_vsa", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods")]
+[node name="HoneyPatcher" type="Node2D" unique_id=295901998 node_paths=PackedStringArray("_acceptdialog", "_usrdirdialog", "_selectusrdir", "_install", "_modsfolder", "_uieditor", "_genpatches", "_modslist", "_closemodslist", "_enableall", "_disableall", "_patchesfolder", "_gamebutton", "_gameselector", "_progress", "_game", "_patchname", "_confirm", "_back", "_select", "_stfa", "_fva", "_vf2a", "_omga", "_daytonaa", "_vsa", "_logoskip", "_cleanup", "_enabledmods", "_disabledmods", "_progressbar")]
 script = ExtResource("1_72wd4")
 _acceptdialog = NodePath("AcceptDialog")
 _usrdirdialog = NodePath("USRDIRDialog")
@@ -170,6 +170,7 @@ _logoskip = NodePath("Logoskip")
 _cleanup = NodePath("Cleanup")
 _enabledmods = NodePath("EnabledMods")
 _disabledmods = NodePath("DisabledMods")
+_progressbar = NodePath("ProgressBar")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=890418921]
 z_index = -2
@@ -594,6 +595,15 @@ position = Vector2(614, 474)
 texture = ExtResource("55_x5qtp")
 script = ExtResource("65_kys1o")
 Progress = NodePath("../Progress")
+
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=14695385]
+visible = false
+z_index = 67
+offset_left = 397.0
+offset_top = 236.0
+offset_right = 563.0
+offset_bottom = 263.0
+step = 0.1
 
 [connection signal="animation_finished" from="Explotano" to="HoneyBadger" method="_on_explotano_animation_finished"]
 [connection signal="mouse_entered" from="SelectUSRDIR" to="Description" method="_on_select_usrdir_mouse_entered"]

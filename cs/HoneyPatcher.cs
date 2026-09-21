@@ -29,9 +29,9 @@ using libHoneyBadger;
 public partial class HoneyPatcher : Node2D
 {	
 	[Export] public AcceptDialog _acceptdialog; // Errors and whatnot
-	[Export] public FileDialog _usrdirdialog; // Restore USRDIR button
-	[Export] public Button _selectusrdir; 
-	[Export] public Button _install; // Restore USRDIR button
+	[Export] public FileDialog _usrdirdialog;
+	[Export] public Button _selectusrdir;
+	[Export] public Button _install; // Apply mods button
 	[Export] public Button _modsfolder; // Opens mods folder, doesn't currently work on my setup for some reason
 	[Export] public Button _uieditor; // Opens StF Ui Editor
 	[Export] public Button _genpatches; // Generate Patches button
@@ -42,7 +42,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public Button _patchesfolder; // Opens patches folder
 	[Export] public MenuBar _gamebutton;
 	[Export] public PopupMenu _gameselector; // Selects a game
-	[Export] public RichTextLabel _progress; // Progress label
+	[Export] public RichTextLabel _progress; // Log label
 	[Export] public Label _game; // game label
 	[Export] public LineEdit _patchname; // Name of patch
 	[Export] public AudioStreamPlayer _confirm;
@@ -58,6 +58,7 @@ public partial class HoneyPatcher : Node2D
 	[Export] public CheckButton _cleanup;
 	[Export] public ItemList _enabledmods;
 	[Export] public ItemList _disabledmods;
+	[Export] public ProgressBar _progressbar;
 	
 	// Static directories
 	string modsDir = ProjectSettings.GlobalizePath("user://mods");
@@ -85,6 +86,8 @@ public partial class HoneyPatcher : Node2D
 	string pretty_game = "Sonic the Fighters";
 	string modsStr;
 	byte loglevel = 2;
+	// float step = 0;
+	// float max_step = 2;
 	
 	bool logoskip = false;
 	bool cleanup = true;
@@ -120,7 +123,7 @@ public partial class HoneyPatcher : Node2D
 				Directory.CreateDirectory("/sdcard/HoneyPatcher/omgusrdir");
 				Directory.CreateDirectory("/sdcard/HoneyPatcher/daytonausrdir");
 			}
-			catch (Exception e){
+			catch{
 				HoneyLog(1, "Failed to create /sdcard/HoneyPatcher. Check that you have granted special permissions!");
 				return;
 			}
@@ -212,7 +215,7 @@ public partial class HoneyPatcher : Node2D
 		_gamebutton.Visible = enable;
 		_logoskip.Disabled = !enable;
 		_selectusrdir.Disabled = !enable;
-		if (OS.GetName() == "Android");{
+		if (OS.GetName() == "Android"){
 			_selectusrdir.Disabled = true;
 		}
 	}
@@ -292,6 +295,8 @@ public partial class HoneyPatcher : Node2D
 	
 	/* Install mods */
 	private void InstallAsync(bool just_extract = false){
+		_progressbar.CallDeferred("show");
+		UpdateProgressBar(0, 17);
 		/* Make backup if valid stf found and no backup exists */
 		string psarc_path = Path.Combine(usrdir, "rom.psarc");
 		if (game == "daytona")
@@ -302,10 +307,10 @@ public partial class HoneyPatcher : Node2D
 			CopyFilesRecursively(usrdir, gameBackupDir);
 			HoneyLog(3, "Created backup.");
 		}
-		catch (Exception e){
+ 		catch (Exception e){
 			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.", e);
 		}
-		
+		UpdateProgressBar(1, 17);
 		/* This gets AcbEditor working. */
 		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		
@@ -322,6 +327,7 @@ public partial class HoneyPatcher : Node2D
 		catch (Exception e){
 			HoneyLog(1, "There was an issue extracting rom.psarc. Check HoneyLog.txt for more details.", e);
 		}
+		UpdateProgressBar(2, 17);
 		try{
 			File.Delete(psarc_path);
 			HoneyLog(4, "Removed rom.psarc.");
@@ -329,26 +335,44 @@ public partial class HoneyPatcher : Node2D
 		catch (Exception e){
 			HoneyLog(1, "There was an issue removing rom.psarc. Check HoneyLog.txt for more details.", e);
 		}
+		UpdateProgressBar(3, 17);
 		FarcUnpack();
+		UpdateProgressBar(4, 17);
 		UnpackAcb();
+		UpdateProgressBar(5, 17);
 		DbToXml();
+		UpdateProgressBar(6, 17);
 		if (!just_extract){
 			ExtractMods();
+			UpdateProgressBar(7, 17);
 			ApplyPatches();
+			UpdateProgressBar(8, 17);
 			InjectModels(); // LibSTF by Bekzii
+			UpdateProgressBar(9, 17);
 			InjectUi(); // StfUiEditor by Seek+
+			UpdateProgressBar(10, 17);
 			DDSFixHeader();
+			UpdateProgressBar(11, 17);
 			InjectModsStr();
+			UpdateProgressBar(12, 17);
 			XmlToDb();
+			UpdateProgressBar(13, 17);
 			FarcPack();
+			UpdateProgressBar(14, 17);
 			PackAcb();
+			UpdateProgressBar(15, 17);
 			CleanUp();
+			UpdateProgressBar(16, 17);
+			// 16
 		}
 		LogoSkip();
+		UpdateProgressBar(17, 17);
 	}
 	
 	/* Just Apply Logoskip */
 	private void LogoSkipAsync(){
+		_progressbar.CallDeferred("show");
+		UpdateProgressBar(0, 2);
 		/* Make backup if valid stf found and no backup exists */
 		string gameBackupDir = Path.Combine(backupDir, game);
 		try{
@@ -359,7 +383,9 @@ public partial class HoneyPatcher : Node2D
 		catch (Exception e){
 			HoneyLog(1, "There was an issue creating a backup. Check HoneyLog.txt for more details.", e);
 		}
+		UpdateProgressBar(1, 2);
 		LogoSkip();
+		UpdateProgressBar(2, 2);
 	}
 	
 	/* Uninstall Mods */
@@ -1375,5 +1401,9 @@ public partial class HoneyPatcher : Node2D
 			else
 				_enabledmods.AddItem(mod);
 		}
+	}
+	
+	private void UpdateProgressBar(float step, float max_step){
+		_progressbar.CallDeferred("set_value", (step/max_step)*100);
 	}
 }

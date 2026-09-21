@@ -8,6 +8,8 @@ func _on_psarc_mouse_entered() -> void:
 	android_helper()
 func _on_install_mouse_entered() -> void:
 	text = "Apply all changes (mods, logoskip, extraction, etc) to your USRDIR."
+	if OS.get_name() == "Android":
+		text = "Apply all changes to your USRDIR. On Android this may take a while!"
 func _on_gen_patches_mouse_entered() -> void:
 	text = "Generate patches for rom_*.bin. THIS IS NOT THE INSTALL BUTTON. See GitHub wiki for more details."
 func _on_menu_bar_mouse_entered() -> void:
@@ -20,11 +22,8 @@ func _on_mods_list_mouse_entered() -> void:
 	text = "Show the mods list, where you can enable/disable mods."
 func _on_help_mouse_entered() -> void:
 	text = "Open the GitHub wiki for HoneyPatcher."
-
 func android_helper() -> void:
 	if OS.get_name() == "Android":
 		text = "This option is not supported on your device."
-
-
 func _on_open_ui_edtior_mouse_entered() -> void:
-	pass # Replace with function body.
+	text = "Open the StfUiEditor program."
